@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "EnvDay.schema.json",
+  "title": "EnvDay",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "north",
+        "south",
+        "east",
+        "west",
+        "central"
+      ]
+    },
+    "psi_24h": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rainfall_mm": {
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Nearest station to home, whole day"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "forecast": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "festival": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "e.g. 'Chinese New Year'"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "data.gov.sg",
+        "fixture",
+        "synthetic"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "date",
+    "region",
+    "psi_24h",
+    "rainfall_mm",
+    "forecast",
+    "festival",
+    "source"
+  ],
+  "additionalProperties": false
+}

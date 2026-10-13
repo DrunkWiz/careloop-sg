@@ -1,0 +1,23 @@
+{
+  "id": "dec-tan-2026-10-25",
+  "senior_id": "tan",
+  "date": "2026-10-25",
+  "rung": "R",
+  "rule_id": "R.bp_floor",
+  "reason": "BP 186/112 at or above the red-flag floor (180/120)",
+  "inputs": {
+    "systolic": 186,
+    "diastolic": 112
+  },
+  "audience": [
+    "senior",
+    "family"
+  ],
+  "message_ids": [
+    "msg-dec-tan-2026-10-25-R-senior-senior",
+    "msg-dec-tan-2026-10-25-R-family-tan-kelvin",
+    "msg-dec-tan-2026-10-25-R-family-tan-weiling"
+  ],
+  "handover_id": "ho-dec-tan-2026-10-25",
+  "created_at": "2026-10-25T17:27:24.498489+08:00"
+}

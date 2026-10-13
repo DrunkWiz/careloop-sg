@@ -1,0 +1,17 @@
+{
+  "id": "msg-dec-tan-2026-10-25-R-family-tan-kelvin",
+  "senior_id": "tan",
+  "decision_id": "dec-tan-2026-10-25",
+  "to": "family",
+  "contact_id": "tan-kelvin",
+  "rung": "R",
+  "language": "en",
+  "text": "Urgent: Mr Tan reported BP 186/112 at or above the red-flag floor (180/120). Please call Mr Tan now. If you cannot reach them, ask someone nearby to check on them or call 995.",
+  "from_template": true,
+  "guardrail": {
+    "passed": true,
+    "reasons": []
+  },
+  "model": null,
+  "time": "2026-10-25T17:27:24.498489+08:00"
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Suggestion.schema.json",
+  "title": "Suggestion",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "place_id": {
+      "type": "string"
+    },
+    "place": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "aac",
+        "cc",
+        "programme"
+      ]
+    },
+    "why_it_fits": {
+      "type": "string"
+    },
+    "indoor": {
+      "type": "boolean"
+    },
+    "free": {
+      "type": "boolean"
+    },
+    "sample": {
+      "type": "boolean",
+      "description": "true for seeded sample programmes"
+    },
+    "response": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "not_for_me",
+            "going"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "date",
+    "place_id",
+    "place",
+    "kind",
+    "why_it_fits",
+    "indoor",
+    "free",
+    "sample",
+    "response"
+  ],
+  "additionalProperties": false
+}

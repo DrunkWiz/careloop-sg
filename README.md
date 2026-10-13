@@ -27,15 +27,27 @@ web/           React + Vite, one build
 docs/          README, evaluation page, Tencent tools log
 ```
 
-## Run the web app
+## Run it
 
 ```
-cd web
-npm install
-npm run dev
+# API (Python 3.10+), seeded with the synthetic demo
+python -m venv .venv && .venv/Scripts/pip install -r backend/requirements.txt
+CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 8787
+
+# Web app (without VITE_API_URL the senior app uses an in-browser mock)
+cd web && npm install && VITE_API_URL=http://localhost:8787 npm run dev
 ```
 
-Open `/senior` or `/care`.
+Open `/senior?senior=tan` (demo senior) or `/care`.
+
+## Tests and evaluation
+
+Offline, with no keys and no network.
+
+```
+for s in language engine api synth; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
+```
 
 ## Real vs synthetic
 

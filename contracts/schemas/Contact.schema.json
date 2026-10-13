@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Contact.schema.json",
+  "title": "Contact",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "family",
+        "aac"
+      ]
+    },
+    "primary": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "en-SG",
+        "zh"
+      ]
+    },
+    "worker_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "AAC path: the staff member, shared across their caseload"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "role",
+    "primary",
+    "name",
+    "language"
+  ],
+  "additionalProperties": false
+}

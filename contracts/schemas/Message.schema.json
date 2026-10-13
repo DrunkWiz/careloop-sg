@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Message.schema.json",
+  "title": "Message",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "to": {
+      "type": "string",
+      "enum": [
+        "senior",
+        "family",
+        "aac"
+      ]
+    },
+    "contact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rung": {
+      "type": "string",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "R"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "en-SG",
+        "zh"
+      ]
+    },
+    "text": {
+      "type": "string"
+    },
+    "from_template": {
+      "type": "boolean"
+    },
+    "guardrail": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "passed",
+        "reasons"
+      ],
+      "additionalProperties": false
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "decision_id",
+    "to",
+    "contact_id",
+    "rung",
+    "language",
+    "text",
+    "from_template",
+    "guardrail",
+    "model",
+    "time"
+  ],
+  "additionalProperties": false
+}

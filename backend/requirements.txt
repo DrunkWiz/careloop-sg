@@ -1,0 +1,8 @@
+# API only. backend/language, engine, env and synth use the standard library.
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+# tests
+httpx==0.28.1
+jsonschema==4.23.0
+# deploy against Postgres (DATABASE_URL=postgresql://...)
+# psycopg[binary]==3.2.3
