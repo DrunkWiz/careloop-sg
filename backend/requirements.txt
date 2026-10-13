@@ -4,5 +4,7 @@ uvicorn[standard]==0.32.1
 # tests
 httpx==0.28.1
 jsonschema==4.23.0
+# backend/reports: the GP brief PDF
+reportlab==4.2.5
 # deploy against Postgres (DATABASE_URL=postgresql://...)
 # psycopg[binary]==3.2.3

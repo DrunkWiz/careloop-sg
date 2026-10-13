@@ -57,7 +57,7 @@ export default function AacProgrammes({ centre }: { centre: { id: string; name: 
 
   const remove = (p: Programme) => list && save(list.filter((x) => x.id !== p.id).map(strip));
   const toggleDay = (d: Weekday) =>
-    setDraft({ ...draft, weekdays: draft.weekdays.includes(d) ? draft.weekdays.filter((x) => x !== d) : [...draft.weekdays, d] });
+    setDraft((cur) => ({ ...cur, weekdays: cur.weekdays.includes(d) ? cur.weekdays.filter((x) => x !== d) : [...cur.weekdays, d] }));
 
   return (
     <>

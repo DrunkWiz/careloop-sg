@@ -17,7 +17,7 @@ export function digestLines(d: Digest, name: string): string[] {
   );
 
   lines.push(
-    `Checked in on ${days(d.checkin_days)} of 7. Pills taken on ${days(d.pills_taken_days)}` +
+    `Checked in on ${d.checkin_days} of 7 days. Pills taken on ${days(d.pills_taken_days)}` +
       (d.missed_days ? `, missed on ${days(d.missed_days)}.` : '.'),
   );
 
@@ -29,7 +29,7 @@ export function digestLines(d: Digest, name: string): string[] {
         (Math.abs(diff) >= 5 ? ` (${diff > 0 ? '+' : ''}${diff}).` : '.'),
     );
   } else {
-    lines.push(`Blood pressure logged on ${days(d.readings_days)} of 7.`);
+    lines.push(`Blood pressure logged on ${d.readings_days} of 7 days.`);
   }
 
   if (d.social_days) lines.push(`Saw or spoke to someone on ${days(d.social_days)}.`);

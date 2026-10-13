@@ -81,6 +81,8 @@ export default function AacApp({ workerId }: { workerId: string }) {
         message={null}
         reason={red.today.reason}
         onClaimed={(h) => {
+          // The caseload only returns open handovers, so remember this one was dealt with.
+          markRedFlagSeen(`${red.senior.id}-${data.today}`);
           onClaimed(h);
           load();
         }}

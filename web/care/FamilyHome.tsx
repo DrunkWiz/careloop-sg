@@ -37,7 +37,11 @@ export default function FamilyHome({ view }: { view: FamilyView }) {
         <p className="care-muted">As of {fmtDate(view.today)}</p>
       </section>
 
-      {view.red_flags.slice(0, 1).map((m) => (
+      {[...view.red_flags]
+        .sort((a, b) => b.time.localeCompare(a.time))
+        .filter((m, i, all) => m.contact_id === contact.id || (i === 0 && !all.some((x) => x.contact_id === contact.id)))
+        .slice(0, 1)
+        .map((m) => (
         <section key={m.id} className="care-card care-card-red">
           <span className="care-card-title is-red">Red flag · {new Date(m.time).toLocaleString('en-SG', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</span>
           <p>{m.text}</p>

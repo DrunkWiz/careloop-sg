@@ -67,7 +67,8 @@ function FamilyApp({ contactId }: { contactId: string }) {
   // red-flag handover, it shows the message until this person says they've seen it.
   const rfHandover = view.handovers.find((h) => h.kind === 'red_flag' && h.status === 'open') ?? null;
   const rfClaimed = view.handovers.some((h) => h.kind === 'red_flag' && h.status !== 'open');
-  const rfMessage = view.red_flags.find((m) => m.contact_id === view.contact.id) ?? view.red_flags[0] ?? null;
+  const latest = [...view.red_flags].sort((a, b) => b.time.localeCompare(a.time));
+  const rfMessage = latest.find((m) => m.contact_id === view.contact.id) ?? latest[0] ?? null;
   const showRed = rfHandover || (view.status === 'red_flag' && rfMessage && !rfClaimed && !seenRedFlags().has(rfMessage.id));
   if (showRed) {
     return (
@@ -127,7 +128,7 @@ function DemoBar() {
   };
   return (
     <div className="demo-bar" role="group" aria-label="Demo controls">
-      <span>Demo{today ? ` · ${today}` : ''}</span>
+      <span>Demo{today ? ` · ${new Date(today).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}` : ''}</span>
       <button disabled={busy} onClick={() => run(() => demoAdvance(1))}>
         +1 day
       </button>
