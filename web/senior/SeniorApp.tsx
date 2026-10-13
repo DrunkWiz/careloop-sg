@@ -27,11 +27,21 @@ type View =
 const store = {
   get(key: string) { try { return localStorage.getItem(`careloop.${key}`); } catch { return null; } },
   set(key: string, v: string) { try { localStorage.setItem(`careloop.${key}`, v); } catch { /* private mode */ } },
+  remove(key: string) { try { localStorage.removeItem(`careloop.${key}`); } catch { /* private mode */ } },
 };
 
 export default function SeniorApp() {
-  const forcePair = new URLSearchParams(location.search).has('pair');
-  const [seniorId, setSeniorId] = useState<string | null>(forcePair ? null : store.get('seniorId'));
+  const params = new URLSearchParams(location.search);
+  const forcePair = params.has('pair');
+  // ?senior=tan opens the app as a seeded demo senior (for the video), skipping pairing.
+  const [seniorId, setSeniorId] = useState<string | null>(() => {
+    const demo = params.get('senior');
+    if (demo) {
+      store.set('seniorId', demo);
+      store.remove('lang');
+    }
+    return forcePair ? null : demo || store.get('seniorId');
+  });
   const [lang, setLangState] = useState<Lang>((store.get('lang') as Lang) || 'en');
   const [today, setToday] = useState<Today | null>(null);
   const [view, setView] = useState<View>({ name: 'home' });
@@ -59,7 +69,10 @@ export default function SeniorApp() {
   const refresh = useCallback(async () => {
     if (!seniorId) return;
     try {
-      setToday(await api.today(seniorId));
+      const t = await api.today(seniorId);
+      setToday(t);
+      // Until the senior picks a language on this phone, use the one set up for them.
+      if (!store.get('lang') && t.senior.language !== lang) setLangState(t.senior.language);
     } catch {
       toast(translate(lang, 'common.offline'));
     }

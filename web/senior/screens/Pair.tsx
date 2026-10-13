@@ -17,7 +17,7 @@ export function Pair({ lang, setLang, onPaired }: { lang: Lang; setLang: (l: Lan
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [bad, setBad] = useState(false);
-  const [consent, setConsent] = useState<Consent>({ share_bp: true, share_meds: true, share_words: false, share_activity: true });
+  const [consent, setConsent] = useState<Consent>({ family_sees: 'digest', share_words: false, share_activity: true });
 
   const submit = async () => {
     setBusy(true);
@@ -31,9 +31,15 @@ export function Pair({ lang, setLang, onPaired }: { lang: Lang; setLang: (l: Lan
     }
   };
 
-  const toggle = (key: keyof Consent, label: string) => (
+  const toggle = (key: 'share_words' | 'share_activity', label: string) => (
     <label className="sa-toggle">
       <input type="checkbox" checked={consent[key]} onChange={(e) => setConsent({ ...consent, [key]: e.target.checked })} />
+      <span>{label}</span>
+    </label>
+  );
+  const sees = (value: Consent['family_sees'], label: string) => (
+    <label className="sa-toggle">
+      <input type="radio" name="sa-family-sees" checked={consent.family_sees === value} onChange={() => setConsent({ ...consent, family_sees: value })} />
       <span>{label}</span>
     </label>
   );
@@ -61,8 +67,10 @@ export function Pair({ lang, setLang, onPaired }: { lang: Lang; setLang: (l: Lan
 
       <fieldset className="sa-fieldset">
         <legend>{t('pair.consent')}</legend>
-        {toggle('share_bp', t('pair.consent.bp'))}
-        {toggle('share_meds', t('pair.consent.meds'))}
+        {sees('nothing', t('pair.consent.nothing'))}
+        {sees('digest', t('pair.consent.digest'))}
+        {sees('readings', t('pair.consent.readings'))}
+        <p className="sa-note">{t('pair.consent.redflags')}</p>
         {toggle('share_words', t('pair.consent.words'))}
         {toggle('share_activity', t('pair.consent.activity'))}
         <p className="sa-note">{t('pair.consent.note')}</p>

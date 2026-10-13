@@ -84,8 +84,8 @@ export interface KnownFact {
 }
 
 export interface Consent {
-  share_bp: boolean;
-  share_meds: boolean;
+  /** What the family sees. Red flags are always shared, and the senior is told so at setup. */
+  family_sees: 'nothing' | 'digest' | 'readings';
   share_words: boolean;
   share_activity: boolean;
 }
