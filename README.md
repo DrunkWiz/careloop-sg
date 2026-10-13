@@ -34,27 +34,27 @@ docs/          README, evaluation page, Tencent tools log
 python -m venv .venv && .venv/Scripts/pip install -r backend/requirements.txt
 CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 8787
 
-# Web app (without VITE_API_URL the senior app uses an in-browser mock)
-cd web && npm install && VITE_API_URL=http://localhost:8787 npm run dev
+# Web app against the API (web/.env.live points at :8787)
+cd web && npm install && npm run dev:live
 ```
 
-Open `/senior?senior=tan` (demo senior) or `/care`.
+Without the API (`npm run dev`), both apps run on in-browser mocks in the same shapes.
 
-Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo URLs:
+**Senior app:** `/senior?senior=tan` (the demo senior).
 
-- `/care`: drift handover (default) · `/care?scenario=quiet` · `/care?scenario=redflag`
-- `?contact=c-weijie` to act as a second family member (claims show across tabs)
-- `/care/pair`: pairing code and sharing choices
-- `/care/aac`: AAC caseload (`?contact=c-aac-daniel` for a second staff member, `?scenario=redflag`), with `/care/aac/programmes` for the timetable
-
-Set `VITE_API_URL` (e.g. in `web/.env.local`) to use the real backend.
+**Caregiver app:**
+- `/care`: the family view, as Wei Ling. Add `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
+- `/care/aac`: the AAC caseload, as worker Siti (`?worker=aac-siti`). `/care/aac/programmes` is the timetable.
+- `/care/pair`: settings and pairing codes.
+- `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
+- Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
 
 ## Tests and evaluation
 
 Offline, with no keys and no network.
 
 ```
-for s in language engine api synth; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+for s in language engine api synth reports; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
 python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
 ```
 

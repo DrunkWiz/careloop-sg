@@ -1,12 +1,13 @@
 // The AAC view of /care: for seniors with no family to call.
 // Routes: /care/aac · /care/aac/senior/{id} · /care/aac/handover/{id} · /care/aac/programmes
 import { useCallback, useEffect, useState } from 'react';
-import type { AacCaseload, CaseloadRow, Handover } from '../shared/contract';
-import { getCaseload } from '../shared/api';
-import HandoverView from './HandoverView';
+import type { Caseload, CaseloadRow, Handover } from '../shared/contract';
+import { getBrief, getCaseload } from '../shared/api';
+import HandoverView, { BackLink, KIND_TITLE } from './HandoverView';
 import RedFlag from './RedFlag';
 import AacSenior from './AacSenior';
 import AacProgrammes from './AacProgrammes';
+import { markRedFlagSeen, seenRedFlags, useLive, useRoute } from './live';
 import { navigate } from './nav';
 
 type Route =
@@ -24,48 +25,84 @@ function parseRoute(): Route {
 }
 
 const fmtDay = (d: string) => new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export default function AacApp({ contactId }: { contactId: string }) {
-  const [route, setRoute] = useState<Route>(parseRoute);
-  const [data, setData] = useState<AacCaseload | null>(null);
+// The caseload doesn't say which centre the worker belongs to, so read it off a senior's brief.
+function useCentre(seniorId: string | undefined) {
+  const [centre, setCentre] = useState<{ id: string; name: string } | null>(null);
+  useEffect(() => {
+    if (!seniorId) return;
+    getBrief(seniorId).then(
+      (b) => b.aac && setCentre({ id: b.aac.id, name: b.aac.name ?? b.aac.id }),
+      () => setCentre(null),
+    );
+  }, [seniorId]);
+  return centre;
+}
+
+export default function AacApp({ workerId }: { workerId: string }) {
+  const route = useRoute(parseRoute);
+  const [data, setData] = useState<Caseload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [, setSeenTick] = useState(0);
 
   const load = useCallback(() => {
-    getCaseload(contactId).then(setData, (e: Error) => setError(e.message));
-  }, [contactId]);
+    getCaseload(workerId).then(
+      (d) => {
+        setData(d);
+        setError(null);
+      },
+      (e: Error) => setError(e.message),
+    );
+  }, [workerId]);
+  useLive(load);
+  const centre = useCentre(data?.seniors[0]?.senior.id);
 
-  useEffect(load, [load]);
-  useEffect(() => {
-    const onPop = () => setRoute(parseRoute());
-    window.addEventListener('popstate', onPop);
-    window.addEventListener('storage', load);
-    return () => {
-      window.removeEventListener('popstate', onPop);
-      window.removeEventListener('storage', load);
-    };
-  }, [load]);
-
-  if (error) return <p className="care-error">Could not load: {error}</p>;
+  if (error && !data) return <p className="care-error">Could not load: {error}</p>;
   if (!data) return <p className="care-muted">Loading…</p>;
 
   const onClaimed = (h: Handover) =>
-    setData((d) => d && { ...d, rows: d.rows.map((r) => (r.handover?.id === h.id ? { ...r, handover: h } : r)) });
+    setData((d) => d && { ...d, seniors: d.seniors.map((r) => (r.handover?.id === h.id ? { ...r, handover: { ...r.handover, ...h } } : r)) });
 
-  const redRow = data.rows.find((r) => r.handover?.kind === 'red_flag' && !r.handover.claimed_by);
-  if (redRow?.handover) {
-    return <RedFlag senior={redRow.senior} contact={data.contact} handover={redRow.handover} onClaimed={onClaimed} />;
+  // A red flag goes full screen until it is claimed (or seen, if the engine raised it without a handover).
+  const red = data.seniors.find(
+    (r) =>
+      r.status === 'red_flag' &&
+      (r.handover?.kind === 'red_flag' ? r.handover.status === 'open' : !seenRedFlags().has(`${r.senior.id}-${data.today}`)),
+  );
+  if (red) {
+    const ho = red.handover?.kind === 'red_flag' ? red.handover : null;
+    return (
+      <RedFlag
+        senior={red.senior}
+        contactId={red.contact_id}
+        aac
+        handover={ho}
+        message={null}
+        reason={red.today.reason}
+        onClaimed={(h) => {
+          // The caseload only returns open handovers, so remember this one was dealt with.
+          markRedFlagSeen(`${red.senior.id}-${data.today}`);
+          onClaimed(h);
+          load();
+        }}
+        onSeen={() => {
+          markRedFlagSeen(`${red.senior.id}-${data.today}`);
+          setSeenTick((n) => n + 1);
+        }}
+      />
+    );
   }
 
   if (route.name === 'handover') {
-    const row = data.rows.find((r) => r.handover?.id === route.id);
-    if (!row) return <HandoverMissing />;
+    const row = data.seniors.find((r) => r.handover?.id === route.id);
+    if (!row) return <NotFound />;
     return (
       <HandoverView
         handover={row.handover ?? undefined}
         senior={row.senior}
-        contact={data.contact}
-        others={data.colleagues.map((c) => c.name)}
-        showNumbers={row.senior.consent.family_sees === 'readings'}
+        contactId={row.contact_id}
+        others={[]}
         backPath={`/care/aac/senior/${row.senior.id}`}
         onClaimed={onClaimed}
       />
@@ -73,37 +110,38 @@ export default function AacApp({ contactId }: { contactId: string }) {
   }
 
   if (route.name === 'senior') {
-    const row = data.rows.find((r) => r.senior.id === route.id);
-    return row ? <AacSenior row={row} contact={data.contact} /> : <HandoverMissing />;
+    const row = data.seniors.find((r) => r.senior.id === route.id);
+    return row ? <AacSenior row={row} /> : <NotFound />;
   }
 
   if (route.name === 'programmes') {
-    return <AacProgrammes contact={data.contact} centre={data.centre.name} initial={data.programmes} />;
+    return centre ? <AacProgrammes centre={centre} /> : <p className="care-muted">Finding your centre…</p>;
   }
 
-  const needs = data.rows.filter((r) => r.status !== 'quiet');
-  const quiet = data.rows.filter((r) => r.status === 'quiet');
+  const needs = data.seniors.filter((r) => r.status !== 'quiet');
+  const quiet = data.seniors.filter((r) => r.status === 'quiet');
+  const noted = quiet.filter((r) => r.today.rung === '3').length;
 
   return (
     <>
+      {error && <p className="care-error">Showing the last update. {error}</p>}
       <header className="care-header">
         <div>
-          <p className="care-eyebrow">
-            {data.centre.name} · {data.contact.name}
-          </p>
+          <p className="care-eyebrow">{centre?.name ?? 'Your centre'}</p>
           <h1>Caseload</h1>
         </div>
-        <button className="care-link" onClick={() => navigate('/care/aac/programmes')}>
+        <button className="care-link" onClick={() => navigate('/care/aac/programmes')} disabled={!centre}>
           Programmes
         </button>
       </header>
 
-      <section className={`care-status ${needs.some((r) => r.status !== 'note') ? 'is-action' : 'is-quiet'}`}>
+      <section className={`care-status ${needs.length ? 'is-action' : 'is-quiet'}`}>
         <p className="care-status-line">
-          {needs.filter((r) => r.status !== 'note').length} to look at today · {quiet.length} quiet
+          {needs.length ? `${needs.length} to look at today` : 'Nobody needs a look today'} · {quiet.length} quiet
         </p>
         <p className="care-muted">
-          {fmtDay(data.as_of)}. At most one non-urgent alert per senior per week.
+          {fmtDay(data.today)}.{noted ? ` ${noted} quiet row${noted === 1 ? '' : 's'} with a note, no alert.` : ''} At most
+          one non-urgent alert per senior per week.
         </p>
       </section>
 
@@ -125,36 +163,34 @@ export default function AacApp({ contactId }: { contactId: string }) {
   );
 }
 
-const STATUS_LABEL: Record<CaseloadRow['status'], string> = {
-  red_flag: 'Red flag',
-  handover: 'Needs a next step',
-  no_contact: 'No contact',
-  note: 'Noted',
-  quiet: 'Quiet',
-};
+function rowLine(r: CaseloadRow): string {
+  if (r.handover) return cap(r.handover.evidence.summary) + '.';
+  if (r.today.reason) return cap(r.today.reason.replace(/^no action, because /, '')) + '.';
+  return r.last_reply ? `Last replied ${fmtDay(r.last_reply)}.` : 'No check-ins yet.';
+}
 
 function CaseRow({ row }: { row: CaseloadRow }) {
-  const claimed = row.handover?.claimed_by_name;
+  const h = row.handover;
+  const chip = row.status === 'red_flag' ? 'Red flag' : h ? KIND_TITLE[h.kind] : row.today.rung === '3' ? 'Noted' : null;
+  const cls = row.status === 'quiet' && row.today.rung === '3' ? 'note' : row.status;
   return (
     <li>
-      <button className={`aac-row is-${row.status}`} onClick={() => navigate(`/care/aac/senior/${row.senior.id}`)}>
+      <button className={`aac-row is-${cls}`} onClick={() => navigate(`/care/aac/senior/${row.senior.id}`)}>
         <span className="aac-row-top">
           <strong>{row.senior.name}</strong>
-          {row.status !== 'quiet' && <span className={`aac-chip is-${row.status}`}>{STATUS_LABEL[row.status]}</span>}
+          {chip && <span className={`aac-chip is-${cls}`}>{chip}</span>}
         </span>
-        <span className="aac-row-line">{row.line}</span>
-        {claimed && <span className="care-pill">{claimed} is handling it</span>}
+        <span className="aac-row-line">{rowLine(row)}</span>
+        {h && h.status !== 'open' && <span className="care-pill">You are handling it</span>}
       </button>
     </li>
   );
 }
 
-function HandoverMissing() {
+function NotFound() {
   return (
     <>
-      <button className="care-link care-back" onClick={() => navigate('/care/aac')}>
-        ← Caseload
-      </button>
+      <BackLink to="/care/aac" label="Caseload" />
       <p className="care-muted">Not found in this caseload.</p>
     </>
   );

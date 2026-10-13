@@ -1,25 +1,36 @@
-// The handover pack (rung 4), shared by the family view and the AAC view.
+// The handover pack (rung 4 or R), shared by the family view and the AAC view.
 import { useState } from 'react';
-import type { Contact, Handover, Senior } from '../shared/contract';
+import type { Handover, HandoverKind, SeniorRef } from '../shared/contract';
 import { claimHandover, briefPdfUrl } from '../shared/api';
 import BpChart from './BpChart';
 import { navigate } from './nav';
 
+export const KIND_TITLE: Record<HandoverKind, string> = {
+  bp_drift: 'Blood pressure above their usual',
+  missed_medicine: 'Missed medicine',
+  unwell: 'Not feeling well',
+  activity: 'Less active and less in touch',
+  no_contact: 'No contact',
+  double_dose: 'Possible double dose',
+  red_flag: 'Red flag',
+};
+
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 const fmtTime = (d: string) =>
   new Date(d).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 interface Props {
   handover: Handover | undefined;
-  senior: Senior;
-  contact: Contact;
+  senior: SeniorRef;
+  contactId: string; // who claims: the family contact, or the AAC worker's contact for this senior
+  claimerName?: (contactId: string) => string | null;
   others: string[]; // names of the other people who can claim it
-  showNumbers: boolean;
   backPath: string;
   onClaimed: (h: Handover) => void;
 }
 
-export default function HandoverView({ handover: h, senior, contact, others, showNumbers, backPath, onClaimed }: Props) {
+export default function HandoverView({ handover: h, senior, contactId, claimerName, others, backPath, onClaimed }: Props) {
   const [choice, setChoice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +45,9 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
   }
 
   const { evidence } = h;
-  const mine = h.claimed_by === contact.id;
+  const hasNumbers = evidence.bp_series.some((p) => p.systolic != null) && evidence.baseline;
+  const mine = h.claimed_by === contactId;
+  const who = h.claimed_by ? (mine ? 'You are' : `${h.claimed_by_name ?? claimerName?.(h.claimed_by) ?? 'Someone'} is`) : '';
   const pdf = briefPdfUrl(senior.id);
 
   const claim = async () => {
@@ -42,7 +55,7 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
     setBusy(true);
     setError(null);
     try {
-      onClaimed(await claimHandover(h.id, contact.id, choice));
+      onClaimed(await claimHandover(h.id, contactId, choice));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -53,17 +66,19 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
   return (
     <>
       <BackLink to={backPath} />
-      <p className="care-eyebrow">{senior.name}</p>
-      <h1>{h.kind === 'red_flag' ? 'Red flag' : 'CareLoop needs you to pick a next step'}</h1>
-      <p className="care-lead">{evidence.summary}</p>
+      <p className="care-eyebrow">
+        {senior.name} · {KIND_TITLE[h.kind]}
+      </p>
+      <h1>{h.status === 'open' ? 'CareLoop needs you to pick a next step' : KIND_TITLE[h.kind]}</h1>
+      <p className="care-lead">{cap(evidence.summary)}.</p>
 
-      {showNumbers && evidence.bp_series && evidence.baseline && (
+      {hasNumbers && evidence.baseline && (
         <section className="care-card">
           <h2>Last 14 days</h2>
-          <BpChart series={evidence.bp_series} baseline={evidence.baseline} since={evidence.since} />
+          <BpChart series={evidence.bp_series} baseline={evidence.baseline} flagged={evidence.dates} />
         </section>
       )}
-      {!showNumbers && evidence.bp_series && (
+      {!hasNumbers && h.kind === 'bp_drift' && (
         <p className="care-muted">{senior.name} has not chosen to share readings, so numbers are left out.</p>
       )}
 
@@ -74,7 +89,7 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
             {evidence.tried.map((t, i) => (
               <li key={i}>
                 <span className="care-timeline-date">{fmtDate(t.date)}</span>
-                <span>{t.what}</span>
+                <span>{cap(t.what)}.</span>
               </li>
             ))}
           </ol>
@@ -87,12 +102,10 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
         {h.claimed_by ? (
           <div className="care-claimed">
             <p>
-              <strong>{mine ? 'You are' : `${h.claimed_by_name} is`} handling this</strong>
+              <strong>{who} handling this</strong>
               {h.claimed_at && <> since {fmtTime(h.claimed_at)}</>}.
             </p>
-            {h.chosen_option && (
-              <p className="care-muted">Chosen: {h.options.find((o) => o.id === h.chosen_option)?.label}</p>
-            )}
+            {h.choice && <p className="care-muted">Chosen: {h.options.find((o) => o.id === h.choice)?.label ?? h.choice}</p>}
             {mine && others.length > 0 && <p className="care-muted">{others.join(' and ')} can see this.</p>}
           </div>
         ) : (
@@ -100,13 +113,7 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
             <div className="care-options" role="radiogroup" aria-label="Next step">
               {h.options.map((o) => (
                 <label key={o.id} className={`care-option ${choice === o.id ? 'is-selected' : ''}`}>
-                  <input
-                    type="radio"
-                    name="next-step"
-                    value={o.id}
-                    checked={choice === o.id}
-                    onChange={() => setChoice(o.id)}
-                  />
+                  <input type="radio" name="next-step" value={o.id} checked={choice === o.id} onChange={() => setChoice(o.id)} />
                   {o.label}
                 </label>
               ))}
@@ -120,32 +127,29 @@ export default function HandoverView({ handover: h, senior, contact, others, sho
         )}
       </section>
 
-      {evidence.bp_series && (
-        <section className="care-card">
-          <h2>For the doctor</h2>
-          <p className="care-muted">
-            A one-page brief with 90 days of readings, medicines and what {senior.name} reported, to print or bring to
-            the visit.
-          </p>
-          {pdf ? (
-            <a className="care-secondary" href={pdf} target="_blank" rel="noreferrer">
-              Open GP brief (PDF)
-            </a>
-          ) : (
-            <button className="care-secondary" disabled>
-              GP brief: not built yet
-            </button>
-          )}
-        </section>
-      )}
+      <section className="care-card">
+        <h2>For the doctor</h2>
+        <p className="care-muted">
+          A one-page brief with 90 days of readings, medicines and what {senior.name} reported, to print or bring to the visit.
+        </p>
+        {pdf ? (
+          <a className="care-secondary" href={pdf} target="_blank" rel="noreferrer">
+            Open GP brief (PDF)
+          </a>
+        ) : (
+          <button className="care-secondary" disabled>
+            GP brief needs the API
+          </button>
+        )}
+      </section>
     </>
   );
 }
 
-export function BackLink({ to }: { to: string }) {
+export function BackLink({ to, label = 'Back' }: { to: string; label?: string }) {
   return (
     <button className="care-link care-back" onClick={() => navigate(to)}>
-      ← Back
+      ← {label}
     </button>
   );
 }

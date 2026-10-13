@@ -144,3 +144,26 @@
 .aac-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .aac-form .aac-check { flex-direction: row; align-items: center; gap: 8px; }
 .aac-form .aac-check input { min-height: 0; width: 18px; height: 18px; accent-color: var(--cl-accent); }
+
+/* Real-API additions */
+.care-card-red { border-color: var(--cl-alert); background: var(--cl-alert-soft); }
+.care-card-red p { margin: 6px 0 0; }
+.care-card-title.is-red { color: var(--cl-alert); }
+.bp-dot { fill: var(--cl-warn); }
+.bp-dot-dia { opacity: 0.7; }
+.aac-row.is-note { border-left-color: var(--cl-muted); }
+.aac-chip.is-note { background: var(--cl-surface); color: var(--cl-muted); }
+.aac-days { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.aac-days legend { font-size: 14px; font-weight: 600; margin-bottom: 4px; padding: 0; }
+.aac-day-chip {
+  min-width: 48px; min-height: 44px; border-radius: 999px; border: 1px solid var(--cl-border);
+  background: var(--cl-card); font: inherit; cursor: pointer;
+}
+.aac-day-chip.is-on { background: var(--cl-accent); border-color: var(--cl-accent); color: #fff; font-weight: 600; }
+.demo-bar {
+  position: sticky; bottom: 8px; margin-top: 16px; display: flex; gap: 6px; align-items: center;
+  background: #1a1a1a; color: #fff; border-radius: 10px; padding: 6px 8px; font-size: 12px; z-index: 20; opacity: 0.92;
+}
+.demo-bar span { margin-right: auto; white-space: nowrap; }
+.demo-bar button { min-height: 32px; border-radius: 6px; border: 0; padding: 0 10px; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.demo-bar button:disabled { opacity: 0.5; }

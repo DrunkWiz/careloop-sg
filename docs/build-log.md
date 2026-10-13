@@ -13,22 +13,20 @@ What has been built, the decisions behind it, and what is still open. Newest fir
 | API | Done on SQLite. The Postgres path hasn't been run |
 | Evaluation | Done. Blind held-out result in `docs/evaluation.md` |
 | Senior app `/senior` | Done, against the API or mocks. Hold-to-talk untested on a real phone |
-| Caregiver app `/care`, `/care/aac` | Built by Nathan **on mocks**; **not yet wired to the API** (see open item 1) |
-| Reports (`backend/reports`) | Not started: GP brief PDF, digest text. Data is ready at `GET /senior/{id}/brief.json` and in `GET /care/family/{contact}` |
+| Caregiver app `/care`, `/care/aac` | Done, on the API (contract shapes) or on mocks. A few API gaps: see open item 1 |
+| Reports (`backend/reports`) | GP brief PDF done (`gp_brief_pdf`, one page, tested). Digest words are fixed templates in `web/care/digest.ts`; no model |
 | Deck, video, README for judges | Not started (Nathan) |
 | Tencent tools log | **Empty.** A submission gate: see open item 2 |
 
 ## Open items, most important first
 
-1. **The caregiver app doesn't match the API yet.** `web/shared/contract.ts` and `web/shared/api.ts` were written before `contracts/` existed. Known differences:
-   - **Claim body:** `POST /handover/{id}/claim` takes `{contact_id, choice}`; the app sends `option_id`.
-   - **Rungs:** strings `"0"` to `"4"` and `"R"` in the API; numbers in the app.
-   - **Senior:** `home_postal` (not `home_postal_code`). Medicines are `{name, dose_text, schedule, started, for_bp}`. Language includes `en-SG`.
-   - **Handover:** `kind` is one of `bp_drift`, `missed_medicine`, `unwell`, `activity`, `no_contact`, `double_dose`, `red_flag`. The chosen option is `choice`.
-   - **Family view and caseload:** `GET /care/family/{contact}` and `GET /care/aac/{worker_id}/caseload` return different shapes from `FamilyView` / `AacCaseload`. The caseload is keyed by the AAC worker (`worker_id`), not a contact id.
-   - **Programmes:** saving them has an endpoint now: `PUT /aac/{aac_id}/programmes`.
-
-   Decide together whether the app adopts `contracts/` or the API adds adapters. The contract says changes need all three to agree.
+1. **Caregiver app: what the API doesn't give it yet** (Vibu). The app now uses the contract shapes as they are; these are the gaps it works around:
+   - **Same-day red flag has no handover (engine bug).** When a rung-4 handover already exists that day, a red flag the same day reuses its `handover_id` (`ladder.py`, `if out.rung in ("4", "R") and not decision["handover_id"]`), so no `red_flag` handover is made. Messages and `status` are right, so nothing is held back, but there is nothing to claim. The demo hits this: advance 11 days, then say the red flag. The app falls back to showing the message with "I've seen this".
+   - **Caseload drops claimed handovers.** It returns only open ones, so a claimed row loses its "handling it" state.
+   - **Caseload has no centre.** The app reads the AAC id and name from a senior's `brief.json` to find the programmes.
+   - **No decision log endpoint.** The befriending record needs `GET /senior/{id}/log?days=7` (shape: `LogDay` in `web/shared/contract.ts`). Until then it shows today's decision only; mocks show the full record.
+   - **No sample programmes in the seed.** The AAC timetable starts empty on the API.
+   - **GP brief gaps.** `brief.json` has adherence for all medicines together, not per medicine, and nothing holds the family's questions (the brief leaves lines to write on).
 2. **Tencent tools gate.** Per the handbook, the project is not scored without proof it was built with CodeBuddy or WorkBuddy. Nothing is logged in `docs/tencent-tools.md` yet. Plan:
    - CodeBuddy for building and tests.
    - WorkBuddy for the weekly digest and GP brief if it fits.
@@ -76,6 +74,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
     - The AAC cap blocked real handovers.
     - An old handover hid a new problem.
     - The CRLF hash pin broke on other machines.
+- **13 Oct, Nathan, branch `nathan/care-api`:** `/care` and `/care/aac` moved onto the contract shapes and the real API (claims, pair codes, programmes, GP brief link), mocks rewritten in the same shapes, live refresh every 15 s, `?demo` bar for the video. GP brief PDF in `backend/reports`. Found the same-day red-flag handover bug (open item 1).
 - **13 Oct, Nathan** (direct to `main`): `/care` family view and `/care/aac` AAC view on mock data, shared handover and red-flag screens, befriending record, programme timetable.
 - **13 Oct, PR #1:** the senior app and the language layer (Mingyu's slice).
 - **13 Oct:** repo skeleton (Nathan).

@@ -1,23 +1,32 @@
-// The /care app: family view + AAC view, chosen by the logged-in contact's role. Owner: Nathan.
-// Until login exists, the view comes from the path (/care vs /care/aac) and the contact from ?contact=.
-import { useCallback, useEffect, useState } from 'react';
+// The /care app: family view + AAC view. Owner: Nathan.
+// Until login exists: /care?contact=<family contact id> is the family view, /care/aac?worker=<worker id> the AAC view.
+import { useCallback, useState } from 'react';
 import type { FamilyView, Handover } from '../shared/contract';
-import { getFamilyView, usingMocks } from '../shared/api';
+import { demoAdvance, demoReset, getFamilyView, usingMocks } from '../shared/api';
 import FamilyHome from './FamilyHome';
 import HandoverView from './HandoverView';
 import RedFlag from './RedFlag';
 import Pairing from './Pairing';
 import AacApp from './AacApp';
+import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useLive, useRoute } from './live';
 import './care.css';
 
+
 export default function CareApp() {
+  const params = new URLSearchParams(window.location.search);
   const aac = window.location.pathname.startsWith('/care/aac');
-  const contact = new URLSearchParams(window.location.search).get('contact');
 
   return (
     <main className="care">
-      {aac ? <AacApp contactId={contact ?? 'c-aac-farah'} /> : <FamilyApp contactId={contact ?? 'c-meiling'} />}
-      {usingMocks && <footer className="care-footer">Synthetic demo data. No real patient data.</footer>}
+      {aac ? (
+        <AacApp workerId={params.get('worker') ?? 'aac-siti'} />
+      ) : (
+        <FamilyApp contactId={params.get('contact') ?? 'tan-weiling'} />
+      )}
+      {params.has('demo') && !usingMocks && <DemoBar />}
+      <footer className="care-footer">
+        {usingMocks ? 'Offline demo data. ' : ''}All people in CareLoop's demo are synthetic. No real patient data.
+      </footer>
     </main>
   );
 }
@@ -32,52 +41,103 @@ function parseRoute(): Route {
 }
 
 function FamilyApp({ contactId }: { contactId: string }) {
-  const [route, setRoute] = useState<Route>(parseRoute);
+  const route = useRoute(parseRoute);
   const [view, setView] = useState<FamilyView | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [, setSeenTick] = useState(0);
 
   const load = useCallback(() => {
-    getFamilyView(contactId).then(setView, (e: Error) => setError(e.message));
+    getFamilyView(contactId).then(
+      (v) => {
+        setView(v);
+        setError(null);
+      },
+      (e: Error) => setError(e.message),
+    );
   }, [contactId]);
-
-  useEffect(load, [load]);
-
-  useEffect(() => {
-    const onPop = () => setRoute(parseRoute());
-    // Another tab (another family member) claiming a handover shows up here too.
-    window.addEventListener('popstate', onPop);
-    window.addEventListener('storage', load);
-    return () => {
-      window.removeEventListener('popstate', onPop);
-      window.removeEventListener('storage', load);
-    };
-  }, [load]);
+  useLive(load);
 
   const onClaimed = (h: Handover) =>
-    setView((v) => v && { ...v, handovers: v.handovers.map((x) => (x.id === h.id ? h : x)) });
+    setView((v) => v && { ...v, handovers: v.handovers.map((x) => (x.id === h.id ? { ...x, ...h } : x)) });
 
-  if (error) return <p className="care-error">Could not load: {error}</p>;
+  if (error && !view) return <p className="care-error">Could not load: {error}</p>;
   if (!view) return <p className="care-muted">Loading…</p>;
 
-  const openRedFlag = view.handovers.find((h) => h.kind === 'red_flag' && !h.claimed_by);
-  if (openRedFlag) {
-    return <RedFlag senior={view.senior} contact={view.contact} handover={openRedFlag} onClaimed={onClaimed} />;
-  }
-
-  if (route.name === 'handover') {
+  // A red flag goes full screen until someone claims its handover. If the engine raised the flag without a
+  // red-flag handover, it shows the message until this person says they've seen it.
+  const rfHandover = view.handovers.find((h) => h.kind === 'red_flag' && h.status === 'open') ?? null;
+  const rfClaimed = view.handovers.some((h) => h.kind === 'red_flag' && h.status !== 'open');
+  const latest = [...view.red_flags].sort((a, b) => b.time.localeCompare(a.time));
+  const rfMessage = latest.find((m) => m.contact_id === view.contact.id) ?? latest[0] ?? null;
+  const showRed = rfHandover || (view.status === 'red_flag' && rfMessage && !rfClaimed && !seenRedFlags().has(rfMessage.id));
+  if (showRed) {
     return (
-      <HandoverView
-        handover={view.handovers.find((x) => x.id === route.id)}
+      <RedFlag
         senior={view.senior}
-        contact={view.contact}
-        others={view.family.filter((c) => c.id !== view.contact.id).map((c) => c.name)}
-        showNumbers={view.senior.consent.family_sees === 'readings'}
-        backPath="/care"
-        onClaimed={onClaimed}
+        contactId={view.contact.id}
+        aac={false}
+        handover={rfHandover}
+        message={rfMessage}
+        onClaimed={(h) => {
+          onClaimed(h);
+          load();
+        }}
+        onSeen={() => {
+          if (rfMessage) markRedFlagSeen(rfMessage.id);
+          setSeenTick((n) => n + 1);
+        }}
       />
     );
   }
 
-  if (route.name === 'pair') return <Pairing view={view} />;
-  return <FamilyHome view={view} />;
+  const others = view.other_contacts.map((c) => c.name);
+
+  return (
+    <>
+      {error && <p className="care-error">Showing the last update. {error}</p>}
+      {route.name === 'handover' ? (
+        <HandoverView
+          handover={view.handovers.find((x) => x.id === route.id)}
+          senior={view.senior}
+          contactId={view.contact.id}
+          claimerName={(id) => view.other_contacts.find((c) => c.id === id)?.name ?? null}
+          others={others}
+          backPath="/care"
+          onClaimed={onClaimed}
+        />
+      ) : route.name === 'pair' ? (
+        <Pairing view={view} />
+      ) : (
+        <FamilyHome view={view} />
+      )}
+    </>
+  );
+}
+
+function DemoBar() {
+  const [busy, setBusy] = useState(false);
+  const [today, setToday] = useState<string | null>(null);
+  const run = async (f: () => Promise<{ today: string }>) => {
+    setBusy(true);
+    try {
+      setToday((await f()).today);
+      window.dispatchEvent(new Event(REFRESH_EVENT));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="demo-bar" role="group" aria-label="Demo controls">
+      <span>Demo{today ? ` · ${new Date(today).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}` : ''}</span>
+      <button disabled={busy} onClick={() => run(() => demoAdvance(1))}>
+        +1 day
+      </button>
+      <button disabled={busy} onClick={() => run(() => demoAdvance(11))}>
+        +11 days
+      </button>
+      <button disabled={busy} onClick={() => run(demoReset)}>
+        Reset
+      </button>
+    </div>
+  );
 }

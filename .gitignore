@@ -3,6 +3,7 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.live
 __pycache__/
 *.pyc
 .venv/
