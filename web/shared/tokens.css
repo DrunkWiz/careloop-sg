@@ -1,0 +1,22 @@
+/* Design tokens. Placeholder until exported from Tencent Design Miora (Nathan). */
+:root {
+  --cl-font: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --cl-bg: #ffffff;
+  --cl-text: #1a1a1a;
+  --cl-accent: #0b6e4f;
+  --cl-alert: #b3261e;
+
+  /* Senior app: very large type, high contrast, 48px+ tap targets */
+  --cl-senior-text: 20px;
+  --cl-senior-tap: 56px;
+
+  /* Caregiver app: calm, dense enough to scan */
+  --cl-care-text: 15px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--cl-font);
+  background: var(--cl-bg);
+  color: var(--cl-text);
+}
