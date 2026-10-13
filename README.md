@@ -37,6 +37,14 @@ npm run dev
 
 Open `/senior` or `/care`.
 
+Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo URLs:
+
+- `/care`: drift handover (default) · `/care?scenario=quiet` · `/care?scenario=redflag`
+- `?contact=c-weijie` to act as a second family member (claims show across tabs)
+- `/care/pair`: pairing code and sharing choices
+
+Set `VITE_API_URL` (e.g. in `web/.env.local`) to use the real backend.
+
 ## Real vs synthetic
 
 All senior data in this repo is synthetic. Clinical thresholds are placeholders until a clinician signs off.

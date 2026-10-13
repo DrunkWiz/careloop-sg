@@ -20,3 +20,16 @@ body {
   background: var(--cl-bg);
   color: var(--cl-text);
 }
+
+/* Caregiver palette (placeholder until Miora) */
+:root {
+  --cl-surface: #f6f7f5;
+  --cl-card: #ffffff;
+  --cl-border: #e2e5e0;
+  --cl-muted: #5f6660;
+  --cl-accent-soft: #e3f1ec;
+  --cl-warn: #8a5a00;
+  --cl-warn-soft: #fdf3e1;
+  --cl-alert-soft: #fdecea;
+  --cl-radius: 12px;
+}
