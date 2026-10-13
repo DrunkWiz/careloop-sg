@@ -1,0 +1,12 @@
+{
+  "to": "senior",
+  "rung": "R",
+  "language": "en-SG",
+  "text": "This reading needs attention now. Please sit down, rest for 5 minutes and measure again. If you have chest pain, face droop, slurred speech, weakness on one side, or you feel faint, call 995 now. I am telling Wei Ling now.",
+  "from_template": true,
+  "guardrail": {
+    "passed": true,
+    "reasons": []
+  },
+  "model": null
+}
