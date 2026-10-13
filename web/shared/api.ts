@@ -1,6 +1,7 @@
 // API client. Set VITE_API_URL to hit the real backend; without it, calls are served by local mocks.
-import type { FamilyView, Handover } from './contract';
+import type { AacCaseload, FamilyView, Handover, Programme } from './contract';
 import * as mock from '../care/mock';
+import * as mockAac from '../care/mockAac';
 
 const BASE = import.meta.env.VITE_API_URL as string | undefined;
 
@@ -30,4 +31,13 @@ export function claimHandover(handoverId: string, contactId: string, optionId: s
 
 export function briefPdfUrl(seniorId: string): string | null {
   return BASE ? `${BASE}/senior/${seniorId}/brief.pdf` : null;
+}
+
+export function getCaseload(contactId: string): Promise<AacCaseload> {
+  return BASE ? http(`/care/aac/${contactId}/caseload`) : mockAac.getCaseload(contactId);
+}
+
+// No endpoint in the contract for saving a timetable yet: local-only until one exists.
+export function saveProgrammes(_contactId: string, programmes: Programme[]): Promise<Programme[]> {
+  return mockAac.saveProgrammes(programmes);
 }

@@ -51,7 +51,7 @@ export interface HandoverOption {
 export interface Handover {
   id: string;
   senior_id: string;
-  kind: 'drift' | 'adherence' | 'red_flag';
+  kind: 'drift' | 'adherence' | 'no_contact' | 'red_flag';
   opened_at: string;
   evidence: {
     summary: string;
@@ -76,5 +76,52 @@ export interface FamilyView {
   status: { week_line: string; rung_today: Rung; as_of: string };
   digest: { week_of: string; lines: string[] } | null;
   handovers: Handover[];
+  synthetic: boolean;
+}
+
+export interface CheckIn {
+  senior_id: string;
+  time: string;
+  raw_text: string;
+  language: Lang | 'singlish';
+  extracted_facts: Record<string, unknown>; // shape owned by Mingyu (understand())
+}
+
+// One day of the decision log, joined with that day's check-in. Feeds the AAC befriending record.
+export interface LogDay {
+  decision: Decision;
+  checkin: CheckIn | null;
+}
+
+export type CaseloadStatus = 'red_flag' | 'handover' | 'no_contact' | 'note' | 'quiet';
+
+export interface CaseloadRow {
+  senior: Senior;
+  status: CaseloadStatus;
+  line: string; // one plain line on why the row sits where it does
+  last_checkin: string | null;
+  handover: Handover | null;
+  alert_this_week: boolean; // at most one non-urgent alert per senior per week
+  log: LogDay[]; // last 7 days, newest first
+}
+
+export interface Programme {
+  id: string;
+  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+  start: string; // HH:MM
+  title: string;
+  place: string;
+  indoor: boolean;
+  sample: boolean; // seeded demo programme, not a real timetable
+}
+
+// GET /care/aac/{contact}/caseload
+export interface AacCaseload {
+  contact: Contact;
+  centre: { name: string };
+  colleagues: Contact[]; // other AAC staff who can claim handovers
+  as_of: string;
+  rows: CaseloadRow[];
+  programmes: Programme[];
   synthetic: boolean;
 }

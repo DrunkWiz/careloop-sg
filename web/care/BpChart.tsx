@@ -24,7 +24,7 @@ export default function BpChart({ series, baseline, since }: Props) {
 
   return (
     <figure className="bp-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Blood pressure over the last 14 days against his usual">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Blood pressure over the last 14 days against their usual">
         {sinceIdx > 0 && (
           <rect
             x={x(sinceIdx)}
@@ -63,7 +63,7 @@ export default function BpChart({ series, baseline, since }: Props) {
         </text>
       </svg>
       <figcaption>
-        mmHg. Dashed lines are his usual ({baseline.systolic}/{baseline.diastolic}).
+        mmHg. Dashed lines are the usual ({baseline.systolic}/{baseline.diastolic}).
         {sinceIdx > 0 && ' Shaded: since the rise began.'}
       </figcaption>
     </figure>

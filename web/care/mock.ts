@@ -115,7 +115,7 @@ function withClaim(h: Handover): Handover {
   return { ...h, ...(sessionClaims[h.id] ?? {}) };
 }
 
-const delay = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 150));
+export const delay = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 150));
 
 export function getFamilyView(contactId: string): Promise<FamilyView> {
   sessionClaims = loadClaims();
@@ -158,14 +158,26 @@ export function getFamilyView(contactId: string): Promise<FamilyView> {
   });
 }
 
+// Handovers and contacts from every mock (family + AAC), so one claim store serves both views.
+const registry = { handovers: [driftHandover, redFlagHandover] as Handover[], contacts: [...family] as Contact[] };
+
+export function registerMock(handovers: Handover[], contacts: Contact[]) {
+  registry.handovers.push(...handovers);
+  registry.contacts.push(...contacts);
+}
+
+export function applyClaims(hs: Handover[]): Handover[] {
+  sessionClaims = loadClaims();
+  return hs.map(withClaim);
+}
+
 export function claimHandover(handoverId: string, contactId: string, optionId: string): Promise<Handover> {
-  const all = [driftHandover, redFlagHandover];
-  const h = all.find((x) => x.id === handoverId);
+  const h = registry.handovers.find((x) => x.id === handoverId);
   if (!h) return Promise.reject(new Error('No such handover'));
   sessionClaims = loadClaims();
-  const existing = sessionClaims[handoverId];
-  if (!existing?.claimed_by) {
-    const who = family.find((c) => c.id === contactId);
+  // First to claim owns it; a later claim returns the existing owner.
+  if (!sessionClaims[handoverId]?.claimed_by) {
+    const who = registry.contacts.find((c) => c.id === contactId);
     sessionClaims[handoverId] = {
       claimed_by: contactId,
       claimed_by_name: who?.name ?? 'Someone',

@@ -42,6 +42,7 @@ Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo 
 - `/care`: drift handover (default) · `/care?scenario=quiet` · `/care?scenario=redflag`
 - `?contact=c-weijie` to act as a second family member (claims show across tabs)
 - `/care/pair`: pairing code and sharing choices
+- `/care/aac`: AAC caseload (`?contact=c-aac-daniel` for a second staff member, `?scenario=redflag`), with `/care/aac/programmes` for the timetable
 
 Set `VITE_API_URL` (e.g. in `web/.env.local`) to use the real backend.
 

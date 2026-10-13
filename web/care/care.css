@@ -100,3 +100,47 @@
 .red-flag-primary { background: #fff; color: var(--cl-alert); border: 0; }
 .red-flag-secondary { background: transparent; color: #fff; border: 2px solid #fff; }
 .red-flag-note { font-size: 14px; opacity: 0.9; margin-top: 20px; }
+
+/* AAC caseload */
+.aac-section { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cl-muted); margin: 20px 0 8px; }
+.aac-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.aac-row {
+  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; min-height: 48px;
+  background: var(--cl-card); border: 1px solid var(--cl-border); border-left-width: 4px; border-radius: 10px;
+}
+.aac-row.is-red_flag { border-left-color: var(--cl-alert); }
+.aac-row.is-handover, .aac-row.is-no_contact { border-left-color: var(--cl-warn); }
+.aac-row.is-note { border-left-color: var(--cl-muted); }
+.aac-row.is-quiet { border-left-color: var(--cl-border); }
+.aac-rows-quiet .aac-row { padding: 8px 14px; }
+.aac-rows-quiet .aac-row-line { color: var(--cl-muted); font-size: 14px; }
+.aac-row-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.aac-row .care-pill { align-self: flex-start; }
+.aac-chip { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px; white-space: nowrap; background: var(--cl-surface); color: var(--cl-muted); }
+.aac-chip.is-red_flag { background: var(--cl-alert-soft); color: var(--cl-alert); }
+.aac-chip.is-handover, .aac-chip.is-no_contact { background: var(--cl-warn-soft); color: var(--cl-warn); }
+
+.aac-record-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.aac-record-head h2 { margin: 0; }
+.aac-said { display: block; }
+.aac-said.is-none { color: var(--cl-warn); font-weight: 600; }
+.aac-reason { display: block; color: var(--cl-muted); font-size: 13px; }
+
+.aac-day h2 { margin-bottom: 4px; }
+.aac-programmes { list-style: none; margin: 0; padding: 0; }
+.aac-programmes li { display: grid; grid-template-columns: 48px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--cl-border); }
+.aac-programmes li:first-child { border-top: 0; }
+.aac-prog-time { font-variant-numeric: tabular-nums; color: var(--cl-muted); }
+.aac-prog-body { display: flex; flex-direction: column; min-width: 0; }
+.aac-remove { font-size: 13px; font-weight: 500; color: var(--cl-muted); }
+
+.aac-form { display: flex; flex-direction: column; gap: 10px; }
+.aac-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; }
+.aac-form input, .aac-form select {
+  font: inherit; font-weight: 400; padding: 10px; min-height: 44px; box-sizing: border-box;
+  border: 1px solid var(--cl-border); border-radius: 8px; background: var(--cl-card);
+}
+.aac-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.aac-form .aac-check { flex-direction: row; align-items: center; gap: 8px; }
+.aac-form .aac-check input { min-height: 0; width: 18px; height: 18px; accent-color: var(--cl-accent); }
