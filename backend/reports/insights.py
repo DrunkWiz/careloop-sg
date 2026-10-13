@@ -210,6 +210,12 @@ def insights(store, senior: dict, today: date, *, days: int = 30, numbers: bool 
         find("haze", "neutral", f"{haze_days} hazy day{'s' if haze_days > 1 else ''}",
              "CareLoop suggested indoor options and did not count those quiet days against them.", haze_days)
 
+    # Medicines, and the days they said one was running low (from understand()'s running_out facts)
+    low = [{"date": d.date.isoformat(), "items": d.running_out} for d in window if d.running_out]
+    if low and (today - date.fromisoformat(low[-1]["date"])).days <= 7:
+        find("refill", "watch", "Medicine running low",
+             f"Mentioned on {date.fromisoformat(low[-1]['date']).strftime('%d %b').lstrip('0')}. Check a refill is collected.", len(low))
+
     order = {"watch": 0, "good": 1, "neutral": 2}
     findings.sort(key=lambda f: order[f["tone"]])
     return {
@@ -232,6 +238,8 @@ def insights(store, senior: dict, today: date, *, days: int = 30, numbers: bool 
             "calendar": [{"date": d.date.isoformat(), "pills": "taken" if d.taken else "missed" if d.missed else None} for d in window],
         },
         "activity": act,
+        "medicines": [{k: m.get(k) for k in ("name", "dose_text", "schedule", "started", "for_bp")} for m in senior.get("medicines", [])],
+        "running_low": low,
         "checkins": {"replied_days": replied, "days": days, "usual_time": usual, "median_first_time": _clock(med) if med is not None else None},
         "context": {"rain_days": rain_days, "haze_days": haze_days, "festival_days": sum(1 for d in window if d.festival)},
         "findings": findings,

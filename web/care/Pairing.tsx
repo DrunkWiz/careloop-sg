@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import type { FamilyView, PairCodeOut } from '../shared/contract';
 import { createPairCode } from '../shared/api';
-import { BackLink } from './HandoverView';
 
 const SEES: Record<FamilyView['family_sees'], string> = {
   nothing: 'Only red flags.',
@@ -40,8 +39,7 @@ export default function Pairing({ view }: { view: FamilyView }) {
 
   return (
     <>
-      <BackLink to="/care/family" />
-      <h1>Settings</h1>
+      <h2 className="care-section-title">Settings</h2>
 
       <section className="care-card">
         <h2>What {view.senior.name} shares with you</h2>

@@ -1,7 +1,7 @@
 // In-browser mock of GET /care/family/{contact}, in the contract's shapes. Synthetic data, mirroring the
 // API's demo seed (Mr Tan; Wei Ling and Kelvin). Scenarios: ?scenario=quiet | handover (default) | redflag
 // Claims persist in localStorage so a second tab as another family member sees who claimed.
-import type { Contact, FamilyView, Handover, LogDay, Message, PairCodeIn, PairCodeOut, Rung } from '../shared/contract';
+import type { CareNotes, Contact, FamilyView, Handover, LogDay, Message, PairCodeIn, PairCodeOut, Rung } from '../shared/contract';
 
 const family: Contact[] = [
   { id: 'tan-weiling', senior_id: 'tan', role: 'family', primary: true, name: 'Wei Ling', language: 'en', worker_id: null },
@@ -234,4 +234,33 @@ export function getLog(days: number): Promise<LogDay[]> {
         festival: null,
       })),
   );
+}
+
+// --- care notes (GET/PUT /senior/{id}/care-notes), kept in this browser for the offline demo ------
+
+const NOTES_KEY = (sid: string) => `careloop-mock-notes-${sid}`;
+const EMPTY_NOTES: CareNotes = {
+  appointments: [], questions: [], tasks: [],
+  emergency: { allergies: '', gp_name: '', gp_phone: '', home_address: '', notes: '' },
+  updated_by: null, updated_at: null,
+};
+
+export function getCareNotes(seniorId: string): Promise<CareNotes> {
+  try {
+    const s = localStorage.getItem(NOTES_KEY(seniorId));
+    if (s) return delay(JSON.parse(s));
+  } catch {
+    /* fall through */
+  }
+  return delay(structuredClone(EMPTY_NOTES));
+}
+
+export function putCareNotes(seniorId: string, notes: CareNotes): Promise<CareNotes> {
+  const out = { ...notes, updated_at: new Date().toISOString() };
+  try {
+    localStorage.setItem(NOTES_KEY(seniorId), JSON.stringify(out));
+  } catch {
+    /* storage unavailable: kept for this page only */
+  }
+  return delay(out);
 }

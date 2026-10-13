@@ -10,6 +10,7 @@ import { cap, plainSummary, ruleText } from './plain';
 import { navigate } from './nav';
 import Findings from './Findings';
 import ActivitiesView from './ActivitiesView';
+import CarePlan from './CarePlan';
 import { BpTrend, PillCalendar } from './charts';
 
 const fmtDay = (d: string) => new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -34,7 +35,7 @@ function recordText(name: string, log: LogDay[]): string {
   ].join('\n');
 }
 
-export default function AacSenior({ row, insights }: { row: CaseloadRow; insights?: Insights }) {
+export default function AacSenior({ row, insights, today }: { row: CaseloadRow; insights?: Insights; today: string }) {
   const [log, setLog] = useState<LogDay[] | null | undefined>(undefined);
   const [copied, setCopied] = useState(false);
   const h = row.handover;
@@ -106,6 +107,9 @@ export default function AacSenior({ row, insights }: { row: CaseloadRow; insight
           </p>
         )}
       </section>
+
+      <h2 className="care-section-title">Care plan</h2>
+      <CarePlan seniorId={row.senior.id} contactId={row.contact_id} me="Centre staff" name={row.senior.name} today={today} />
       </div>
 
       <aside className="senior-side">

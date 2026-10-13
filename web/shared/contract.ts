@@ -241,6 +241,8 @@ export interface Insights {
   checkins: { replied_days: number; days: number; usual_time: string; median_first_time: string | null };
   context: { rain_days: number; haze_days: number; festival_days: number };
   findings: Finding[];
+  medicines: Medicine[];
+  running_low: { date: string; items: string[] }[];
   note: string;
 }
 
@@ -273,7 +275,45 @@ export interface Activities {
   } | null;
   nearby_aacs: Place[];
   nearby_ccs: Place[];
-  suggested_today: { place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean }[];
+  suggested_today: { place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean; as_told_to_senior?: string }[];
   suggestions: { id: string; date: string; place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean; response: 'going' | 'not_for_me' | null }[];
   source: string;
+}
+
+// GET/PUT /senior/{id}/care-notes?contact=… (added, needs team OK): kept together by every linked contact.
+export interface Appointment {
+  id: string;
+  date: string;
+  time?: string | null;
+  place: string;
+  purpose: string;
+  who_goes?: string | null;
+  notes_after: string;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  by: string;
+  added: string;
+  asked: boolean;
+  answer: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  due?: string | null;
+  owner?: string | null;
+  done: boolean;
+  done_by?: string | null;
+}
+
+export interface CareNotes {
+  appointments: Appointment[];
+  questions: Question[];
+  tasks: Task[];
+  emergency: { allergies: string; gp_name: string; gp_phone: string; home_address: string; notes: string };
+  updated_by?: string | null;
+  updated_at?: string | null;
 }

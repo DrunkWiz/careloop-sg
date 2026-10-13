@@ -7,6 +7,8 @@ import { navigate } from './nav';
 import Findings from './Findings';
 import { useInsights } from './Health';
 import { useActivities } from './ActivitiesView';
+import { useCareNotes } from './CarePlan';
+import type { FamilySees } from '../shared/contract';
 
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -68,6 +70,10 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
         <p className="hero-line">{line}</p>
         <p className="hero-asof">As of {fmtDate(view.today)}</p>
       </section>
+
+      <TodaySoFar log={log} today={view.today} name={senior.name} shared={family_sees} />
+
+      <PlanPreview seniorId={senior.id} contactId={contact.id} me={contact.name} today={view.today} />
 
       {redMsg && (
         <section className="care-card care-card-red">
@@ -147,6 +153,81 @@ function ActivityPreview({ seniorId, contactId, name }: { seniorId: string; cont
       <strong>{first.place}</strong>
       <span className="care-muted">{first.why_it_fits}</span>
       <span className="care-card-cta">See what else is on nearby →</span>
+    </button>
+  );
+}
+
+// Today at a glance: the three things a working or far-away child asks first. From today's log entry.
+function TodaySoFar({ log, today, name, shared }: { log: LogDay[] | null; today: string; name: string; shared: FamilySees }) {
+  const d = log?.find((x) => x.date === today);
+  if (!log || shared === 'nothing') return null;
+  const first = d?.checkins[0];
+  const sg = (t: Date) => t.toLocaleTimeString('en-SG', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit' });
+  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const away = !!localTz && localTz !== 'Asia/Singapore';
+  return (
+    <section className="today" aria-label="Today so far">
+      <div className={`today-item ${d?.replied ? 'is-yes' : 'is-no'}`}>
+        <span className="today-icon" aria-hidden="true">{d?.replied ? '✓' : '…'}</span>
+        <span>
+          <strong>{d?.replied ? 'Checked in' : 'No check-in yet'}</strong>
+          <span>{first ? sg(new Date(first.time)) : d?.replied ? 'today' : `${name} usually replies in the morning`}</span>
+        </span>
+      </div>
+      <div className={`today-item ${d?.pills === 'taken' ? 'is-yes' : d?.pills === 'missed' ? 'is-warn' : 'is-no'}`}>
+        <span className="today-icon" aria-hidden="true">{d?.pills === 'taken' ? '✓' : d?.pills === 'missed' ? '!' : '…'}</span>
+        <span>
+          <strong>{d?.pills === 'taken' ? 'Pills taken' : d?.pills === 'missed' ? 'Missed a dose' : 'Pills not reported'}</strong>
+          <span>{d?.pills === 'missed' ? 'CareLoop asked gently' : 'today'}</span>
+        </span>
+      </div>
+      <div className={`today-item ${d?.bp ? 'is-yes' : 'is-no'}`}>
+        <span className="today-icon" aria-hidden="true">{d?.bp ? '♥' : '…'}</span>
+        <span>
+          <strong>{d?.bp ? `BP ${d.bp.systolic}/${d.bp.diastolic}` : shared === 'readings' ? 'No BP yet' : 'BP not shared'}</strong>
+          <span>{shared === 'readings' ? 'today' : 'their choice'}</span>
+        </span>
+      </div>
+      <p className="today-time">
+        {sg(new Date())} in Singapore{away ? ` · ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} where you are` : ''}
+      </p>
+    </section>
+  );
+}
+
+// The next visit and my open to-dos, from the shared care plan.
+function PlanPreview({ seniorId, contactId, me, today }: { seniorId: string; contactId: string; me: string; today: string }) {
+  const { notes } = useCareNotes(seniorId, contactId);
+  if (!notes) return null;
+  const next = [...notes.appointments].filter((a) => a.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const mine = notes.tasks.filter((t) => !t.done && t.owner === me).length;
+  const unowned = notes.tasks.filter((t) => !t.done && !t.owner).length;
+  const questions = notes.questions.filter((q) => !q.asked).length;
+  if (!next && !mine && !unowned) {
+    return (
+      <button className="care-card plan-preview is-empty" onClick={() => navigate('/care/family/plan')}>
+        <span className="care-muted">No visit or to-dos in the care plan yet.</span>
+        <span className="care-card-cta">Add the next appointment →</span>
+      </button>
+    );
+  }
+  return (
+    <button className="care-card plan-preview" onClick={() => navigate('/care/family/plan')}>
+      {next && (
+        <span>
+          <strong>Next visit {new Date(next.date).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' })}</strong>
+          {next.place && ` · ${next.place}`}
+          {questions > 0 && <span className="care-muted"> · {questions} question{questions > 1 ? 's' : ''} for the doctor</span>}
+        </span>
+      )}
+      {(mine > 0 || unowned > 0) && (
+        <span className="care-muted">
+          {mine > 0 && `${mine} to-do${mine > 1 ? 's' : ''} for you`}
+          {mine > 0 && unowned > 0 && ' · '}
+          {unowned > 0 && `${unowned} nobody has taken yet`}
+        </span>
+      )}
+      <span className="care-card-cta">Open the care plan →</span>
     </button>
   );
 }

@@ -428,6 +428,10 @@ def brief_data(sid: str, days: int = 90):
         "events": [{"date": d["date"], "rung": d["rung"], "rule_id": d["rule_id"], "reason": d["reason"], "decision_id": d["id"]}
                    for d in decisions if d["rung"] in ("3", "4", "R")],
         "in_their_words": words, "aac": aac,
+        # From the care notes the family and centre keep (added: Nathan): their questions, and the next visit.
+        "family_questions": [q["text"] for q in (store.get("carenotes", f"notes-{sid}") or {}).get("questions", []) if not q.get("asked")],
+        "next_appointment": next((a for a in sorted((store.get("carenotes", f"notes-{sid}") or {}).get("appointments", []), key=lambda a: a["date"])
+                                  if a["date"] >= t.isoformat()), None),
         "note": "Generated from the CareLoop decision log. Not connected to any clinic system. Synthetic data in the demo.",
     }
 
@@ -529,6 +533,77 @@ def senior_activities(sid: str, contact: Optional[str] = None):
 
     senior, family, see = _viewer(sid, contact)
     return activities(store, senior, today(), responses=see["activity"])
+
+
+# --- care notes: what the family and centre keep together (added: Nathan, needs team OK) -----------------
+
+class Appointment(BaseModel):
+    id: str = Field(max_length=40)
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time: Optional[str] = Field(default=None, max_length=10)
+    place: str = Field(default="", max_length=120)
+    purpose: str = Field(default="", max_length=200)
+    who_goes: Optional[str] = Field(default=None, max_length=60)
+    notes_after: str = Field(default="", max_length=1000)
+
+
+class Question(BaseModel):
+    id: str = Field(max_length=40)
+    text: str = Field(min_length=1, max_length=300)
+    by: str = Field(default="", max_length=60)
+    added: str = Field(default="", max_length=30)
+    asked: bool = False
+    answer: str = Field(default="", max_length=500)
+
+
+class Task(BaseModel):
+    id: str = Field(max_length=40)
+    title: str = Field(min_length=1, max_length=200)
+    due: Optional[str] = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    owner: Optional[str] = Field(default=None, max_length=60)
+    done: bool = False
+    done_by: Optional[str] = Field(default=None, max_length=60)
+
+
+class Emergency(BaseModel):
+    allergies: str = Field(default="", max_length=300)
+    gp_name: str = Field(default="", max_length=120)
+    gp_phone: str = Field(default="", max_length=30)
+    home_address: str = Field(default="", max_length=200)
+    notes: str = Field(default="", max_length=500)
+
+
+class CareNotes(BaseModel):
+    appointments: list[Appointment] = Field(default_factory=list, max_length=50)
+    questions: list[Question] = Field(default_factory=list, max_length=50)
+    tasks: list[Task] = Field(default_factory=list, max_length=100)
+    emergency: Emergency = Field(default_factory=Emergency)
+
+
+def _linked_contact(sid: str, contact: Optional[str]) -> dict:
+    c = store.get("contact", contact) if contact else None
+    if c is None or c["senior_id"] != sid:
+        raise HTTPException(403, "not a contact for this senior")
+    return c
+
+
+@app.get("/senior/{sid}/care-notes")
+def get_care_notes(sid: str, contact: Optional[str] = None):
+    """Appointments, questions for the doctor, shared to-dos and the emergency card. Every linked contact
+    sees and edits the same notes. Nothing here changes what the engine decides."""
+    senior_or_404(sid)
+    _linked_contact(sid, contact)
+    doc = store.get("carenotes", f"notes-{sid}")
+    return doc or {"id": f"notes-{sid}", "senior_id": sid, **CareNotes().model_dump(), "updated_by": None, "updated_at": None}
+
+
+@app.put("/senior/{sid}/care-notes")
+def put_care_notes(sid: str, body: CareNotes, contact: Optional[str] = None):
+    senior_or_404(sid)
+    c = _linked_contact(sid, contact)
+    doc = {"id": f"notes-{sid}", "senior_id": sid, **body.model_dump(), "updated_by": c["name"], "updated_at": now().isoformat()}
+    store.put("carenotes", doc)
+    return doc
 
 
 @app.get("/senior/{sid}/brief.pdf")

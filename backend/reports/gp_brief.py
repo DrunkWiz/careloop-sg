@@ -203,6 +203,10 @@ def _story(data: dict) -> list:
         sub.append(f"{_dy(period['from'])} to {_dy(period['to'])}")
     if senior.get("conditions"):
         sub.append(", ".join(c.capitalize() for c in senior["conditions"]))
+    appt = data.get("next_appointment")
+    if appt:
+        sub.append(f"Visit {_dy(appt['date'])}" + (f", {escape(appt['time'])}" if appt.get("time") else "")
+                   + (f" at {_text(appt['place'])}" if appt.get("place") else ""))
     story.append(Paragraph(" · ".join(sub), S_SUB))
     story.append(Paragraph(escape(note), S_SMALL))
     story.append(Spacer(1, 5))
@@ -292,11 +296,15 @@ def _story(data: dict) -> list:
         story.append(Paragraph("No symptoms reported in this period.", S_BODY))
     story.append(Spacer(1, 6))
 
-    # Questions
-    questions = [q for w in words for q in (w.get("questions") or [])]
+    # Questions: the senior's own (from check-ins), then the family's (from the care notes)
+    own = [q for w in words for q in (w.get("questions") or [])]
+    family = data.get("family_questions") or []
+    questions = own + family
     story.append(Paragraph("Questions for this visit", S_H))
-    for q in questions[:4]:
-        story.append(Paragraph(f"• {_text(q)}", S_BODY))
+    for q in own[:4]:
+        story.append(Paragraph(f"• {_text(q)} <font color=\"#5f6660\">(asked by them)</font>", S_BODY))
+    for q in family[: max(0, 6 - len(own[:4]))]:
+        story.append(Paragraph(f"• {_text(q)} <font color=\"#5f6660\">(from family or centre)</font>", S_BODY))
     blank = max(0, 3 - len(questions))
     for _ in range(blank):
         story.append(_table([[""]], [BODY_W]))

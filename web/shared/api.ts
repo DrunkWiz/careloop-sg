@@ -3,6 +3,7 @@
 import type {
   Activities,
   BriefData,
+  CareNotes,
   Insights,
   Caseload,
   FamilyView,
@@ -89,6 +90,18 @@ export function getActivities(seniorId: string, contactId?: string): Promise<Act
   return BASE
     ? http(`/senior/${seniorId}/activities${contactId ? `?contact=${encodeURIComponent(contactId)}` : ''}`)
     : mockInsights.getActivities(seniorId);
+}
+
+// Added endpoint (needs team OK). Every linked contact reads and writes the same notes.
+export function getCareNotes(seniorId: string, contactId: string): Promise<CareNotes> {
+  return BASE ? http(`/senior/${seniorId}/care-notes?contact=${encodeURIComponent(contactId)}`) : mock.getCareNotes(seniorId);
+}
+
+export function putCareNotes(seniorId: string, contactId: string, notes: CareNotes): Promise<CareNotes> {
+  const { updated_by: _b, updated_at: _a, ...body } = notes;
+  return BASE
+    ? http(`/senior/${seniorId}/care-notes?contact=${encodeURIComponent(contactId)}`, { method: 'PUT', body: JSON.stringify(body) })
+    : mock.putCareNotes(seniorId, notes);
 }
 
 export function getProgrammes(aacId: string): Promise<Programme[]> {

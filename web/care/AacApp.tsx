@@ -10,6 +10,7 @@ import AacSenior from './AacSenior';
 import { TimelineStrip } from './Timeline';
 import { plainSummary, ruleText } from './plain';
 import AacProgrammes from './AacProgrammes';
+import CentreReport from './CentreReport';
 import { initials } from './FamilyHome';
 import { markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
@@ -18,13 +19,15 @@ type Route =
   | { name: 'caseload' }
   | { name: 'senior'; id: string }
   | { name: 'handover'; id: string }
-  | { name: 'programmes' };
+  | { name: 'programmes' }
+  | { name: 'report' };
 
 function parseRoute(): Route {
   const parts = window.location.pathname.replace(/^\/care\/aac\/?/, '').split('/').filter(Boolean);
   if (parts[0] === 'senior' && parts[1]) return { name: 'senior', id: parts[1] };
   if (parts[0] === 'handover' && parts[1]) return { name: 'handover', id: parts[1] };
   if (parts[0] === 'programmes') return { name: 'programmes' };
+  if (parts[0] === 'report') return { name: 'report' };
   return { name: 'caseload' };
 }
 
@@ -141,7 +144,9 @@ export default function AacApp({ workerId }: { workerId: string }) {
     );
   } else if (route.name === 'senior') {
     const row = data.seniors.find((r) => r.senior.id === route.id);
-    body = row ? <AacSenior row={row} insights={extras[row.senior.id]?.insights} /> : <NotFound />;
+    body = row ? <AacSenior row={row} insights={extras[row.senior.id]?.insights} today={data.today} /> : <NotFound />;
+  } else if (route.name === 'report') {
+    body = <CentreReport data={data} extras={extras} centre={centre?.name ?? 'Your centre'} />;
   } else if (route.name === 'programmes') {
     body = centre ? <AacProgrammes centre={centre} seniors={data.seniors} /> : <p className="care-muted">Finding your centre…</p>;
   } else {
@@ -159,8 +164,11 @@ export default function AacApp({ workerId }: { workerId: string }) {
           </div>
         </div>
         <nav className="console-nav" aria-label="Centre console">
-          <button className={route.name === 'programmes' ? '' : 'is-active'} onClick={() => navigate('/care/aac')}>
+          <button className={route.name === 'programmes' || route.name === 'report' ? '' : 'is-active'} onClick={() => navigate('/care/aac')}>
             Caseload
+          </button>
+          <button className={route.name === 'report' ? 'is-active' : ''} onClick={() => navigate('/care/aac/report')}>
+            Report
           </button>
           <button className={route.name === 'programmes' ? 'is-active' : ''} onClick={() => navigate('/care/aac/programmes')} disabled={!centre}>
             Programmes

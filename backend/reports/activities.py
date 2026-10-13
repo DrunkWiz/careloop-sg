@@ -51,6 +51,24 @@ def activities(store, senior: dict, today: date, *, responses: bool = True) -> d
     # What CareLoop would suggest today, worked out the same way the senior app's card is, but not stored.
     stored = [p for p in store.list("programme") if p.get("place_id") == (own or {}).get("id")] or None
     today_sugs = suggest(senior, today, indoor_only=rainy or hazy, programmes=stored)
+    by_id = {p["id"]: p for p in progs}
+
+    def for_family(s: dict) -> str:
+        """The engine words why_it_fits to the senior ("You said you like…", in their language). The family
+        app needs it about them, in English: rebuilt here from the same facts."""
+        if s["kind"] == "programme":
+            like = (by_id.get(s["place_id"]) or {}).get("fits")
+            return f"They like {like}" if like else "At their own centre"
+        if s["kind"] == "cc":
+            cc = place(s["place_id"])
+            return f"Nearest community club, about {_km((cc['lat'], cc['lon']), home):.1f} km" if cc else "Nearest community club"
+        return "Active Ageing Centre near them"
+
+    def title_en(s: dict) -> str:
+        if s["kind"] == "programme" and s["place_id"] in by_id and own:
+            p = by_id[s["place_id"]]
+            return f"{own['name']}: {p['title']}, {p['time']}"
+        return s["place"]
 
     return {
         "today": today.isoformat(),
@@ -69,8 +87,8 @@ def activities(store, senior: dict, today: date, *, responses: bool = True) -> d
                     if own else None),
         "nearby_aacs": near("aac", 3, {own["id"]} if own else set()),
         "nearby_ccs": near("cc", 3, set()),
-        "suggested_today": [{"place": s["place"], "kind": s["kind"], "why_it_fits": s["why_it_fits"], "indoor": s["indoor"],
-                             "sample": s.get("sample", False)} for s in today_sugs],
+        "suggested_today": [{"place": title_en(s), "kind": s["kind"], "why_it_fits": for_family(s), "indoor": s["indoor"],
+                             "sample": s.get("sample", False), "as_told_to_senior": s["why_it_fits"]} for s in today_sugs],
         "suggestions": [{"id": s["id"], "date": s["date"], "place": s["place"], "kind": s["kind"], "why_it_fits": s["why_it_fits"],
                          "indoor": s["indoor"], "sample": s.get("sample", False),
                          "response": s.get("response") if responses else None} for s in sugs],

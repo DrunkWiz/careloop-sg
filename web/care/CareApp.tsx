@@ -14,6 +14,8 @@ import AacApp from './AacApp';
 import Health from './Health';
 import ActivitiesView from './ActivitiesView';
 import RoleChooser from './RoleChooser';
+import CarePlan from './CarePlan';
+import LookingAfterYou from './LookingAfterYou';
 import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
 import './care.css';
@@ -29,7 +31,7 @@ export default function CareApp() {
       : 'choose';
 
   return (
-    <main className={`care theme-${door}`}>
+    <main className={`care theme-${door} ${largeText() ? 'is-large-text' : ''}`}>
       {params.has('demo') && !usingMocks && door !== 'choose' && <DemoBar />}
       {door === 'centre' ? (
         <AacApp workerId={params.get('worker') ?? 'aac-siti'} />
@@ -49,6 +51,7 @@ type Route =
   | { name: 'today' }
   | { name: 'health' }
   | { name: 'activities' }
+  | { name: 'plan' }
   | { name: 'settings' }
   | { name: 'handover'; id: string };
 
@@ -58,6 +61,8 @@ function parseRoute(): Route {
   if (parts[0] === 'pair' || parts[0] === 'settings') return { name: 'settings' };
   if (parts[0] === 'health') return { name: 'health' };
   if (parts[0] === 'activities') return { name: 'activities' };
+  if (parts[0] === 'plan') return { name: 'plan' };
+  if (parts[0] === 'you') return { name: 'settings' };
   return { name: 'today' };
 }
 
@@ -136,7 +141,17 @@ function FamilyApp({ contactId }: { contactId: string }) {
           onClaimed={onClaimed}
         />
       ) : route.name === 'settings' ? (
-        <Pairing view={view} />
+        <>
+          <TabHeader title="You" senior={view.contact.name} />
+          <LookingAfterYou />
+          <TextSizeCard />
+          <Pairing view={view} />
+        </>
+      ) : route.name === 'plan' ? (
+        <>
+          <TabHeader title="Care plan" senior={view.senior.name} />
+          <CarePlan seniorId={view.senior.id} contactId={view.contact.id} me={view.contact.name} name={view.senior.name} today={view.today} />
+        </>
       ) : route.name === 'health' ? (
         <>
           <TabHeader title="Health" senior={view.senior.name} />
@@ -155,6 +170,38 @@ function FamilyApp({ contactId }: { contactId: string }) {
   );
 }
 
+const TEXT_KEY = 'careloop-large-text';
+function largeText(): boolean {
+  try {
+    return localStorage.getItem(TEXT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function TextSizeCard() {
+  const [on, setOn] = useState(largeText);
+  const toggle = () => {
+    const next = !on;
+    try {
+      localStorage.setItem(TEXT_KEY, next ? '1' : '0');
+    } catch {
+      /* this page only */
+    }
+    document.querySelector('main.care')?.classList.toggle('is-large-text', next);
+    setOn(next);
+  };
+  return (
+    <section className="care-card">
+      <div className="card-head">
+        <h2>Bigger text</h2>
+        <button role="switch" aria-checked={on} aria-label="Bigger text" className={`switch ${on ? 'is-on' : ''}`} onClick={toggle} />
+      </div>
+      <p className="care-muted">Makes everything in the app larger on this device.</p>
+    </section>
+  );
+}
+
 function TabHeader({ title, senior }: { title: string; senior: string }) {
   return (
     <header className="tab-header">
@@ -167,8 +214,9 @@ function TabHeader({ title, senior }: { title: string; senior: string }) {
 const TABS = [
   { id: 'today', label: 'Today', path: '/care/family', icon: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
   { id: 'health', label: 'Health', path: '/care/family/health', icon: 'M3 12h4l2-5 4 10 2-5h6' },
+  { id: 'plan', label: 'Plan', path: '/care/family/plan', icon: 'M8 3v3M16 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8 13l2 2 4-4' },
   { id: 'activities', label: 'Activities', path: '/care/family/activities', icon: 'M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' },
-  { id: 'settings', label: 'Settings', path: '/care/family/settings', icon: 'M4 7h16M4 12h16M4 17h16' },
+  { id: 'settings', label: 'You', path: '/care/family/you', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0' },
 ] as const;
 
 function TabBar({ active, badge }: { active: Route['name']; badge: number }) {
