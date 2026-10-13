@@ -1,0 +1,43 @@
+{
+  "lang": "en-SG",
+  "bp": [
+    {
+      "systolic": 186,
+      "diastolic": 112,
+      "pulse": null,
+      "confidence": 0.95,
+      "span": "186/112",
+      "plausible": true,
+      "needs_confirmation": false
+    }
+  ],
+  "pulse": null,
+  "doses": [
+    {
+      "taken": true,
+      "medicine": null,
+      "span": "Eat medicine"
+    }
+  ],
+  "running_out": [],
+  "symptoms": [
+    {
+      "code": "dizziness",
+      "words": "giddy",
+      "red_flag": false
+    }
+  ],
+  "activities": [
+    {
+      "kind": "social",
+      "words": "mahjong",
+      "social_contact": true
+    }
+  ],
+  "mood": "good",
+  "english": "I'm fine lah, BP 186/112 this morning. Eat medicine already, then mahjong with my kakis. A bit giddy.",
+  "source": "rules",
+  "red_flag": false,
+  "feeling_unwell": true,
+  "social_contact": true
+}

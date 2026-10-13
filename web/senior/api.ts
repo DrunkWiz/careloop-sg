@@ -1,0 +1,56 @@
+// Senior app's API client. Talks to Vibu's API when VITE_API_URL is set; otherwise to an
+// in-browser mock (mock.ts) so the app works before the contract freezes and without a backend.
+import type { Lang } from '../shared/i18n';
+import type { CheckInResult, Consent, KnownFact, PairResult, Today } from './types';
+import { mock } from './mock';
+
+const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
+export const usingMock = !BASE;
+
+async function http<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const res = await fetch(BASE + path, {
+    method,
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${method} ${path}: ${res.status}`);
+  return res.status === 204 ? (undefined as T) : res.json();
+}
+
+export const api = {
+  today: (seniorId: string): Promise<Today> =>
+    usingMock ? mock.today(seniorId) : http('GET', `/senior/${seniorId}/today`),
+
+  /** Every check-in goes here as text: speech is transcribed in the browser; the big buttons send canned text. */
+  checkin: (seniorId: string, text: string, lang: Lang, source: 'voice' | 'typed' | 'button'): Promise<CheckInResult> =>
+    usingMock
+      ? mock.checkin(seniorId, text, lang)
+      : http('POST', '/checkin', { senior_id: seniorId, text, language: lang, source, time: new Date().toISOString() }),
+
+  reading: (seniorId: string, bp: { systolic: number; diastolic: number; pulse?: number | null }, source: 'cuff' | 'voice'): Promise<void> =>
+    usingMock
+      ? mock.reading(seniorId, bp)
+      : http('POST', '/reading', {
+          senior_id: seniorId,
+          time: new Date().toISOString(),
+          kind: 'bp',
+          values: bp,
+          source,
+          confidence: 1, // confirmed by the senior
+        }),
+
+  knows: (seniorId: string): Promise<KnownFact[]> =>
+    usingMock ? mock.knows(seniorId) : http('GET', `/senior/${seniorId}/knows`),
+
+  forget: (seniorId: string, factId: string): Promise<void> =>
+    usingMock ? mock.forget(seniorId, factId) : http('DELETE', `/senior/${seniorId}/knows/${encodeURIComponent(factId)}`),
+
+  // NOT IN THE CONTRACT YET (raise with Vibu): recording "Not for me" on a suggestion, and pairing.
+  notForMe: (seniorId: string, suggestionId: string): Promise<void> =>
+    usingMock
+      ? mock.notForMe(seniorId, suggestionId)
+      : http('POST', `/senior/${seniorId}/suggestions/${encodeURIComponent(suggestionId)}/response`, { response: 'not_for_me' }),
+
+  pair: (code: string, lang: Lang, consent: Consent): Promise<PairResult> =>
+    usingMock ? mock.pair(code, lang, consent) : http('POST', '/pair', { code, language: lang, consent }),
+};
