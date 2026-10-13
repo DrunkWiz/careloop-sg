@@ -167,13 +167,22 @@ export interface BriefData {
   aac: { id: string; name: string | null; going: string[] } | null;
 }
 
-// Proposed, not in the contract yet: GET /senior/{id}/log?days=7, for the AAC befriending record.
+// GET /senior/{id}/log?days=N&contact=… (added, needs team OK): every day's decision, newest first.
+// For a family contact the senior's consent applies: null means "not shared" (or no decision that day).
 export interface LogDay {
   date: string;
-  rung: Rung;
-  rule_id: string;
-  reason: string;
-  checkins: { time: string; raw_text: string; language: Lang }[];
+  rung: Rung | null;
+  rule_id: string | null;
+  reason: string | null; // engine wording; only when readings are shared, or on a red flag
+  decision_id: string | null;
+  checkins: { time: string; raw_text: string; language: Lang }[]; // only when words are shared
+  replied: boolean | null;
+  pills: 'taken' | 'missed' | null;
+  social: boolean | null;
+  bp: { systolic: number; diastolic: number } | null;
+  psi: number | null;
+  rain_mm: number | null;
+  festival: string | null;
 }
 
 // POST /care/pair-code

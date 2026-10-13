@@ -1,14 +1,14 @@
 // The /care app: family view + AAC view. Owner: Nathan.
 // Until login exists: /care?contact=<family contact id> is the family view, /care/aac?worker=<worker id> the AAC view.
 import { useCallback, useState } from 'react';
-import type { FamilyView, Handover } from '../shared/contract';
-import { demoAdvance, demoReset, getFamilyView, usingMocks } from '../shared/api';
+import type { FamilyView, Handover, LogDay } from '../shared/contract';
+import { demoAdvance, demoReset, getFamilyView, getLog, usingMocks } from '../shared/api';
 import FamilyHome from './FamilyHome';
 import HandoverView from './HandoverView';
 import RedFlag from './RedFlag';
 import Pairing from './Pairing';
 import AacApp from './AacApp';
-import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useLive, useRoute } from './live';
+import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import './care.css';
 
 
@@ -43,6 +43,7 @@ function parseRoute(): Route {
 function FamilyApp({ contactId }: { contactId: string }) {
   const route = useRoute(parseRoute);
   const [view, setView] = useState<FamilyView | null>(null);
+  const [log, setLog] = useState<LogDay[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, setSeenTick] = useState(0);
 
@@ -51,11 +52,16 @@ function FamilyApp({ contactId }: { contactId: string }) {
       (v) => {
         setView(v);
         setError(null);
+        getLog(v.senior.id, 14, v.contact.id).then(setLog, () => setLog(null));
       },
       (e: Error) => setError(e.message),
     );
   }, [contactId]);
   useLive(load);
+  useAlert(
+    view?.status === 'red_flag' ? `Red flag: ${view.senior.name}` : view?.status === 'handover' ? `${view.senior.name} needs you` : null,
+    view?.red_flags[0]?.text ?? 'Open CareLoop to see the evidence.',
+  );
 
   const onClaimed = (h: Handover) =>
     setView((v) => v && { ...v, handovers: v.handovers.map((x) => (x.id === h.id ? { ...x, ...h } : x)) });
@@ -102,13 +108,15 @@ function FamilyApp({ contactId }: { contactId: string }) {
           contactId={view.contact.id}
           claimerName={(id) => view.other_contacts.find((c) => c.id === id)?.name ?? null}
           others={others}
+          fromName={view.contact.name}
+          log={log}
           backPath="/care"
           onClaimed={onClaimed}
         />
       ) : route.name === 'pair' ? (
         <Pairing view={view} />
       ) : (
-        <FamilyHome view={view} />
+        <FamilyHome view={view} log={log} />
       )}
     </>
   );

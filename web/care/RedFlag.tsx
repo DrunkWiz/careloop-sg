@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Handover, Message, SeniorRef } from '../shared/contract';
 import { claimHandover } from '../shared/api';
+import DecisionInfo from './DecisionInfo';
 
 const fmtTime = (d: string) => new Date(d).toLocaleString('en-SG', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
@@ -72,6 +73,9 @@ export default function RedFlag({ senior, contactId, aac, handover, message, rea
           </button>
         )}
       </div>
+      <a className="red-flag-995" href="tel:995">
+        Dial 995 now
+      </a>
       {error && <p className="red-flag-note">{error}</p>}
       <p className="red-flag-note">
         {handover
@@ -80,6 +84,9 @@ export default function RedFlag({ senior, contactId, aac, handover, message, rea
         {aac && ' Follow your centre’s own escalation protocol as well.'} If there is chest pain, face drooping, slurred
         speech or weakness on one side, call 995.
       </p>
+      <div className="red-flag-info">
+        <DecisionInfo ruleId={null} message={message} />
+      </div>
     </div>
   );
 }

@@ -24,7 +24,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - **Same-day red flag has no handover (engine bug).** When a rung-4 handover already exists that day, a red flag the same day reuses its `handover_id` (`ladder.py`, `if out.rung in ("4", "R") and not decision["handover_id"]`), so no `red_flag` handover is made. Messages and `status` are right, so nothing is held back, but there is nothing to claim. The demo hits this: advance 11 days, then say the red flag. The app falls back to showing the message with "I've seen this".
    - **Caseload drops claimed handovers.** It returns only open ones, so a claimed row loses its "handling it" state.
    - **Caseload has no centre.** The app reads the AAC id and name from a senior's `brief.json` to find the programmes.
-   - **No decision log endpoint.** The befriending record needs `GET /senior/{id}/log?days=7` (shape: `LogDay` in `web/shared/contract.ts`). Until then it shows today's decision only; mocks show the full record.
+   - **Decision log endpoint added by Nathan** (`GET /senior/{id}/log`, in `backend/api/app.py`, tests in `test_log.py`): needs Vibu's OK. For a family contact it applies consent: `nothing` shows only red-flag days, `digest` hides numbers and the engine's reasons (they quote readings), `share_words: false` hides check-in words.
    - **No sample programmes in the seed.** The AAC timetable starts empty on the API.
    - **GP brief gaps.** `brief.json` has adherence for all medicines together, not per medicine, and nothing holds the family's questions (the brief leaves lines to write on).
 2. **Tencent tools gate.** Per the handbook, the project is not scored without proof it was built with CodeBuddy or WorkBuddy. Nothing is logged in `docs/tencent-tools.md` yet. Plan:
@@ -74,6 +74,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
     - The AAC cap blocked real handovers.
     - An old handover hid a new problem.
     - The CRLF hash pin broke on other machines.
+- **13 Oct, Nathan, branch `nathan/care-v2`:** caregiver app made fuller after a critique against the judging criteria. A 14-day timeline of every decision (quiet days included) for family and AAC, with each day's plain reason, words, pills and context; plain-language summaries per rule id (`web/care/plain.ts`), engine wording kept underneath; next-step help after a claim (GP note draft to copy, share or WhatsApp; polyclinic checklist; call or visit talking points; tap to dial 995); a "How this was decided" panel (rule, template or model, guardrail); redesigned home; week strips on caseload rows; tab badge and optional browser alerts while open. Added `GET /senior/{id}/log`.
 - **13 Oct, Nathan, branch `nathan/care-api`:** `/care` and `/care/aac` moved onto the contract shapes and the real API (claims, pair codes, programmes, GP brief link), mocks rewritten in the same shapes, live refresh every 15 s, `?demo` bar for the video. GP brief PDF in `backend/reports`. Found the same-day red-flag handover bug (open item 1).
 - **13 Oct, Nathan** (direct to `main`): `/care` family view and `/care/aac` AAC view on mock data, shared handover and red-flag screens, befriending record, programme timetable.
 - **13 Oct, PR #1:** the senior app and the language layer (Mingyu's slice).

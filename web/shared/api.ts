@@ -63,11 +63,12 @@ export function briefPdfUrl(seniorId: string): string | null {
   return BASE ? `${BASE}/senior/${seniorId}/brief.pdf` : null;
 }
 
-// Proposed endpoint, not in the contract yet. Returns null when the API doesn't have it.
-export async function getLog(seniorId: string, days = 7): Promise<LogDay[] | null> {
-  if (!BASE) return mockAac.getLog(seniorId);
+// Added endpoint (needs team OK). Pass the family contact so the senior's consent applies.
+// Returns null when the API doesn't have it.
+export async function getLog(seniorId: string, days = 14, contactId?: string): Promise<LogDay[] | null> {
+  if (!BASE) return seniorId === 'tan' ? mock.getLog(days) : mockAac.getLog(seniorId, days);
   try {
-    return await http(`/senior/${seniorId}/log?days=${days}`);
+    return await http(`/senior/${seniorId}/log?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) return null;
     throw e;

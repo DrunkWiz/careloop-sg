@@ -432,6 +432,64 @@ def brief_data(sid: str, days: int = 90):
     }
 
 
+@app.get("/senior/{sid}/log")
+def decision_log(sid: str, days: int = 14, contact: Optional[str] = None):
+    """Every day's decision, rung 0 included, with that day's facts. Newest first. (added: Nathan, needs team OK)
+
+    For the family timeline and the AAC befriending record. Pass `contact` when a family member asks: the
+    senior's consent then applies. Red-flag days are always shown in full.
+    - family_sees "nothing": only red-flag days carry a rung and reason.
+    - family_sees "digest": no numbers (reasons are left out, since they quote readings; rule ids stay).
+    - share_words false: no check-in words.
+    AAC staff, and calls without `contact`, see everything (AAC consent is given at enrolment).
+    """
+    senior = senior_or_404(sid)
+    days = max(1, min(days, 60))
+    family = False
+    if contact is not None:
+        c = store.get("contact", contact)
+        if c is None or c["senior_id"] != sid:
+            raise HTTPException(403, "not a contact for this senior")
+        family = c["role"] == "family"
+    consent = senior.get("consent") or {}
+    sees = consent.get("family_sees", "digest") if family else "readings"
+    words_ok = consent.get("share_words", False) if family else True
+    activity_ok = consent.get("share_activity", True) if family else True
+
+    t = today()
+    start = t - timedelta(days - 1)
+    hist = build(store, senior, t, days=days)
+    decisions = {d["date"]: d for d in store.list("decision", senior_id=sid, day_from=start.isoformat(), day_to=t.isoformat())}
+    checkins: dict[str, list[dict]] = {}
+    for c in store.list("checkin", senior_id=sid, day_from=start.isoformat(), day_to=t.isoformat()):
+        checkins.setdefault(c["time"][:10], []).append(c)
+
+    out = []
+    for i in range(days):
+        d = t - timedelta(i)
+        key = d.isoformat()
+        dec = decisions.get(key)
+        h = hist.get(d)
+        red = bool(dec and dec["rung"] == "R")
+        hidden = sees == "nothing" and not red
+        numbers = sees == "readings" or red
+        out.append({
+            "date": key,
+            "rung": None if hidden or not dec else dec["rung"],
+            "rule_id": None if hidden or not dec else dec["rule_id"],
+            "reason": dec["reason"] if dec and numbers and not hidden else None,
+            "decision_id": dec["id"] if dec and not hidden else None,
+            "checkins": [{"time": c["time"], "raw_text": c["raw_text"], "language": c["language"]}
+                         for c in sorted(checkins.get(key, []), key=lambda c: c["time"])] if words_ok and not hidden else [],
+            "replied": bool(h and h.replies) if not hidden else None,
+            "pills": (None if hidden or not h else ("taken" if h.taken else "missed" if h.missed else None)),
+            "social": bool(h and h.social) if activity_ok and not hidden else None,
+            "bp": ({"systolic": round(h.sys), "diastolic": round(h.dia)} if h and h.sys and h.dia and numbers and not hidden else None),
+            "psi": h.psi if h else None, "rain_mm": h.rain_mm if h else None, "festival": h.festival if h else None,
+        })
+    return out
+
+
 @app.get("/senior/{sid}/brief.pdf")
 def brief_pdf(sid: str):
     try:

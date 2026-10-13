@@ -1,13 +1,15 @@
 // The AAC view of /care: for seniors with no family to call.
 // Routes: /care/aac · /care/aac/senior/{id} · /care/aac/handover/{id} · /care/aac/programmes
 import { useCallback, useEffect, useState } from 'react';
-import type { Caseload, CaseloadRow, Handover } from '../shared/contract';
-import { getBrief, getCaseload } from '../shared/api';
+import type { Caseload, CaseloadRow, Handover, LogDay } from '../shared/contract';
+import { getBrief, getCaseload, getLog } from '../shared/api';
 import HandoverView, { BackLink, KIND_TITLE } from './HandoverView';
 import RedFlag from './RedFlag';
 import AacSenior from './AacSenior';
+import { TimelineStrip } from './Timeline';
+import { plainSummary, ruleText } from './plain';
 import AacProgrammes from './AacProgrammes';
-import { markRedFlagSeen, seenRedFlags, useLive, useRoute } from './live';
+import { markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
 
 type Route =
@@ -45,18 +47,26 @@ export default function AacApp({ workerId }: { workerId: string }) {
   const [data, setData] = useState<Caseload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, setSeenTick] = useState(0);
+  const [logs, setLogs] = useState<Record<string, LogDay[]>>({});
 
   const load = useCallback(() => {
     getCaseload(workerId).then(
       (d) => {
         setData(d);
         setError(null);
+        // The 7-day strip on each row. One small request per senior; a caseload is tens, not thousands.
+        Promise.all(d.seniors.map((r) => getLog(r.senior.id, 7, r.contact_id).then((l) => [r.senior.id, l] as const, () => [r.senior.id, null] as const))).then(
+          (pairs) => setLogs(Object.fromEntries(pairs.filter((p): p is readonly [string, LogDay[]] => !!p[1]))),
+        );
       },
       (e: Error) => setError(e.message),
     );
   }, [workerId]);
   useLive(load);
   const centre = useCentre(data?.seniors[0]?.senior.id);
+  const redRow = data?.seniors.find((r) => r.status === 'red_flag');
+  const needCount = data?.seniors.filter((r) => r.status !== 'quiet').length ?? 0;
+  useAlert(redRow ? `Red flag: ${redRow.senior.name}` : needCount ? `${needCount} to look at today` : null, redRow?.today.reason ?? 'Open the caseload.');
 
   if (error && !data) return <p className="care-error">Could not load: {error}</p>;
   if (!data) return <p className="care-muted">Loading…</p>;
@@ -103,6 +113,8 @@ export default function AacApp({ workerId }: { workerId: string }) {
         senior={row.senior}
         contactId={row.contact_id}
         others={[]}
+        fromName={`${centre?.name ?? 'Active Ageing Centre'} staff`}
+        log={logs[row.senior.id] ?? null}
         backPath={`/care/aac/senior/${row.senior.id}`}
         onClaimed={onClaimed}
       />
@@ -148,7 +160,7 @@ export default function AacApp({ workerId }: { workerId: string }) {
       {needs.length > 0 && (
         <ul className="aac-rows">
           {needs.map((r) => (
-            <CaseRow key={r.senior.id} row={r} />
+            <CaseRow key={r.senior.id} row={r} log={logs[r.senior.id]} />
           ))}
         </ul>
       )}
@@ -156,20 +168,22 @@ export default function AacApp({ workerId }: { workerId: string }) {
       <h2 className="aac-section">Quiet</h2>
       <ul className="aac-rows aac-rows-quiet">
         {quiet.map((r) => (
-          <CaseRow key={r.senior.id} row={r} />
+          <CaseRow key={r.senior.id} row={r} log={logs[r.senior.id]} />
         ))}
       </ul>
     </>
   );
 }
 
-function rowLine(r: CaseloadRow): string {
-  if (r.handover) return cap(r.handover.evidence.summary) + '.';
+function rowLine(r: CaseloadRow, log?: LogDay[]): string {
+  if (r.handover) return plainSummary(r.handover, r.senior.name);
+  const today = log?.find((d) => d.date === log[0]?.date && d.rule_id);
+  if (today?.rule_id) return ruleText(today.rule_id, today.rung);
   if (r.today.reason) return cap(r.today.reason.replace(/^no action, because /, '')) + '.';
   return r.last_reply ? `Last replied ${fmtDay(r.last_reply)}.` : 'No check-ins yet.';
 }
 
-function CaseRow({ row }: { row: CaseloadRow }) {
+function CaseRow({ row, log }: { row: CaseloadRow; log?: LogDay[] }) {
   const h = row.handover;
   const chip = row.status === 'red_flag' ? 'Red flag' : h ? KIND_TITLE[h.kind] : row.today.rung === '3' ? 'Noted' : null;
   const cls = row.status === 'quiet' && row.today.rung === '3' ? 'note' : row.status;
@@ -180,7 +194,8 @@ function CaseRow({ row }: { row: CaseloadRow }) {
           <strong>{row.senior.name}</strong>
           {chip && <span className={`aac-chip is-${cls}`}>{chip}</span>}
         </span>
-        <span className="aac-row-line">{rowLine(row)}</span>
+        <span className="aac-row-line">{rowLine(row, log)}</span>
+        {log && <TimelineStrip log={log} />}
         {h && h.status !== 'open' && <span className="care-pill">You are handling it</span>}
       </button>
     </li>

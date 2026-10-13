@@ -1,8 +1,11 @@
 // The handover pack (rung 4 or R), shared by the family view and the AAC view.
 import { useState } from 'react';
-import type { Handover, HandoverKind, SeniorRef } from '../shared/contract';
+import type { Handover, HandoverKind, LogDay, SeniorRef } from '../shared/contract';
 import { claimHandover, briefPdfUrl } from '../shared/api';
 import BpChart from './BpChart';
+import DecisionInfo from './DecisionInfo';
+import NextSteps from './NextSteps';
+import { plainSummary, ruleText } from './plain';
 import { navigate } from './nav';
 
 export const KIND_TITLE: Record<HandoverKind, string> = {
@@ -26,11 +29,13 @@ interface Props {
   contactId: string; // who claims: the family contact, or the AAC worker's contact for this senior
   claimerName?: (contactId: string) => string | null;
   others: string[]; // names of the other people who can claim it
+  fromName: string; // who signs a drafted note
+  log?: LogDay[] | null;
   backPath: string;
   onClaimed: (h: Handover) => void;
 }
 
-export default function HandoverView({ handover: h, senior, contactId, claimerName, others, backPath, onClaimed }: Props) {
+export default function HandoverView({ handover: h, senior, contactId, claimerName, others, fromName, log, backPath, onClaimed }: Props) {
   const [choice, setChoice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +75,10 @@ export default function HandoverView({ handover: h, senior, contactId, claimerNa
         {senior.name} · {KIND_TITLE[h.kind]}
       </p>
       <h1>{h.status === 'open' ? 'CareLoop needs you to pick a next step' : KIND_TITLE[h.kind]}</h1>
-      <p className="care-lead">{cap(evidence.summary)}.</p>
+      <p className="care-lead">{plainSummary(h, senior.name)}</p>
+      <p className="care-engine">
+        The rule's own words: {cap(evidence.summary)}.
+      </p>
 
       {hasNumbers && evidence.baseline && (
         <section className="care-card">
@@ -89,7 +97,16 @@ export default function HandoverView({ handover: h, senior, contactId, claimerNa
             {evidence.tried.map((t, i) => (
               <li key={i}>
                 <span className="care-timeline-date">{fmtDate(t.date)}</span>
-                <span>{cap(t.what)}.</span>
+                <span>
+                  {log?.find((d) => d.date === t.date)?.rule_id ? (
+                    <>
+                      {ruleText(log.find((d) => d.date === t.date)!.rule_id, t.rung)}
+                      <span className="care-engine-inline">{cap(t.what)}.</span>
+                    </>
+                  ) : (
+                    <>{cap(t.what)}.</>
+                  )}
+                </span>
               </li>
             ))}
           </ol>
@@ -126,6 +143,10 @@ export default function HandoverView({ handover: h, senior, contactId, claimerNa
           </>
         )}
       </section>
+
+      {h.claimed_by && mine && <NextSteps h={h} senior={senior} from={fromName} />}
+
+      <DecisionInfo ruleId={log?.find((d) => d.decision_id === h.decision_id)?.rule_id ?? null} day={log?.find((d) => d.decision_id === h.decision_id) ?? null} />
 
       <section className="care-card">
         <h2>For the doctor</h2>

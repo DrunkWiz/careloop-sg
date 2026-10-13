@@ -38,7 +38,8 @@ Owner: Vibu. Frozen Tue 13 Oct 23:00. **After the freeze, a change needs all thr
 | `GET/PUT /aac/{aac_id}/programmes` (weekly timetable, entered once) **(added)** | AAC view |
 | `POST /handover/{id}/claim` `{contact_id, choice}`; 400 if `choice` isn't an option | Both care views |
 | `GET /senior/{id}/brief.json` (everything the GP brief needs) **(added)** | Family view, reports |
-| `GET /senior/{id}/brief.pdf` (501 until `backend/reports` has `gp_brief_pdf`) | Family view |
+| `GET /senior/{id}/brief.pdf` (one-page GP brief, `backend/reports`) | Family view |
+| `GET /senior/{id}/log?days=14&contact={id}` (every day's decision, rung 0 included; consent applied for family) **(added)** | Family timeline, AAC befriending record |
 | `POST /demo/advance` `{days}`, `POST /demo/reset` | Demo only |
 | `GET /meta` (model chain, data sources, version) | Everyone |
 

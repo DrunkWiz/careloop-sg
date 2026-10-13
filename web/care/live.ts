@@ -51,3 +51,23 @@ export function markRedFlagSeen(id: string) {
   }
 }
 
+
+// While something needs the person: badge the tab title, and (if they turned alerts on) one notification
+// per new alert. Only while CareLoop is open in a tab; there is no push service.
+export function useAlert(title: string | null, body: string) {
+  useEffect(() => {
+    const base = 'CareLoop SG';
+    document.title = title ? `(!) ${title} · ${base}` : base;
+    if (!title) return;
+    const key = `careloop-alerted:${title}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      /* no storage: may notify again on reload */
+    }
+    if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible') {
+      new Notification(title, { body });
+    }
+  }, [title, body]);
+}
