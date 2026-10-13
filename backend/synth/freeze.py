@@ -30,7 +30,9 @@ def write(name: str, seed: int, prefix: str) -> Path:
 
 
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Hash of the parsed data, so line endings (CRLF on Windows checkouts) don't matter."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
 def main() -> None:

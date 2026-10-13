@@ -1,8 +1,8 @@
-import hashlib
 import json
 import unittest
 from pathlib import Path
 
+from backend.synth.freeze import sha256
 from backend.synth.generator import generate
 
 HERE = Path(__file__).resolve().parents[1]
@@ -11,7 +11,7 @@ HERE = Path(__file__).resolve().parents[1]
 class Frozen(unittest.TestCase):
     def test_heldout_set_is_unchanged(self):
         want = (HERE / "HELDOUT.sha256").read_text().split()[0]
-        got = hashlib.sha256((HERE / "heldout.json").read_bytes()).hexdigest()
+        got = sha256(HERE / "heldout.json")
         self.assertEqual(got, want, "the held-out set changed after it was frozen")
 
     def test_heldout_seed_is_recorded(self):

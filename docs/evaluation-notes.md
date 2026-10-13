@@ -4,7 +4,7 @@
 
 ## Order of events (13 Oct 2026)
 
-1. **The generator was written and both sets were frozen** before any engine tuning: tuning seed 20261013, held-out seed 16102026, eight personas each. `backend/synth/HELDOUT.sha256` pins the held-out file, and a test fails if it changes.
+1. **The generator was written and both sets were frozen** before any engine tuning: tuning seed 20261013, held-out seed 16102026, eight personas each. `backend/synth/HELDOUT.sha256` pins the held-out data (a hash of the parsed JSON, so line endings do not matter), and a test fails if it changes.
 2. **Two generator bugs were fixed and the held-out set was refrozen**, still before any engine tuning and without looking at held-out results.
    - A planted drift of +18 on a senior whose normal is 122 never crossed 140. That isn't a hand-over case under the brief's own rule, so drifts now land at 152 or above.
    - Overlapping events overwrote each other's check-in texts.
