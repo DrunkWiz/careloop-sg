@@ -1,20 +1,39 @@
-// Front-end mirror of contracts/. Field names follow the shared contract objects.
-// Until Vibu freezes contracts/ (Tue 23:00) this is our best guess; reconcile after the freeze.
+// Front-end mirror of contracts/schemas (frozen 13 Oct 23:00) and the API responses in backend/api/app.py.
+// Field names and enums match the schemas exactly. If a schema changes, change it here too.
 
-export type Rung = 0 | 1 | 2 | 3 | 4 | 'R';
-export type Lang = 'en' | 'zh';
-export type ConsentShare = 'nothing' | 'digest' | 'readings';
+export type Rung = '0' | '1' | '2' | '3' | '4' | 'R';
+export type Lang = 'en' | 'en-SG' | 'zh';
+export type FamilySees = 'nothing' | 'digest' | 'readings';
+
+export interface Medicine {
+  name: string;
+  dose_text: string; // as on the label; CareLoop never changes it
+  schedule: ('morning' | 'noon' | 'evening' | 'night')[];
+  started: string;
+  for_bp: boolean;
+}
 
 export interface Senior {
   id: string;
   name: string;
   language: Lang;
-  home_postal_code: string;
+  home_postal: string;
   region: 'north' | 'south' | 'east' | 'west' | 'central';
+  path: 'family' | 'aac';
+  aac_id: string | null;
   conditions: string[];
-  medicines: { name: string; dose: string; times: string[] }[];
+  medicines: Medicine[];
   likes: string[];
-  consent: { family_sees: ConsentShare };
+  usual_checkin_time: string;
+  consent: { family_sees: FamilySees; share_words: boolean; share_activity: boolean };
+  hidden_suggestions: string[];
+}
+
+// The cut-down senior the care endpoints return.
+export interface SeniorRef {
+  id: string;
+  name: string;
+  language: Lang;
 }
 
 export interface Contact {
@@ -23,105 +42,152 @@ export interface Contact {
   role: 'family' | 'aac';
   primary: boolean;
   name: string;
+  language: Lang;
+  worker_id: string | null; // groups an AAC caseload
 }
 
-export interface Reading {
-  senior_id: string;
-  time: string; // ISO 8601
-  kind: 'bp' | 'hr' | 'steps' | 'sleep';
-  values: Record<string, number>; // bp: { systolic, diastolic }
-  source: 'cuff' | 'watch' | 'voice' | 'synthetic';
-  confidence: number;
-}
-
-export interface Decision {
-  senior_id: string;
-  date: string; // YYYY-MM-DD
-  rung: Rung;
-  rule_id: string;
-  reason: string;
-  inputs_used: string[];
-}
-
-export interface HandoverOption {
+export interface Message {
   id: string;
-  label: string;
+  senior_id: string;
+  decision_id: string | null;
+  to: 'senior' | 'family' | 'aac';
+  contact_id: string | null;
+  rung: Rung;
+  language: Lang;
+  text: string;
+  from_template: boolean;
+  guardrail: { passed: boolean; reasons: string[] };
+  model: string | null;
+  time: string;
+}
+
+export type HandoverKind =
+  | 'bp_drift'
+  | 'missed_medicine'
+  | 'unwell'
+  | 'activity'
+  | 'no_contact'
+  | 'double_dose'
+  | 'red_flag';
+
+export interface BpPoint {
+  date: string;
+  systolic: number | null;
+  diastolic: number | null;
 }
 
 export interface Handover {
   id: string;
   senior_id: string;
-  kind: 'drift' | 'adherence' | 'no_contact' | 'red_flag';
+  decision_id: string;
   opened_at: string;
+  kind: HandoverKind;
   evidence: {
     summary: string;
-    since: string; // date the pattern started
+    bp_series: BpPoint[]; // empty when the senior hasn't agreed to share readings (applied by the server)
+    baseline: { systolic: number; diastolic: number } | null;
+    dates: string[];
     tried: { date: string; rung: Rung; what: string }[];
-    bp_series?: { date: string; systolic: number; diastolic: number }[];
-    baseline?: { systolic: number; diastolic: number };
-    reported?: { time: string; words: string; reading?: { systolic: number; diastolic: number } };
   };
-  options: HandoverOption[];
+  options: { id: string; label: string }[];
+  status: 'open' | 'claimed';
   claimed_by: string | null; // contact id
-  claimed_by_name: string | null;
   claimed_at: string | null;
-  chosen_option: string | null;
+  choice: string | null;
+  claimed_by_name?: string | null; // added by GET /care/family
 }
 
-// GET /care/family/{contact}
+// GET /care/family/{contact}: the numbers behind the weekly digest. The app turns them into words.
+export interface Digest {
+  week_start: string;
+  week_end: string;
+  headline: 'quiet' | 'worth a look' | 'needs you';
+  readings_days: number;
+  mean_systolic: number | null; // null unless family_sees is "readings"
+  mean_diastolic: number | null;
+  baseline: { systolic: number; diastolic: number } | null;
+  pills_taken_days: number;
+  missed_days: number;
+  checkin_days: number;
+  social_days: number;
+  worth_raising: string[];
+}
+
 export interface FamilyView {
   contact: Contact;
-  senior: Senior;
-  family: Contact[]; // every family contact for this senior
-  status: { week_line: string; rung_today: Rung; as_of: string };
-  digest: { week_of: string; lines: string[] } | null;
+  senior: SeniorRef;
+  family_sees: FamilySees;
+  today: string;
+  status: 'quiet' | 'handover' | 'red_flag';
+  digest: Digest | null; // null when family_sees is "nothing"
   handovers: Handover[];
-  synthetic: boolean;
+  red_flags: Message[]; // rung R messages to family in the last 2 days
+  other_contacts: { id: string; name: string }[];
 }
 
-export interface CheckIn {
-  senior_id: string;
-  time: string;
-  raw_text: string;
-  language: Lang | 'singlish';
-  extracted_facts: Record<string, unknown>; // shape owned by Mingyu (understand())
-}
-
-// One day of the decision log, joined with that day's check-in. Feeds the AAC befriending record.
-export interface LogDay {
-  decision: Decision;
-  checkin: CheckIn | null;
-}
-
-export type CaseloadStatus = 'red_flag' | 'handover' | 'no_contact' | 'note' | 'quiet';
-
+// GET /care/aac/{worker_id}/caseload
 export interface CaseloadRow {
-  senior: Senior;
-  status: CaseloadStatus;
-  line: string; // one plain line on why the row sits where it does
-  last_checkin: string | null;
+  senior: SeniorRef;
+  contact_id: string; // this worker's contact for this senior: claim with it
+  status: 'quiet' | 'handover' | 'red_flag';
+  today: { rung: Rung | null; reason: string | null };
   handover: Handover | null;
-  alert_this_week: boolean; // at most one non-urgent alert per senior per week
-  log: LogDay[]; // last 7 days, newest first
+  last_reply: string | null;
 }
 
-export interface Programme {
-  id: string;
-  day: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
-  start: string; // HH:MM
+export interface Caseload {
+  worker_id: string;
+  today: string;
+  seniors: CaseloadRow[];
+}
+
+// GET/PUT /aac/{aac_id}/programmes
+export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+export interface ProgrammeIn {
   title: string;
-  place: string;
+  title_zh?: string | null;
+  weekdays: Weekday[];
+  time: string;
+  tags: string[];
   indoor: boolean;
-  sample: boolean; // seeded demo programme, not a real timetable
+  free: boolean;
 }
 
-// GET /care/aac/{contact}/caseload
-export interface AacCaseload {
-  contact: Contact;
-  centre: { name: string };
-  colleagues: Contact[]; // other AAC staff who can claim handovers
-  as_of: string;
-  rows: CaseloadRow[];
-  programmes: Programme[];
-  synthetic: boolean;
+export interface Programme extends ProgrammeIn {
+  id: string;
+  place_id: string;
+  sample: boolean;
+}
+
+// GET /senior/{id}/brief.json (the parts the care app reads)
+export interface BriefData {
+  senior: { id: string; name: string; conditions: string[]; medicines: Medicine[] };
+  period: { from: string; to: string };
+  aac: { id: string; name: string | null; going: string[] } | null;
+}
+
+// Proposed, not in the contract yet: GET /senior/{id}/log?days=7, for the AAC befriending record.
+export interface LogDay {
+  date: string;
+  rung: Rung;
+  rule_id: string;
+  reason: string;
+  checkins: { time: string; raw_text: string; language: Lang }[];
+}
+
+// POST /care/pair-code
+export interface PairCodeIn {
+  contact_name: string;
+  role: 'family' | 'aac';
+  language?: Lang;
+  senior_name: string;
+  home_postal: string;
+  worker_id?: string | null;
+}
+
+export interface PairCodeOut {
+  code: string;
+  senior_id: string;
+  contact_id: string;
 }

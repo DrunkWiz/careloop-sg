@@ -1,72 +1,99 @@
-// Pairing: generate the code that links the senior app, and set what the family sees.
-// No pairing endpoint in the contract yet; this is local-only until Vibu adds one.
+// Settings and pairing. The caregiver makes a code (POST /care/pair-code); the senior enters it in the senior
+// app, and the senior chooses there what the family sees. So consent is shown here, not set here.
 import { useState } from 'react';
-import type { ConsentShare, FamilyView } from '../shared/contract';
-import { navigate } from './nav';
+import type { FamilyView, PairCodeOut } from '../shared/contract';
+import { createPairCode } from '../shared/api';
+import { BackLink } from './HandoverView';
 
-const SHARE_OPTIONS: { id: ConsentShare; label: string; detail: string }[] = [
-  { id: 'nothing', label: 'Nothing', detail: 'Only red flags.' },
-  { id: 'digest', label: 'Weekly digest', detail: 'Five lines a week on how it went. No numbers.' },
-  { id: 'readings', label: 'Digest and readings', detail: 'The digest, plus blood pressure numbers when CareLoop hands over.' },
-];
-
-function newCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
+const SEES: Record<FamilyView['family_sees'], string> = {
+  nothing: 'Only red flags.',
+  digest: 'The weekly digest, without numbers. Red flags always.',
+  readings: 'The weekly digest and blood pressure numbers. Red flags always.',
+};
 
 export default function Pairing({ view }: { view: FamilyView }) {
-  const [code, setCode] = useState<string | null>(null);
-  const [share, setShare] = useState<ConsentShare>(view.senior.consent.family_sees);
+  const [form, setForm] = useState({ senior_name: '', home_postal: '' });
+  const [result, setResult] = useState<PairCodeOut | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const valid = form.senior_name.trim() && /^\d{6}$/.test(form.home_postal);
+
+  const make = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(
+        await createPairCode({
+          contact_name: view.contact.name,
+          role: 'family',
+          language: view.contact.language,
+          senior_name: form.senior_name.trim(),
+          home_postal: form.home_postal,
+        }),
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <>
-      <button className="care-link care-back" onClick={() => navigate('/care')}>
-        ← Back
-      </button>
-      <h1>Set up {view.senior.name}'s app</h1>
+      <BackLink to="/care" />
+      <h1>Settings</h1>
 
       <section className="care-card">
-        <h2>1. Link the senior app</h2>
-        <p className="care-muted">Open CareLoop on their phone and enter this code. It works for 15 minutes.</p>
-        {code ? (
-          <p className="care-code" aria-live="polite">
-            {code.slice(0, 3)} {code.slice(3)}
-          </p>
-        ) : (
-          <button className="care-primary" onClick={() => setCode(newCode())}>
-            Get a pairing code
-          </button>
-        )}
-      </section>
-
-      <section className="care-card">
-        <h2>2. What the family sees</h2>
-        <p className="care-muted">Choose this together with {view.senior.name}. It is their choice, and they can change it.</p>
-        <div className="care-options" role="radiogroup" aria-label="What the family sees">
-          {SHARE_OPTIONS.map((o) => (
-            <label key={o.id} className={`care-option ${share === o.id ? 'is-selected' : ''}`}>
-              <input type="radio" name="share" value={o.id} checked={share === o.id} onChange={() => setShare(o.id)} />
-              <span>
-                <strong>{o.label}</strong>
-                <span className="care-option-detail">{o.detail}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-        <p className="care-notice">Red flags are always shared with the family, whatever is chosen here.</p>
+        <h2>What {view.senior.name} shares with you</h2>
+        <p>{SEES[view.family_sees]}</p>
+        <p className="care-muted">
+          {view.senior.name} chose this on their phone and can change it there. It is their choice.
+        </p>
       </section>
 
       <section className="care-card">
         <h2>Family on CareLoop</h2>
         <ul className="care-digest">
-          {view.family.map((c) => (
-            <li key={c.id}>
-              {c.name}
-              {c.id === view.contact.id && ' (you)'}
-            </li>
+          <li>{view.contact.name} (you)</li>
+          {view.other_contacts.map((c) => (
+            <li key={c.id}>{c.name}</li>
           ))}
         </ul>
         <p className="care-muted">Anyone here can take a handover. The first to tap “I'll handle it” owns it.</p>
+      </section>
+
+      <section className="care-card aac-form">
+        <h2>Set up CareLoop for someone new</h2>
+        {result ? (
+          <>
+            <p className="care-muted">Open CareLoop on their phone and enter this code. It works once.</p>
+            <p className="care-code" aria-live="polite">
+              {result.code.slice(0, 3)} {result.code.slice(3)}
+            </p>
+            <p className="care-muted">On their phone they choose what to share with you. Red flags are always shared.</p>
+          </>
+        ) : (
+          <>
+            <label>
+              Their name
+              <input value={form.senior_name} onChange={(e) => setForm({ ...form, senior_name: e.target.value })} placeholder="e.g. Mr Tan" />
+            </label>
+            <label>
+              Home postal code
+              <input
+                inputMode="numeric"
+                maxLength={6}
+                value={form.home_postal}
+                onChange={(e) => setForm({ ...form, home_postal: e.target.value.replace(/\D/g, '') })}
+                placeholder="6 digits, for the haze reading"
+              />
+            </label>
+            <button className="care-primary" disabled={!valid || busy} onClick={make}>
+              {busy ? 'Making a code…' : 'Get a pairing code'}
+            </button>
+            {error && <p className="care-error">{error}</p>}
+          </>
+        )}
       </section>
     </>
   );

@@ -1,99 +1,103 @@
-// Synthetic demo data for the family view, shaped like GET /care/family/{contact}.
-// Scenarios: ?scenario=quiet | drift (default) | redflag
+// In-browser mock of GET /care/family/{contact}, in the contract's shapes. Synthetic data, mirroring the
+// API's demo seed (Mr Tan; Wei Ling and Kelvin). Scenarios: ?scenario=quiet | handover (default) | redflag
 // Claims persist in localStorage so a second tab as another family member sees who claimed.
-import type { Contact, FamilyView, Handover, Senior } from '../shared/contract';
-
-const senior: Senior = {
-  id: 's-tan',
-  name: 'Tan Ah Kow',
-  language: 'en',
-  home_postal_code: '560123',
-  region: 'central',
-  conditions: ['hypertension'],
-  medicines: [{ name: 'Amlodipine', dose: '5 mg', times: ['08:00'] }],
-  likes: ['mahjong', 'morning market', 'karaoke'],
-  consent: { family_sees: 'readings' },
-};
+import type { Contact, FamilyView, Handover, Message, PairCodeIn, PairCodeOut } from '../shared/contract';
 
 const family: Contact[] = [
-  { id: 'c-meiling', senior_id: 's-tan', role: 'family', primary: true, name: 'Mei Ling' },
-  { id: 'c-weijie', senior_id: 's-tan', role: 'family', primary: true, name: 'Wei Jie' },
+  { id: 'tan-weiling', senior_id: 'tan', role: 'family', primary: true, name: 'Wei Ling', language: 'en', worker_id: null },
+  { id: 'tan-kelvin', senior_id: 'tan', role: 'family', primary: true, name: 'Kelvin', language: 'en', worker_id: null },
 ];
 
-const baseline = { systolic: 132, diastolic: 82 };
-
-// 14 days of synthetic BP: settled for a week, then a drift from 7 Oct.
+// 14 days of synthetic BP ending 24 Oct: settled, one odd reading on 15 Oct, then a drift from 21 Oct.
 const series = [
-  [131, 81], [134, 83], [129, 80], [133, 82], [130, 81], [135, 84], [132, 82],
-  [141, 87], [144, 88], [139, 86], [146, 90], [148, 91], [143, 88], [147, 90],
-].map(([systolic, diastolic], i) => {
-  const d = new Date(Date.UTC(2026, 8, 30 + i));
-  return { date: d.toISOString().slice(0, 10), systolic, diastolic };
-});
+  [null, null], [131, 77], [null, null], [126, 75], [157, 96], [null, null], [126, 79],
+  [127, 85], [133, 85], [139, 88], [148, 91], [149, 89], [155, 95], [156, 90],
+].map(([systolic, diastolic], i) => ({
+  date: new Date(Date.UTC(2026, 9, 11 + i)).toISOString().slice(0, 10),
+  systolic,
+  diastolic,
+}));
 
 const driftHandover: Handover = {
-  id: 'h-drift-1',
-  senior_id: 's-tan',
-  kind: 'drift',
-  opened_at: '2026-10-13T09:40:00+08:00',
+  id: 'ho-dec-tan-2026-10-24',
+  senior_id: 'tan',
+  decision_id: 'dec-tan-2026-10-24',
+  opened_at: '2026-10-24T21:00:00+08:00',
+  kind: 'bp_drift',
   evidence: {
-    summary:
-      "Dad's blood pressure has been higher than his usual for 7 days. His 7-day average is 144/89, against his usual 132/82, and it was over 140 on 6 of the last 7 days.",
-    since: '2026-10-07',
-    tried: [
-      { date: '2026-10-07', rung: 1, what: 'Asked him to measure again after resting. Second reading was similar.' },
-      { date: '2026-10-09', rung: 2, what: 'Suggested taking his pill at breakfast, as two doses were late. He agreed.' },
-      { date: '2026-10-11', rung: 3, what: 'Noted the rise in your weekly digest.' },
-    ],
+    summary: '7-day average systolic 144, 15 above their own baseline of 129, and over 140 on 4 of 7 days',
     bp_series: series,
-    baseline,
+    baseline: { systolic: 129, diastolic: 78 },
+    dates: ['2026-10-15', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24'],
+    tried: [
+      { date: '2026-10-15', rung: '1', what: 'one odd reading 157/96 against a baseline of 128; offer to re-measure' },
+      { date: '2026-10-17', rung: '2', what: 'medicine running out (unspecified); suggest collecting a refill' },
+      { date: '2026-10-21', rung: '3', what: '7-day average systolic 138 against a baseline of 128; over 140 on 2 days; not persistent yet' },
+      { date: '2026-10-23', rung: '3', what: '7-day average systolic 140 against a baseline of 129; over 140 on 3 days; not persistent yet' },
+    ],
   },
   options: [
-    { id: 'polyclinic', label: 'Book a polyclinic appointment' },
-    { id: 'gp_note', label: 'Draft a note to his GP' },
-    { id: 'call', label: 'Call Dad today' },
+    { id: 'polyclinic', label: 'Book a polyclinic slot' },
+    { id: 'gp_note', label: 'Draft a note to the GP' },
+    { id: 'call', label: 'Call them today' },
   ],
+  status: 'open',
   claimed_by: null,
-  claimed_by_name: null,
   claimed_at: null,
-  chosen_option: null,
+  choice: null,
 };
 
 const redFlagHandover: Handover = {
-  id: 'h-red-1',
-  senior_id: 's-tan',
+  id: 'ho-dec-tan-2026-10-25',
+  senior_id: 'tan',
+  decision_id: 'dec-tan-2026-10-25',
+  opened_at: '2026-10-25T09:31:00+08:00',
   kind: 'red_flag',
-  opened_at: '2026-10-13T09:32:00+08:00',
   evidence: {
-    summary: 'Dad logged a blood pressure of 186/112. CareLoop told him to call 995 or see a doctor now.',
-    since: '2026-10-13',
+    summary: 'BP 186/112 at or above the red-flag floor (180/120)',
+    bp_series: series,
+    baseline: { systolic: 129, diastolic: 78 },
+    dates: ['2026-10-25'],
     tried: [],
-    reported: {
-      time: '2026-10-13T09:31:00+08:00',
-      words: "I'm fine lah",
-      reading: { systolic: 186, diastolic: 112 },
-    },
   },
   options: [
-    { id: 'call', label: 'Call Dad now' },
-    { id: 'call_995', label: 'Call 995 for him' },
+    { id: 'call_now', label: 'Call them now' },
+    { id: '995', label: 'Call 995 for them' },
   ],
+  status: 'open',
   claimed_by: null,
-  claimed_by_name: null,
   claimed_at: null,
-  chosen_option: null,
+  choice: null,
 };
 
-type Scenario = 'quiet' | 'drift' | 'redflag';
+const redFlagMessage = (c: Contact): Message => ({
+  id: `msg-dec-tan-2026-10-25-R-family-${c.id}`,
+  senior_id: 'tan',
+  decision_id: 'dec-tan-2026-10-25',
+  to: 'family',
+  contact_id: c.id,
+  rung: 'R',
+  language: 'en',
+  text: 'Urgent: Mr Tan reported BP 186/112 at or above the red-flag floor (180/120). Please call Mr Tan now. If you cannot reach them, ask someone nearby to check on them or call 995.',
+  from_template: true,
+  guardrail: { passed: true, reasons: [] },
+  model: null,
+  time: '2026-10-25T09:31:00+08:00',
+});
+
+type Scenario = 'quiet' | 'handover' | 'redflag';
 
 function scenario(): Scenario {
   const s = new URLSearchParams(window.location.search).get('scenario');
-  return s === 'quiet' || s === 'redflag' ? s : 'drift';
+  return s === 'quiet' || s === 'redflag' ? s : 'handover';
 }
 
+// --- claim store, shared with the AAC mock -------------------------------------------------
+
+type Claim = Pick<Handover, 'status' | 'claimed_by' | 'claimed_at' | 'choice'>;
 const STORE_KEY = 'careloop-mock-claims';
 
-function loadClaims(): Record<string, Pick<Handover, 'claimed_by' | 'claimed_by_name' | 'claimed_at' | 'chosen_option'>> {
+function loadClaims(): Record<string, Claim> {
   try {
     return JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}');
   } catch {
@@ -101,7 +105,7 @@ function loadClaims(): Record<string, Pick<Handover, 'claimed_by' | 'claimed_by_
   }
 }
 
-function saveClaims(claims: ReturnType<typeof loadClaims>) {
+function saveClaims(claims: Record<string, Claim>) {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(claims));
   } catch {
@@ -109,56 +113,7 @@ function saveClaims(claims: ReturnType<typeof loadClaims>) {
   }
 }
 
-let sessionClaims = loadClaims();
-
-function withClaim(h: Handover): Handover {
-  return { ...h, ...(sessionClaims[h.id] ?? {}) };
-}
-
-export const delay = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 150));
-
-export function getFamilyView(contactId: string): Promise<FamilyView> {
-  sessionClaims = loadClaims();
-  const contact = family.find((c) => c.id === contactId) ?? family[0];
-  const s = scenario();
-
-  const handovers = s === 'drift' ? [driftHandover] : s === 'redflag' ? [redFlagHandover] : [];
-
-  const status =
-    s === 'quiet'
-      ? { week_line: 'A quiet week. Dad took his pills every day and his readings were his usual.', rung_today: 0 as const }
-      : s === 'drift'
-        ? { week_line: "Dad's blood pressure has been above his usual this week. CareLoop needs you to pick a next step.", rung_today: 4 as const }
-        : { week_line: 'Dad reported a dangerous blood pressure reading this morning.', rung_today: 'R' as const };
-
-  return delay({
-    contact,
-    senior,
-    family,
-    status: { ...status, as_of: '2026-10-13' },
-    digest: {
-      week_of: '2026-10-05',
-      lines:
-        s === 'quiet'
-          ? [
-              'Dad had a steady week and checked in every morning.',
-              'He took his amlodipine on all 7 days.',
-              'He played mahjong on Tuesday and Saturday.',
-              'Nothing to raise at his next visit.',
-            ]
-          : [
-              'Dad checked in every morning this week.',
-              'He took his amlodipine on 5 of 7 days; two doses were late.',
-              'His blood pressure was higher than his usual from Wednesday.',
-              'Worth raising at his next visit: the rise since 7 Oct, and whether the pill timing matters.',
-            ],
-    },
-    handovers: handovers.map(withClaim),
-    synthetic: true,
-  });
-}
-
-// Handovers and contacts from every mock (family + AAC), so one claim store serves both views.
+let claims = loadClaims();
 const registry = { handovers: [driftHandover, redFlagHandover] as Handover[], contacts: [...family] as Contact[] };
 
 export function registerMock(handovers: Handover[], contacts: Contact[]) {
@@ -166,30 +121,65 @@ export function registerMock(handovers: Handover[], contacts: Contact[]) {
   registry.contacts.push(...contacts);
 }
 
-export function applyClaims(hs: Handover[]): Handover[] {
-  sessionClaims = loadClaims();
-  return hs.map(withClaim);
+export function applyClaims(h: Handover): Handover {
+  claims = loadClaims();
+  const out = { ...h, ...(claims[h.id] ?? {}) };
+  if (out.claimed_by) out.claimed_by_name = registry.contacts.find((x) => x.id === out.claimed_by)?.name ?? null;
+  return out;
 }
 
-export function claimHandover(handoverId: string, contactId: string, optionId: string): Promise<Handover> {
+export const delay = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 150));
+
+export function claimHandover(handoverId: string, contactId: string, choice: string): Promise<Handover> {
   const h = registry.handovers.find((x) => x.id === handoverId);
   if (!h) return Promise.reject(new Error('No such handover'));
-  sessionClaims = loadClaims();
-  // First to claim owns it; a later claim returns the existing owner.
-  if (!sessionClaims[handoverId]?.claimed_by) {
-    const who = registry.contacts.find((c) => c.id === contactId);
-    sessionClaims[handoverId] = {
-      claimed_by: contactId,
-      claimed_by_name: who?.name ?? 'Someone',
-      claimed_at: new Date().toISOString(),
-      chosen_option: optionId,
-    };
-    saveClaims(sessionClaims);
+  if (!h.options.some((o) => o.id === choice)) return Promise.reject(new Error(`${choice} is not an option`));
+  claims = loadClaims();
+  // First to claim owns it; a later claim returns the existing owner (as the API does).
+  if (!claims[handoverId]?.claimed_by) {
+    claims[handoverId] = { status: 'claimed', claimed_by: contactId, claimed_at: new Date().toISOString(), choice };
+    saveClaims(claims);
   }
-  return delay(withClaim(h));
+  return delay(applyClaims(h));
 }
 
 export function resetMockClaims() {
-  sessionClaims = {};
+  claims = {};
   saveClaims({});
+}
+
+// --- family view ---------------------------------------------------------------------------
+
+export function getFamilyView(contactId: string): Promise<FamilyView> {
+  const contact = family.find((c) => c.id === contactId) ?? family[0];
+  const s = scenario();
+  const handovers = s === 'quiet' ? [] : s === 'handover' ? [driftHandover] : [redFlagHandover, driftHandover];
+  return delay({
+    contact,
+    senior: { id: 'tan', name: 'Mr Tan', language: 'en-SG' },
+    family_sees: 'readings',
+    today: s === 'redflag' ? '2026-10-25' : s === 'handover' ? '2026-10-24' : '2026-10-13',
+    status: s === 'quiet' ? 'quiet' : s === 'handover' ? 'handover' : 'red_flag',
+    digest:
+      s === 'quiet'
+        ? {
+            week_start: '2026-10-07', week_end: '2026-10-13', headline: 'quiet', readings_days: 6,
+            mean_systolic: 128.4, mean_diastolic: 79.1, baseline: { systolic: 128, diastolic: 80 },
+            pills_taken_days: 7, missed_days: 0, checkin_days: 7, social_days: 3, worth_raising: [],
+          }
+        : {
+            week_start: '2026-10-18', week_end: '2026-10-24', headline: 'needs you', readings_days: 7,
+            mean_systolic: 143.9, mean_diastolic: 89, baseline: { systolic: 129, diastolic: 78 },
+            pills_taken_days: 7, missed_days: 0, checkin_days: 7, social_days: 3,
+            worth_raising: ['7-day average systolic 140 against a baseline of 129; over 140 on 3 days; not persistent yet'],
+          },
+    handovers: handovers.map(applyClaims),
+    red_flags: s === 'redflag' ? family.map(redFlagMessage) : [],
+    other_contacts: family.filter((c) => c.id !== contact.id).map((c) => ({ id: c.id, name: c.name })),
+  });
+}
+
+export function createPairCode(_body: PairCodeIn): Promise<PairCodeOut> {
+  const n = Math.floor(Math.random() * 1e6);
+  return delay({ code: String(n).padStart(6, '0'), senior_id: `sen-${n}`, contact_id: `con-${n}` });
 }
