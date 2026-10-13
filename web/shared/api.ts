@@ -1,7 +1,9 @@
 // Caregiver-app API client. Set VITE_API_URL to hit the real backend; without it, calls are served by
 // in-browser mocks with the same shapes (web/care/mock.ts, web/care/mockAac.ts).
 import type {
+  Activities,
   BriefData,
+  Insights,
   Caseload,
   FamilyView,
   Handover,
@@ -13,6 +15,7 @@ import type {
 } from './contract';
 import * as mock from '../care/mock';
 import * as mockAac from '../care/mockAac';
+import * as mockInsights from '../care/mockInsights';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
 
@@ -73,6 +76,19 @@ export async function getLog(seniorId: string, days = 14, contactId?: string): P
     if (e instanceof ApiError && e.status === 404) return null;
     throw e;
   }
+}
+
+// Added endpoints (need team OK). Pass the family contact so the senior's consent applies.
+export function getInsights(seniorId: string, contactId?: string, days = 30): Promise<Insights> {
+  return BASE
+    ? http(`/senior/${seniorId}/insights?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mockInsights.getInsights(seniorId);
+}
+
+export function getActivities(seniorId: string, contactId?: string): Promise<Activities> {
+  return BASE
+    ? http(`/senior/${seniorId}/activities${contactId ? `?contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mockInsights.getActivities(seniorId);
 }
 
 export function getProgrammes(aacId: string): Promise<Programme[]> {

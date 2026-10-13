@@ -40,7 +40,7 @@ export default function Pairing({ view }: { view: FamilyView }) {
 
   return (
     <>
-      <BackLink to="/care" />
+      <BackLink to="/care/family" />
       <h1>Settings</h1>
 
       <section className="care-card">

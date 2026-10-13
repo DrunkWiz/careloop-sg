@@ -200,3 +200,80 @@ export interface PairCodeOut {
   senior_id: string;
   contact_id: string;
 }
+
+// GET /senior/{id}/insights?days=30&contact=… (added, needs team OK): patterns in the senior's own data.
+export interface Finding {
+  id: string;
+  tone: 'watch' | 'good' | 'neutral';
+  title: string;
+  detail: string;
+  n: number; // how many days or readings it rests on
+}
+
+export interface Insights {
+  period: { from: string; to: string; days: number };
+  bp: {
+    shared: boolean;
+    series: BpPoint[];
+    baseline: { systolic: number; diastolic: number; fallback: boolean } | null;
+    last7_systolic: number | null;
+    prev7_systolic: number | null;
+    slope_per_week: number | null;
+    trend: 'rising' | 'falling' | 'steady' | 'unclear';
+    days_over_140: number | null;
+    readings_days: number;
+  };
+  adherence: {
+    reported_days: number;
+    taken_days: number;
+    missed_days: number;
+    streak_days: number;
+    by_weekday: { day: Weekday; missed: number; reported: number }[];
+    calendar: { date: string; pills: 'taken' | 'missed' | null }[];
+  };
+  activity: {
+    steps: { date: string; steps: number | null }[];
+    steps_baseline: number | null;
+    steps_last7_avg: number | null;
+    social_days_last7: number;
+    social_days_prev7: number;
+  } | null;
+  checkins: { replied_days: number; days: number; usual_time: string; median_first_time: string | null };
+  context: { rain_days: number; haze_days: number; festival_days: number };
+  findings: Finding[];
+  note: string;
+}
+
+// GET /senior/{id}/activities?contact=… (added, needs team OK)
+export interface Place {
+  id: string;
+  kind: 'aac' | 'cc';
+  name: string;
+  address: string | null;
+  postal: string | null;
+  km: number;
+  lat: number;
+  lon: number;
+}
+
+export interface Activities {
+  today: string;
+  weekday: Weekday;
+  indoor_only: boolean;
+  why_indoor: 'rain' | 'haze' | null;
+  psi: number | null;
+  rain_mm: number | null;
+  likes: string[];
+  distance_from: string;
+  own_aac: {
+    id: string;
+    name: string;
+    address: string | null;
+    programmes: (ProgrammeIn & { id: string; sample: boolean; fits: string | null; today: boolean; hidden: boolean })[];
+  } | null;
+  nearby_aacs: Place[];
+  nearby_ccs: Place[];
+  suggested_today: { place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean }[];
+  suggestions: { id: string; date: string; place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean; response: 'going' | 'not_for_me' | null }[];
+  source: string;
+}

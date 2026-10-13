@@ -490,6 +490,47 @@ def decision_log(sid: str, days: int = 14, contact: Optional[str] = None):
     return out
 
 
+def _viewer(sid: str, contact: Optional[str]) -> tuple[dict, bool, dict]:
+    """The senior, whether a family member is asking, and what they may see (consent applies to family only)."""
+    senior = senior_or_404(sid)
+    family = False
+    if contact is not None:
+        c = store.get("contact", contact)
+        if c is None or c["senior_id"] != sid:
+            raise HTTPException(403, "not a contact for this senior")
+        family = c["role"] == "family"
+    consent = senior.get("consent") or {}
+    return senior, family, {
+        "sees": consent.get("family_sees", "digest") if family else "readings",
+        "activity": consent.get("share_activity", True) if family else True,
+    }
+
+
+@app.get("/senior/{sid}/insights")
+def senior_insights(sid: str, days: int = 30, contact: Optional[str] = None):
+    """Patterns in the senior's own data: trends, weekday patterns, simple comparisons. (added: Nathan, needs team OK)
+
+    Plain statistics (backend/reports/insights.py), no model. For family, consent applies: "nothing" is 403
+    (red flags reach them anyway), "digest" drops readings, share_activity false drops steps and contact.
+    """
+    from backend.reports.insights import insights
+
+    senior, family, see = _viewer(sid, contact)
+    if see["sees"] == "nothing":
+        raise HTTPException(403, "the senior shares only red flags")
+    return insights(store, senior, today(), days=days, numbers=see["sees"] == "readings", activity=see["activity"])
+
+
+@app.get("/senior/{sid}/activities")
+def senior_activities(sid: str, contact: Optional[str] = None):
+    """Their own AAC's programmes, the nearest AACs and CCs (data.gov.sg), recent suggestions and answers,
+    and whether today calls for indoor options. (added: Nathan, needs team OK)"""
+    from backend.reports.activities import activities
+
+    senior, family, see = _viewer(sid, contact)
+    return activities(store, senior, today(), responses=see["activity"])
+
+
 @app.get("/senior/{sid}/brief.pdf")
 def brief_pdf(sid: str):
     try:

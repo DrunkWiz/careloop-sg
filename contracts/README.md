@@ -40,6 +40,8 @@ Owner: Vibu. Frozen Tue 13 Oct 23:00. **After the freeze, a change needs all thr
 | `GET /senior/{id}/brief.json` (everything the GP brief needs) **(added)** | Family view, reports |
 | `GET /senior/{id}/brief.pdf` (one-page GP brief, `backend/reports`) | Family view |
 | `GET /senior/{id}/log?days=14&contact={id}` (every day's decision, rung 0 included; consent applied for family) **(added)** | Family timeline, AAC befriending record |
+| `GET /senior/{id}/insights?days=30&contact={id}` (patterns in their own data, `backend/reports/insights.py`; consent applied) **(added)** | Family Health tab, centre console |
+| `GET /senior/{id}/activities?contact={id}` (own AAC programmes, nearest AACs and CCs, today's suggestions) **(added)** | Family Activities tab, centre console |
 | `POST /demo/advance` `{days}`, `POST /demo/reset` | Demo only |
 | `GET /meta` (model chain, data sources, version) | Everyone |
 

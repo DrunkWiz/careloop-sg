@@ -1,13 +1,16 @@
 // One senior in the AAC caseload: today's decision, the open handover, the day-by-day timeline, and the
 // befriending record, written from the decision log so staff don't fill in a form.
 import { useEffect, useState } from 'react';
-import type { CaseloadRow, LogDay } from '../shared/contract';
+import type { CaseloadRow, Insights, LogDay } from '../shared/contract';
 import { getLog } from '../shared/api';
 import { BackLink, KIND_TITLE } from './HandoverView';
 import Timeline from './Timeline';
 import { initials } from './FamilyHome';
 import { cap, plainSummary, ruleText } from './plain';
 import { navigate } from './nav';
+import Findings from './Findings';
+import ActivitiesView from './ActivitiesView';
+import { BpTrend, PillCalendar } from './charts';
 
 const fmtDay = (d: string) => new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtTime = (d: string) => new Date(d).toLocaleTimeString('en-SG', { hour: 'numeric', minute: '2-digit' });
@@ -31,7 +34,7 @@ function recordText(name: string, log: LogDay[]): string {
   ].join('\n');
 }
 
-export default function AacSenior({ row }: { row: CaseloadRow }) {
+export default function AacSenior({ row, insights }: { row: CaseloadRow; insights?: Insights }) {
   const [log, setLog] = useState<LogDay[] | null | undefined>(undefined);
   const [copied, setCopied] = useState(false);
   const h = row.handover;
@@ -55,6 +58,8 @@ export default function AacSenior({ row }: { row: CaseloadRow }) {
   return (
     <>
       <BackLink to="/care/aac" label="Caseload" />
+      <div className="senior-grid">
+      <div className="senior-main">
       <div className="hero-top senior-head">
         <span className="avatar" aria-hidden="true">
           {initials(row.senior.name)}
@@ -101,6 +106,29 @@ export default function AacSenior({ row }: { row: CaseloadRow }) {
           </p>
         )}
       </section>
+      </div>
+
+      <aside className="senior-side">
+        <section className="care-section">
+          <h2 className="care-section-title">What CareLoop noticed</h2>
+          {insights ? <Findings findings={insights.findings} note={insights.note} /> : <p className="care-muted">Working it out…</p>}
+        </section>
+        {insights?.bp.shared && insights.bp.baseline && insights.bp.series.some((p) => p.systolic != null) && (
+          <section className="care-card">
+            <h2>Blood pressure, {insights.period.days} days</h2>
+            <BpTrend series={insights.bp.series} baseline={insights.bp.baseline} />
+          </section>
+        )}
+        {insights && (
+          <section className="care-card">
+            <h2>Medicine, {insights.period.days} days</h2>
+            <PillCalendar calendar={insights.adherence.calendar} />
+          </section>
+        )}
+        <h2 className="care-section-title">Things to do</h2>
+        <ActivitiesView seniorId={row.senior.id} contactId={row.contact_id} name={row.senior.name} compact />
+      </aside>
+      </div>
     </>
   );
 }

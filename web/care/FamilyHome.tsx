@@ -4,6 +4,9 @@ import { KIND_TITLE } from './HandoverView';
 import Timeline from './Timeline';
 import { plainSummary } from './plain';
 import { navigate } from './nav';
+import Findings from './Findings';
+import { useInsights } from './Health';
+import { useActivities } from './ActivitiesView';
 
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -50,9 +53,6 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
     <>
       <header className="care-header">
         <p className="care-eyebrow">CareLoop SG · {contact.name}</p>
-        <button className="care-link" onClick={() => navigate('/care/pair')}>
-          Settings
-        </button>
       </header>
 
       <section className={`hero is-${tone}`}>
@@ -79,7 +79,7 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
       )}
 
       {[...open, ...recent].map((h) => (
-        <button key={h.id} className={`care-card care-card-handover ${h.status !== 'open' ? 'is-done' : ''}`} onClick={() => navigate(`/care/handover/${h.id}`)}>
+        <button key={h.id} className={`care-card care-card-handover ${h.status !== 'open' ? 'is-done' : ''}`} onClick={() => navigate(`/care/family/handover/${h.id}`)}>
           <span className="care-card-title">
             {KIND_TITLE[h.kind]}
             {h.status !== 'open' && (
@@ -91,7 +91,11 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
         </button>
       ))}
 
+      {view.family_sees !== 'nothing' && <NoticedPreview seniorId={senior.id} contactId={contact.id} />}
+
       {log && log.length > 0 && <Timeline log={log} name={senior.name} />}
+
+      <ActivityPreview seniorId={senior.id} contactId={contact.id} name={senior.name} />
 
       {digest && (
         <section className="care-card">
@@ -112,5 +116,37 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
         </section>
       )}
     </>
+  );
+}
+
+function NoticedPreview({ seniorId, contactId }: { seniorId: string; contactId: string }) {
+  const { data } = useInsights(seniorId, contactId);
+  if (!data?.findings.length) return null;
+  return (
+    <section className="care-section">
+      <div className="card-head">
+        <h2 className="care-section-title">What CareLoop noticed</h2>
+        <button className="care-link" onClick={() => navigate('/care/family/health')}>
+          All of it →
+        </button>
+      </div>
+      <Findings findings={data.findings} limit={2} />
+    </section>
+  );
+}
+
+function ActivityPreview({ seniorId, contactId, name }: { seniorId: string; contactId: string; name: string }) {
+  const a = useActivities(seniorId, contactId);
+  const first = a?.suggested_today[0];
+  if (!first) return null;
+  return (
+    <button className="care-card act-preview" onClick={() => navigate('/care/family/activities')}>
+      <span className="care-eyebrow">
+        Suggested to {name} today{a.indoor_only ? ` · indoor, it's ${a.why_indoor === 'rain' ? 'raining' : 'hazy'}` : ''}
+      </span>
+      <strong>{first.place}</strong>
+      <span className="care-muted">{first.why_it_fits}</span>
+      <span className="care-card-cta">See what else is on nearby →</span>
+    </button>
   );
 }

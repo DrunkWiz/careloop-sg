@@ -71,3 +71,14 @@ export function useAlert(title: string | null, body: string) {
     }
   }, [title, body]);
 }
+
+// Bumps when the demo clock moves (or anything else asks for a refresh), so data that isn't polled reloads.
+export function useRefreshTick(): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const on = () => setTick((n) => n + 1);
+    window.addEventListener(REFRESH_EVENT, on);
+    return () => window.removeEventListener(REFRESH_EVENT, on);
+  }, []);
+  return tick;
+}

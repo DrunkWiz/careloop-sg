@@ -1,5 +1,8 @@
-// The /care app: family view + AAC view. Owner: Nathan.
-// Until login exists: /care?contact=<family contact id> is the family view, /care/aac?worker=<worker id> the AAC view.
+// The /care app. Owner: Nathan. Two separate front doors, built for two different people:
+//   /care/family  the family app: phone-first, warm, one senior, tabs for Today, Health, Activities, Settings.
+//   /care/aac     CareLoop for Centres: a work console for AAC staff, many seniors, dense and desktop-friendly.
+// /care itself asks which one you are. Until login exists, ?contact= picks the family member and ?worker= the
+// AAC worker. Old links (/care?contact=…, /care/handover/…, /care/pair) still open the family app.
 import { useCallback, useState } from 'react';
 import type { FamilyView, Handover, LogDay } from '../shared/contract';
 import { demoAdvance, demoReset, getFamilyView, getLog, usingMocks } from '../shared/api';
@@ -8,22 +11,33 @@ import HandoverView from './HandoverView';
 import RedFlag from './RedFlag';
 import Pairing from './Pairing';
 import AacApp from './AacApp';
+import Health from './Health';
+import ActivitiesView from './ActivitiesView';
+import RoleChooser from './RoleChooser';
 import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
+import { navigate } from './nav';
 import './care.css';
-
+import './themes.css';
 
 export default function CareApp() {
   const params = new URLSearchParams(window.location.search);
-  const aac = window.location.pathname.startsWith('/care/aac');
+  const path = window.location.pathname;
+  const door = path.startsWith('/care/aac')
+    ? 'centre'
+    : path.startsWith('/care/family') || /^\/care\/(handover|pair)/.test(path) || params.has('contact')
+      ? 'family'
+      : 'choose';
 
   return (
-    <main className="care">
-      {aac ? (
+    <main className={`care theme-${door}`}>
+      {params.has('demo') && !usingMocks && door !== 'choose' && <DemoBar />}
+      {door === 'centre' ? (
         <AacApp workerId={params.get('worker') ?? 'aac-siti'} />
-      ) : (
+      ) : door === 'family' ? (
         <FamilyApp contactId={params.get('contact') ?? 'tan-weiling'} />
+      ) : (
+        <RoleChooser />
       )}
-      {params.has('demo') && !usingMocks && <DemoBar />}
       <footer className="care-footer">
         {usingMocks ? 'Offline demo data. ' : ''}All people in CareLoop's demo are synthetic. No real patient data.
       </footer>
@@ -31,13 +45,20 @@ export default function CareApp() {
   );
 }
 
-type Route = { name: 'home' } | { name: 'handover'; id: string } | { name: 'pair' };
+type Route =
+  | { name: 'today' }
+  | { name: 'health' }
+  | { name: 'activities' }
+  | { name: 'settings' }
+  | { name: 'handover'; id: string };
 
 function parseRoute(): Route {
-  const parts = window.location.pathname.replace(/^\/care\/?/, '').split('/').filter(Boolean);
+  const parts = window.location.pathname.replace(/^\/care(\/family)?\/?/, '').split('/').filter(Boolean);
   if (parts[0] === 'handover' && parts[1]) return { name: 'handover', id: parts[1] };
-  if (parts[0] === 'pair') return { name: 'pair' };
-  return { name: 'home' };
+  if (parts[0] === 'pair' || parts[0] === 'settings') return { name: 'settings' };
+  if (parts[0] === 'health') return { name: 'health' };
+  if (parts[0] === 'activities') return { name: 'activities' };
+  return { name: 'today' };
 }
 
 function FamilyApp({ contactId }: { contactId: string }) {
@@ -97,9 +118,10 @@ function FamilyApp({ contactId }: { contactId: string }) {
   }
 
   const others = view.other_contacts.map((c) => c.name);
+  const openCount = view.handovers.filter((h) => h.status === 'open').length;
 
   return (
-    <>
+    <div className="fam">
       {error && <p className="care-error">Showing the last update. {error}</p>}
       {route.name === 'handover' ? (
         <HandoverView
@@ -110,15 +132,59 @@ function FamilyApp({ contactId }: { contactId: string }) {
           others={others}
           fromName={view.contact.name}
           log={log}
-          backPath="/care"
+          backPath="/care/family"
           onClaimed={onClaimed}
         />
-      ) : route.name === 'pair' ? (
+      ) : route.name === 'settings' ? (
         <Pairing view={view} />
+      ) : route.name === 'health' ? (
+        <>
+          <TabHeader title="Health" senior={view.senior.name} />
+          <Health seniorId={view.senior.id} contactId={view.contact.id} name={view.senior.name} />
+        </>
+      ) : route.name === 'activities' ? (
+        <>
+          <TabHeader title="Things to do" senior={view.senior.name} />
+          <ActivitiesView seniorId={view.senior.id} contactId={view.contact.id} name={view.senior.name} />
+        </>
       ) : (
         <FamilyHome view={view} log={log} />
       )}
-    </>
+      <TabBar active={route.name} badge={openCount} />
+    </div>
+  );
+}
+
+function TabHeader({ title, senior }: { title: string; senior: string }) {
+  return (
+    <header className="tab-header">
+      <p className="care-eyebrow">{senior}</p>
+      <h1>{title}</h1>
+    </header>
+  );
+}
+
+const TABS = [
+  { id: 'today', label: 'Today', path: '/care/family', icon: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
+  { id: 'health', label: 'Health', path: '/care/family/health', icon: 'M3 12h4l2-5 4 10 2-5h6' },
+  { id: 'activities', label: 'Activities', path: '/care/family/activities', icon: 'M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z' },
+  { id: 'settings', label: 'Settings', path: '/care/family/settings', icon: 'M4 7h16M4 12h16M4 17h16' },
+] as const;
+
+function TabBar({ active, badge }: { active: Route['name']; badge: number }) {
+  const current = active === 'handover' ? 'today' : active;
+  return (
+    <nav className="tabbar" aria-label="Family app">
+      {TABS.map((t) => (
+        <button key={t.id} className={`tab ${current === t.id ? 'is-active' : ''}`} aria-current={current === t.id ? 'page' : undefined} onClick={() => navigate(t.path)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d={t.icon} />
+          </svg>
+          <span>{t.label}</span>
+          {t.id === 'today' && badge > 0 && <span className="tab-badge" aria-label={`${badge} to act on`}>{badge}</span>}
+        </button>
+      ))}
+    </nav>
   );
 }
 
