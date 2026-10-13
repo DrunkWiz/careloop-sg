@@ -40,15 +40,6 @@ cd web && npm install && VITE_API_URL=http://localhost:8787 npm run dev
 
 Open `/senior?senior=tan` (demo senior) or `/care`.
 
-## Tests and evaluation
-
-Offline, with no keys and no network.
-
-```
-for s in language engine api synth; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
-python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
-```
-
 Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo URLs:
 
 - `/care`: drift handover (default) · `/care?scenario=quiet` · `/care?scenario=redflag`
@@ -57,6 +48,15 @@ Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo 
 - `/care/aac`: AAC caseload (`?contact=c-aac-daniel` for a second staff member, `?scenario=redflag`), with `/care/aac/programmes` for the timetable
 
 Set `VITE_API_URL` (e.g. in `web/.env.local`) to use the real backend.
+
+## Tests and evaluation
+
+Offline, with no keys and no network.
+
+```
+for s in language engine api synth; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
+```
 
 ## Real vs synthetic
 
