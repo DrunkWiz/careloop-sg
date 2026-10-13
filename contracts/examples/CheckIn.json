@@ -1,0 +1,31 @@
+{
+  "id": "tan-ck-2026-10-25-1",
+  "senior_id": "tan",
+  "time": "2026-10-25T09:30:00+08:00",
+  "source": "synthetic",
+  "raw_text": "Eat medicine already.",
+  "language": "en-SG",
+  "facts": {
+    "lang": "en-SG",
+    "bp": [],
+    "pulse": null,
+    "doses": [
+      {
+        "taken": true,
+        "medicine": null,
+        "span": "Eat medicine"
+      }
+    ],
+    "running_out": [],
+    "symptoms": [],
+    "activities": [],
+    "mood": null,
+    "double_dose": false,
+    "questions": [],
+    "english": "Eat medicine already.",
+    "source": "rules",
+    "red_flag": false,
+    "feeling_unwell": false,
+    "social_contact": false
+  }
+}

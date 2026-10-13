@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Facts.schema.json",
+  "title": "Facts",
+  "type": "object",
+  "properties": {
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "en-SG",
+        "zh"
+      ]
+    },
+    "bp": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "systolic": {
+            "type": "integer"
+          },
+          "diastolic": {
+            "type": "integer"
+          },
+          "pulse": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "span": {
+            "type": "string"
+          },
+          "plausible": {
+            "type": "boolean"
+          },
+          "needs_confirmation": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "systolic",
+          "diastolic",
+          "pulse",
+          "confidence",
+          "span",
+          "plausible",
+          "needs_confirmation"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "pulse": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "doses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "taken": {
+            "type": "boolean"
+          },
+          "medicine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "span": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taken",
+          "medicine",
+          "span"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "running_out": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "symptoms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "words": {
+            "type": "string"
+          },
+          "red_flag": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "words",
+          "red_flag"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "social",
+              "exercise",
+              "outing",
+              "home"
+            ]
+          },
+          "words": {
+            "type": "string"
+          },
+          "social_contact": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "words",
+          "social_contact"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "mood": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "good",
+            "ok",
+            "low"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "double_dose": {
+      "type": "boolean"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "english": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "red_flag": {
+      "type": "boolean"
+    },
+    "feeling_unwell": {
+      "type": "boolean"
+    },
+    "social_contact": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "lang",
+    "bp",
+    "pulse",
+    "doses",
+    "running_out",
+    "symptoms",
+    "activities",
+    "mood",
+    "double_dose",
+    "questions",
+    "english",
+    "source",
+    "red_flag",
+    "feeling_unwell",
+    "social_contact"
+  ],
+  "additionalProperties": false
+}

@@ -67,6 +67,8 @@ class Facts:
     symptoms: list[Symptom] = field(default_factory=list)
     activities: list[Activity] = field(default_factory=list)
     mood: Optional[Literal["good", "ok", "low"]] = None
+    double_dose: bool = False  # "took my morning pill twice"
+    questions: list[str] = field(default_factory=list)  # "skip_or_change_medicine": for the GP, never answered by CareLoop
     english: str = ""  # the meaning in English, for the GP brief and the family; never the numbers' source
     source: str = "rules"  # "rules" or "rules+model:<name>"
 

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Senior.schema.json",
+  "title": "Senior",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "en-SG",
+        "zh"
+      ]
+    },
+    "home_postal": {
+      "type": "string",
+      "pattern": "^[0-9]{6}$"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "north",
+        "south",
+        "east",
+        "west",
+        "central"
+      ],
+      "description": "For PSI."
+    },
+    "path": {
+      "type": "string",
+      "enum": [
+        "family",
+        "aac"
+      ],
+      "description": "aac only when there is no family to call."
+    },
+    "aac_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "places.json id of the senior's own AAC"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "medicines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dose_text": {
+            "type": "string",
+            "description": "As on the label. CareLoop never changes it."
+          },
+          "schedule": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "morning",
+                "noon",
+                "evening",
+                "night"
+              ]
+            }
+          },
+          "started": {
+            "type": "string",
+            "format": "date"
+          },
+          "for_bp": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "dose_text",
+          "schedule",
+          "started",
+          "for_bp"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "likes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "usual_checkin_time": {
+      "type": "string",
+      "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+    },
+    "consent": {
+      "type": "object",
+      "properties": {
+        "family_sees": {
+          "type": "string",
+          "enum": [
+            "nothing",
+            "digest",
+            "readings"
+          ],
+          "description": "What the family sees. Red flags are always shared; the senior is told so at setup."
+        },
+        "share_words": {
+          "type": "boolean",
+          "description": "Family may see the senior's own words from check-ins."
+        },
+        "share_activity": {
+          "type": "boolean",
+          "description": "Steps and activity feed the digest."
+        }
+      },
+      "required": [
+        "family_sees",
+        "share_words",
+        "share_activity"
+      ],
+      "additionalProperties": false
+    },
+    "hidden_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "place ids the senior said 'not for me' to"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "language",
+    "home_postal",
+    "region",
+    "path",
+    "aac_id",
+    "conditions",
+    "medicines",
+    "likes",
+    "usual_checkin_time",
+    "consent",
+    "hidden_suggestions"
+  ],
+  "additionalProperties": false
+}

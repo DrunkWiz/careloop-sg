@@ -74,6 +74,8 @@ class Rules(unittest.TestCase):
             "Go outside lah, wear mask can already.",
             "戴口罩出去散步吧。",
             "去公园走走。",
+            "Wear a mask and go for your walk lah!",
+            "N95 can already, still can go market.",
         ], context={"psi": 140})
 
     def test_haze_stay_in_is_fine(self):

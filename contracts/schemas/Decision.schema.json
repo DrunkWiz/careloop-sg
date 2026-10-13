@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Decision.schema.json",
+  "title": "Decision",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "rung": {
+      "type": "string",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "R"
+      ]
+    },
+    "rule_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Plain English: 'no action, because ...' on rung 0"
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Every number the rule used: baseline, 7-day mean, days over, PSI, rain, ..."
+    },
+    "audience": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "senior",
+          "family",
+          "aac"
+        ]
+      }
+    },
+    "message_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "handover_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "date",
+    "rung",
+    "rule_id",
+    "reason",
+    "inputs",
+    "audience",
+    "message_ids",
+    "handover_id",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

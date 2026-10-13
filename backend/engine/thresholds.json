@@ -1,0 +1,72 @@
+{
+  "_status": "PLACEHOLDER: red-flag floors are from memory until the medical student signs off (by Thu) and they are sourced to MOH/HPB guidance. Everything else is a starting value, tuned on the tuning set only.",
+
+  "red_flag": {
+    "_status": "PLACEHOLDER",
+    "systolic_at_or_above": 180,
+    "diastolic_at_or_above": 120,
+    "low_systolic_below": 90,
+    "low_systolic_needs_symptom": ["dizziness", "fainting"],
+    "symptoms": ["chest_pain", "face_droop", "slurred_speech", "one_sided_weakness", "fainting"]
+  },
+
+  "trust": {
+    "systolic_range": [60, 280],
+    "diastolic_range": [30, 160],
+    "heart_rate_range": [25, 220],
+    "steps_max": 60000,
+    "glucose_mmol_range": [1.0, 35.0],
+    "glucose_mgdl_range": [18, 630]
+  },
+
+  "baseline": {
+    "window_days": 30,
+    "recent_days": 7,
+    "min_days": 7,
+    "fallback_bp": { "systolic": 135, "diastolic": 85, "_status": "PLACEHOLDER: used only before 7 days of history" }
+  },
+
+  "ask": {
+    "odd_reading_above_baseline": 20,
+    "odd_reading_systolic": 160
+  },
+
+  "suggest": {
+    "missed_same_weekday": 2,
+    "missed_pattern_days": 21
+  },
+
+  "note": {
+    "mild_drift_above_baseline": 5,
+    "mild_days_over": 2
+  },
+
+  "hand_over": {
+    "drift_above_baseline": 10,
+    "drift_systolic_over": 140,
+    "drift_days_over": 4,
+    "drift_min_reading_days": 4,
+    "missed_bp_medicine_days": 3,
+    "missed_window_days": 7,
+    "unwell_consecutive_days": 3,
+    "no_contact_days": 3,
+    "same_kind_cooldown_days": 14
+  },
+
+  "activity": {
+    "low_movement_fraction": 0.5,
+    "concern_days_per_week": 3,
+    "weeks_to_hand_over": 2,
+    "rain_mm": 5.0,
+    "haze_psi_above": 100
+  },
+
+  "haze": {
+    "_source": "MOH haze advisory, updated 12 Oct 2026 (see main brief). CareLoop repeats it; the model never improvises haze advice.",
+    "family_told_psi_above": 300
+  },
+
+  "new_prescription_days": 14,
+  "festival_window_days": 3,
+  "aac_non_urgent_per_week": 1
+}

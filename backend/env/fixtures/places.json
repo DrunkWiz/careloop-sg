@@ -1,0 +1,2361 @@
+{
+ "meta": {
+  "source": {
+   "aac": "data.gov.sg Eldercare Services (MOH), d_f0fd1b3643ed8bd34bd403dedd7c1533",
+   "cc": "data.gov.sg Community Club / PAssion WaVe Outlet (PA), d_9de02d3fb33d96da1855f4fbef549a0f"
+  },
+  "fetched": "2026-10-13",
+  "note": "kind=aac: names matching Senior Activity Centre / SAC / Silver ACE / Active Ageing (old SAC names are now AACs). eldercare_other: homes, group homes, cluster offices; never suggested."
+ },
+ "places": [
+  {
+   "id": "aac-000",
+   "kind": "aac",
+   "name": "Yuhua Senior Activity Centre",
+   "postal": "601318",
+   "address": "318A Jurong East Avenue 1 #02-308",
+   "lat": 1.347624,
+   "lon": 103.731009
+  },
+  {
+   "id": "aac-001",
+   "kind": "aac",
+   "name": "THK SAC @ Kaki Bukit",
+   "postal": "462509",
+   "address": "Blk 509B Bedok North Street 3 #02-157",
+   "lat": 1.333693,
+   "lon": 103.930397
+  },
+  {
+   "id": "aac-002",
+   "kind": "aac",
+   "name": "THK SAC @ Boon Lay",
+   "postal": "640190",
+   "address": "Blk 190 Boon Lay Drive #01-242",
+   "lat": 1.345077,
+   "lon": 103.71185
+  },
+  {
+   "id": "aac-003",
+   "kind": "aac",
+   "name": "PEACE-Connect Senior Activity Centre@5",
+   "postal": "190005",
+   "address": "5 Beach Rd #02-4943",
+   "lat": 1.304346,
+   "lon": 103.864816
+  },
+  {
+   "id": "aac-004",
+   "kind": "aac",
+   "name": "THK SAC @ Beo Crescent",
+   "postal": "160044",
+   "address": "Blk 44 Beo Crescent #01-67",
+   "lat": 1.288809,
+   "lon": 103.826295
+  },
+  {
+   "id": "aac-005",
+   "kind": "aac",
+   "name": "Silver ACE @ Bukit Merah",
+   "postal": "160117",
+   "address": "Blk 117 Jalan Bukit Merah #01-1683",
+   "lat": 1.281707,
+   "lon": 103.82684
+  },
+  {
+   "id": "aac-006",
+   "kind": "aac",
+   "name": "Lions Befrienders Senior Activity Centre @ Tampines Blk 499C",
+   "postal": "523499",
+   "address": "499C Tampines Ave 9 #01-256",
+   "lat": 1.35954,
+   "lon": 103.956109
+  },
+  {
+   "id": "aac-007",
+   "kind": "aac",
+   "name": "Care Corner Senior Activity Centre (WL569)",
+   "postal": "731569",
+   "address": "569A Champion Way #01-346",
+   "lat": 1.430122,
+   "lon": 103.789718
+  },
+  {
+   "id": "aac-008",
+   "kind": "aac",
+   "name": "Fei Yue Senior Activity Centre (Bukit Batok Branch)",
+   "postal": "651210",
+   "address": "210A Bukit Batok St 21 #01-294",
+   "lat": 1.345428,
+   "lon": 103.750836
+  },
+  {
+   "id": "aac-009",
+   "kind": "aac",
+   "name": "COMNET Senior Activity Centre @ 182 Rivervale Crescent",
+   "postal": "540182",
+   "address": "Blk 182 Rivervale Crescent #01-311",
+   "lat": 1.390471,
+   "lon": 103.909216
+  },
+  {
+   "id": "aac-010",
+   "kind": "eldercare_other",
+   "name": "Abdullah Shooker Jewish Welfare Home",
+   "postal": "228080",
+   "address": "81 Wilkie Road",
+   "lat": 1.302877,
+   "lon": 103.847199
+  },
+  {
+   "id": "aac-011",
+   "kind": "eldercare_other",
+   "name": "Adventist Home For The Elders",
+   "postal": "310195",
+   "address": "Blk 195 Kim Keat Ave # 01-294",
+   "lat": 1.330081,
+   "lon": 103.858355
+  },
+  {
+   "id": "aac-012",
+   "kind": "eldercare_other",
+   "name": "AWWA Community Home for Senior Citizens",
+   "postal": "560123",
+   "address": "123 Ang Mo Kio Ave 6 #02-4035",
+   "lat": 1.370511,
+   "lon": 103.844652
+  },
+  {
+   "id": "aac-013",
+   "kind": "eldercare_other",
+   "name": "Bo Tien Home For The Aged",
+   "postal": "619708",
+   "address": "No. 6 Fourth Chin Bee Road  Singapore 619708",
+   "lat": 1.331312,
+   "lon": 103.7189
+  },
+  {
+   "id": "aac-014",
+   "kind": "eldercare_other",
+   "name": "Evergreen Place, Home @Hong San",
+   "postal": "688246",
+   "address": "30 Hong San Terrace",
+   "lat": 1.378026,
+   "lon": 103.745467
+  },
+  {
+   "id": "aac-015",
+   "kind": "eldercare_other",
+   "name": "Geylang East Home For The Aged",
+   "postal": "380097",
+   "address": "97 Aljunied Crescent #01-439",
+   "lat": 1.321297,
+   "lon": 103.885668
+  },
+  {
+   "id": "aac-016",
+   "kind": "eldercare_other",
+   "name": "Henderson Senior Citizens' Home",
+   "postal": "151117",
+   "address": "Blk 117 Bukit Merah View #01-205",
+   "lat": 1.284348,
+   "lon": 103.821773
+  },
+  {
+   "id": "aac-017",
+   "kind": "eldercare_other",
+   "name": "Kheng Chiu Loke Tin Kee Home",
+   "postal": "529681",
+   "address": "70 Tampines Ave 4 Kheng Chiu Happy Lodge",
+   "lat": 1.356323,
+   "lon": 103.946664
+  },
+  {
+   "id": "aac-018",
+   "kind": "eldercare_other",
+   "name": "PERTAPIS Senior Citizens Fellowship Home",
+   "postal": "310222",
+   "address": "222 Lorong 8 Toa Payoh #01-707/711",
+   "lat": 1.341773,
+   "lon": 103.85604
+  },
+  {
+   "id": "aac-019",
+   "kind": "eldercare_other",
+   "name": "SBWS Happy Villa (Females)",
+   "postal": "082001",
+   "address": "Blk1 Tanjong Pagar Plaza Tanjong Pagar Road #03-50",
+   "lat": 1.275596,
+   "lon": 103.842393
+  },
+  {
+   "id": "aac-020",
+   "kind": "eldercare_other",
+   "name": "Singapore Baptist Convention Golden Age Home",
+   "postal": "330064",
+   "address": "Blk 64 Kallang Bahru #01-389/393",
+   "lat": 1.320369,
+   "lon": 103.868341
+  },
+  {
+   "id": "aac-021",
+   "kind": "eldercare_other",
+   "name": "St Andrew's Cathedral Home For The Aged",
+   "postal": "120341",
+   "address": "Blk 341 Clementi Ave 5 #01-148",
+   "lat": 1.319169,
+   "lon": 103.769054
+  },
+  {
+   "id": "aac-022",
+   "kind": "eldercare_other",
+   "name": "St John's Home for the Aged",
+   "postal": "347601",
+   "address": "69 Wan Tho Avenue",
+   "lat": 1.333065,
+   "lon": 103.873606
+  },
+  {
+   "id": "aac-023",
+   "kind": "eldercare_other",
+   "name": "St Vincent Home",
+   "postal": "180263",
+   "address": "Blk 263 Waterloo Street  #05-01",
+   "lat": 1.298609,
+   "lon": 103.852267
+  },
+  {
+   "id": "aac-024",
+   "kind": "eldercare_other",
+   "name": "Zion Home For The Aged",
+   "postal": "460419",
+   "address": "Blk 419 Bedok North St 1 #01-200",
+   "lat": 1.32698,
+   "lon": 103.928131
+  },
+  {
+   "id": "aac-025",
+   "kind": "eldercare_other",
+   "name": "NTUC Health Cluster Support @ Taman Jurong",
+   "postal": "610361",
+   "address": "361 YUNG AN ROAD #01-111",
+   "lat": 1.335804,
+   "lon": 103.720314
+  },
+  {
+   "id": "aac-026",
+   "kind": "eldercare_other",
+   "name": "NTUC Health Cluster Support @ Bt Merah",
+   "postal": "151121",
+   "address": "121 Bt Merah View #01-96",
+   "lat": 1.283085,
+   "lon": 103.822804
+  },
+  {
+   "id": "aac-027",
+   "kind": "eldercare_other",
+   "name": "THK Cluster Support @ Bedok",
+   "postal": "460013",
+   "address": "13 Bedok South Rd #01-625",
+   "lat": 1.320405,
+   "lon": 103.936741
+  },
+  {
+   "id": "aac-028",
+   "kind": "eldercare_other",
+   "name": "Peace-Connect Cluster Operator",
+   "postal": "190005",
+   "address": "5 Beach Rd #02-4915",
+   "lat": 1.304346,
+   "lon": 103.864816
+  },
+  {
+   "id": "aac-029",
+   "kind": "eldercare_other",
+   "name": "THK Cluster Support @ Pipit",
+   "postal": "370093",
+   "address": "93 Paya Lebar Way",
+   "lat": 1.322735,
+   "lon": 103.888103
+  },
+  {
+   "id": "aac-030",
+   "kind": "eldercare_other",
+   "name": "THK Cluster Support @ AMK",
+   "postal": "560650",
+   "address": "650 ANG MO KIO STREET 61 #01-09",
+   "lat": 1.377691,
+   "lon": 103.842745
+  },
+  {
+   "id": "aac-031",
+   "kind": "eldercare_other",
+   "name": "AMKFSC Cluster Support",
+   "postal": "560469",
+   "address": "Blk 469 Ang Mo Kio Avenue 10 #01-940",
+   "lat": 1.36452,
+   "lon": 103.856632
+  },
+  {
+   "id": "aac-032",
+   "kind": "eldercare_other",
+   "name": "Carecorner Cluster Suppport",
+   "postal": "312062",
+   "address": "62B Lorong 4 Toa Payoh #02-121",
+   "lat": 1.33584,
+   "lon": 103.851278
+  },
+  {
+   "id": "aac-033",
+   "kind": "eldercare_other",
+   "name": "SACS Cluster Support@Jurong East",
+   "postal": "600374",
+   "address": "374 Jurong East St 32",
+   "lat": 1.349612,
+   "lon": 103.732548
+  },
+  {
+   "id": "aac-034",
+   "kind": "eldercare_other",
+   "name": "THK Senior Group Home @ AMK257",
+   "postal": "560257",
+   "address": "Blk 257 Ang Mo Kio Ave 4",
+   "lat": 1.37017,
+   "lon": 103.835782
+  },
+  {
+   "id": "aac-035",
+   "kind": "eldercare_other",
+   "name": "THK Senior Group Home @ Indus",
+   "postal": "161079",
+   "address": "Blk 79 Indus Rd",
+   "lat": 1.291075,
+   "lon": 103.82869
+  },
+  {
+   "id": "aac-036",
+   "kind": "eldercare_other",
+   "name": "PEACE-Connect Senior Group Home@8",
+   "postal": "190008",
+   "address": "Blk 8 North Bridge Rd",
+   "lat": 1.304586,
+   "lon": 103.864004
+  },
+  {
+   "id": "aac-037",
+   "kind": "eldercare_other",
+   "name": "TOUCH Senior Group Home@Geylang Bahru",
+   "postal": "330061",
+   "address": "Blk 62 Geylang Bahru",
+   "lat": 1.322311,
+   "lon": 103.869263
+  },
+  {
+   "id": "aac-038",
+   "kind": "eldercare_other",
+   "name": "Lions Befrienders Senior Group Home (Mei Ling)",
+   "postal": "140151",
+   "address": "Blk 151 Mei Ling St",
+   "lat": 1.294571,
+   "lon": 103.803042
+  },
+  {
+   "id": "aac-039",
+   "kind": "eldercare_other",
+   "name": "Care Corner SGH @ WL569A",
+   "postal": "731569",
+   "address": "Blk 569A Champions Way",
+   "lat": 1.430122,
+   "lon": 103.789718
+  },
+  {
+   "id": "aac-040",
+   "kind": "eldercare_other",
+   "name": "SACS Senior Group Home @ 373 JE",
+   "postal": "600373",
+   "address": "Blk 373 Jurong East St 32",
+   "lat": 1.349349,
+   "lon": 103.732356
+  },
+  {
+   "id": "aac-041",
+   "kind": "eldercare_other",
+   "name": "Fei Yue Senior Group Home @ Hougang",
+   "postal": "533174",
+   "address": "Blk 174C Hougang Ave 1",
+   "lat": 1.349122,
+   "lon": 103.889093
+  },
+  {
+   "id": "aac-042",
+   "kind": "eldercare_other",
+   "name": "COMNET Senior Group Home @ Rivervale Crescent",
+   "postal": "540182",
+   "address": "Blk 182 Rivervale Crescent",
+   "lat": 1.390471,
+   "lon": 103.909216
+  },
+  {
+   "id": "aac-043",
+   "kind": "eldercare_other",
+   "name": "Lions Befrienders Senior Group Home @ Tampines 499C",
+   "postal": "523499",
+   "address": "Blk 499C Tampines Ave 9",
+   "lat": 1.35954,
+   "lon": 103.956109
+  },
+  {
+   "id": "aac-044",
+   "kind": "eldercare_other",
+   "name": "Fei Yue Senior Group Home @ Teck Whye Crescent",
+   "postal": "681165",
+   "address": "Blk 165A Teck Whye Crescent",
+   "lat": 1.382737,
+   "lon": 103.753517
+  },
+  {
+   "id": "aac-045",
+   "kind": "eldercare_other",
+   "name": "Care Corner SGH @ WL180C",
+   "postal": "733180",
+   "address": "Blk 180C Marsiling Rd",
+   "lat": 1.439561,
+   "lon": 103.778588
+  },
+  {
+   "id": "aac-046",
+   "kind": "eldercare_other",
+   "name": "THK Senior Group Home @ Pipit Road",
+   "postal": "370094",
+   "address": "94 Pipit Road",
+   "lat": 1.323195,
+   "lon": 103.888457
+  },
+  {
+   "id": "aac-047",
+   "kind": "eldercare_other",
+   "name": "NTUC Health Senior Group Home @ Henderson",
+   "postal": "151117",
+   "address": "117 Bukit Merah View",
+   "lat": 1.284348,
+   "lon": 103.821773
+  },
+  {
+   "id": "aac-048",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "572152",
+   "address": "Blk 152B Bishan St 11, #01-271",
+   "lat": 1.345316,
+   "lon": 103.853985
+  },
+  {
+   "id": "aac-049",
+   "kind": "eldercare_other",
+   "name": "Thye Hua Kwan Moral Charities Limited",
+   "postal": "610337",
+   "address": "Blk 337 Tah Ching Rd, #01-01",
+   "lat": 1.338182,
+   "lon": 103.722603
+  },
+  {
+   "id": "aac-050",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "141061",
+   "address": "Blk 61 Strathmore Avenue, #01-02",
+   "lat": 1.293998,
+   "lon": 103.810979
+  },
+  {
+   "id": "aac-051",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "731572",
+   "address": "Blk 572A Woodlands Ave 1",
+   "lat": 1.430867,
+   "lon": 103.789555
+  },
+  {
+   "id": "aac-052",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "161051",
+   "address": "Blk 51 Havelock Road",
+   "lat": 1.289946,
+   "lon": 103.82768
+  },
+  {
+   "id": "aac-053",
+   "kind": "eldercare_other",
+   "name": "Thye Hua Kwan Moral Charities Limited",
+   "postal": "102080",
+   "address": "Blk 80B Telok Blangah Street 31",
+   "lat": 1.273477,
+   "lon": 103.80681
+  },
+  {
+   "id": "aac-054",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "730887",
+   "address": "Blk 887 Woodlands Drive 50",
+   "lat": 1.437553,
+   "lon": 103.794698
+  },
+  {
+   "id": "aac-055",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "680574",
+   "address": "Blk 574 Choa Chu Kang Street 52",
+   "lat": 1.394415,
+   "lon": 103.745143
+  },
+  {
+   "id": "aac-056",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "521117",
+   "address": "Blk 117 Tampines Street 11",
+   "lat": 1.345236,
+   "lon": 103.946198
+  },
+  {
+   "id": "aac-057",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "541327",
+   "address": "Blk 327A Anchorvale Road",
+   "lat": 1.395256,
+   "lon": 103.888613
+  },
+  {
+   "id": "aac-058",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "821264",
+   "address": "Blk 264A Punggol Way",
+   "lat": 1.405977,
+   "lon": 103.898544
+  },
+  {
+   "id": "aac-059",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "762317",
+   "address": "Blk 317B Yishun Ave 9",
+   "lat": 1.434169,
+   "lon": 103.84295
+  },
+  {
+   "id": "aac-060",
+   "kind": "eldercare_other",
+   "name": "Econ Health and Wellness Centre",
+   "postal": "651230",
+   "address": "Blk 230A Bukit Batok Street 21",
+   "lat": 1.347552,
+   "lon": 103.755783
+  },
+  {
+   "id": "aac-061",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "762333",
+   "address": "Blk 333B Yishun St 31, #01-183",
+   "lat": 1.431958,
+   "lon": 103.845379
+  },
+  {
+   "id": "aac-062",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "822211",
+   "address": "Blk 211B Punggol Walk",
+   "lat": 1.40117,
+   "lon": 103.899921
+  },
+  {
+   "id": "aac-063",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "523868",
+   "address": "Blks 868B, 868C Tampines Ave 8",
+   "lat": 1.355858,
+   "lon": 103.933334
+  },
+  {
+   "id": "aac-064",
+   "kind": "eldercare_other",
+   "name": "NTUC Eldercare Co-operative Ltd",
+   "postal": "731180",
+   "address": "Blks 180A Marsiling Road #01-2208",
+   "lat": 1.439056,
+   "lon": 103.778145
+  },
+  {
+   "id": "aac-065",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "543279",
+   "address": "Blk 279C Sengkang East Avenue",
+   "lat": 1.385729,
+   "lon": 103.892595
+  },
+  {
+   "id": "aac-066",
+   "kind": "eldercare_other",
+   "name": "Pacific Activity Centres Pte Ltd",
+   "postal": "164010",
+   "address": "Blk 10B Boon Tiong Road",
+   "lat": 1.286337,
+   "lon": 103.829205
+  },
+  {
+   "id": "aac-067",
+   "kind": "eldercare_other",
+   "name": "Adventist Home for the Elders",
+   "postal": "641530",
+   "address": "Blk 530A Jurong West Avenue 1",
+   "lat": 1.347936,
+   "lon": 103.715691
+  },
+  {
+   "id": "aac-068",
+   "kind": "eldercare_other",
+   "name": "Adventist Home for the Elders",
+   "postal": "310196",
+   "address": "Blk 196 Kim Keat Avenue",
+   "lat": 1.331305,
+   "lon": 103.859019
+  },
+  {
+   "id": "aac-069",
+   "kind": "eldercare_other",
+   "name": "Methodist Welfare Services",
+   "postal": "791473",
+   "address": "Blk 473A Fernvale Street",
+   "lat": 1.39786,
+   "lon": 103.881233
+  },
+  {
+   "id": "aac-070",
+   "kind": "eldercare_other",
+   "name": "Presbyterian Community Services",
+   "postal": "590021",
+   "address": "Blk 21 Toh Yi Drive",
+   "lat": 1.338132,
+   "lon": 103.771986
+  },
+  {
+   "id": "aac-071",
+   "kind": "eldercare_other",
+   "name": "Singapore Anglican Community Services",
+   "postal": "761426",
+   "address": "Blk 426A Yishun Ave 11",
+   "lat": 1.423081,
+   "lon": 103.846419
+  },
+  {
+   "id": "aac-072",
+   "kind": "eldercare_other",
+   "name": "Singapore Anglican Community Services",
+   "postal": "640499",
+   "address": "Blk 499 Jurong West Street 41",
+   "lat": 1.348639,
+   "lon": 103.725087
+  },
+  {
+   "id": "aac-073",
+   "kind": "eldercare_other",
+   "name": "Unicare Services Pte Ltd",
+   "postal": "683476",
+   "address": "Blk 476C Choa Chu Kang Ave 5",
+   "lat": 1.377347,
+   "lon": 103.737913
+  },
+  {
+   "id": "aac-074",
+   "kind": "aac",
+   "name": "AWWA Senior Activity Centre",
+   "postal": "560123",
+   "address": "Blk 123 Ang Mo Kio Avenue 6 #01-4011",
+   "lat": 1.370511,
+   "lon": 103.844652
+  },
+  {
+   "id": "aac-075",
+   "kind": "aac",
+   "name": "THK Bedok Radiance Senior Activity Centre",
+   "postal": "460012",
+   "address": "12 Bedok South Avenue 2 #01-610",
+   "lat": 1.321103,
+   "lon": 103.9369
+  },
+  {
+   "id": "aac-076",
+   "kind": "aac",
+   "name": "Care Corner Senior Activity Centre (TP5)",
+   "postal": "310005",
+   "address": "Blk 5 Lorong 7 Toa Payoh #01-131",
+   "lat": 1.33866,
+   "lon": 103.855806
+  },
+  {
+   "id": "aac-077",
+   "kind": "aac",
+   "name": "Care Corner Senior Activity Centre (TP149)",
+   "postal": "310149",
+   "address": "Blk 149 Lorong 1 Toa Payoh #01-963",
+   "lat": 1.333785,
+   "lon": 103.843761
+  },
+  {
+   "id": "aac-078",
+   "kind": "aac",
+   "name": "Care Corner Senior Activity Centre (TP170)",
+   "postal": "310170",
+   "address": "170 Lorong 1 Toa Payoh #01-1102",
+   "lat": 1.331319,
+   "lon": 103.842669
+  },
+  {
+   "id": "aac-079",
+   "kind": "aac",
+   "name": "Care Corner Senior Activity Centre (TP62B)",
+   "postal": "312062",
+   "address": "62B Lorong 4 Toa Payoh #02-121",
+   "lat": 1.33584,
+   "lon": 103.851278
+  },
+  {
+   "id": "aac-080",
+   "kind": "aac",
+   "name": "CARElderly Senior Activity Centre",
+   "postal": "370035",
+   "address": "35 Circuit Rd #01-432",
+   "lat": 1.329159,
+   "lon": 103.88601
+  },
+  {
+   "id": "aac-081",
+   "kind": "aac",
+   "name": "CARElderly Senior Activity Centre (Merpati)",
+   "postal": "370012",
+   "address": "12 Merpati Road #01-127",
+   "lat": 1.327731,
+   "lon": 103.884362
+  },
+  {
+   "id": "aac-082",
+   "kind": "aac",
+   "name": "COMNET @ Teck Ghee Senior Activity Centre",
+   "postal": "560420",
+   "address": "420 Ang Mo Kio Avenue 10 #01-1143",
+   "lat": 1.364999,
+   "lon": 103.853112
+  },
+  {
+   "id": "aac-083",
+   "kind": "aac",
+   "name": "Teck Ghee Senior Activity Centre Branch @ Blk 469",
+   "postal": "560469",
+   "address": "Blk 469 Ang Mo Kio Avenue 10 #01-940",
+   "lat": 1.36452,
+   "lon": 103.856632
+  },
+  {
+   "id": "aac-084",
+   "kind": "aac",
+   "name": "Chong Hua Tong Senior Activity Centre",
+   "postal": "210047",
+   "address": "47 Owen Rd #01-251",
+   "lat": 1.314845,
+   "lon": 103.850118
+  },
+  {
+   "id": "aac-085",
+   "kind": "aac",
+   "name": "COMNET@Sin Ming Senior Activity Centre",
+   "postal": "570026",
+   "address": "26 Sin Ming Industrial Est Sector A #01-158",
+   "lat": 1.355801,
+   "lon": 103.840546
+  },
+  {
+   "id": "aac-086",
+   "kind": "aac",
+   "name": "Fei Yue Senior Activity Centre (Holland Close)",
+   "postal": "271001",
+   "address": "1 Holland Close #02-115",
+   "lat": 1.309219,
+   "lon": 103.796732
+  },
+  {
+   "id": "aac-087",
+   "kind": "aac",
+   "name": "Fei Yue SAC (Commonwealth Branch)",
+   "postal": "140107",
+   "address": "Blk 107 Commonwealth Crescent #01-230",
+   "lat": 1.307862,
+   "lon": 103.799312
+  },
+  {
+   "id": "aac-088",
+   "kind": "aac",
+   "name": "Fei Yue Senior Activity Centre (Teck Whye)",
+   "postal": "680009",
+   "address": "9 Teck Whye Lane #01-268",
+   "lat": 1.380035,
+   "lon": 103.754146
+  },
+  {
+   "id": "aac-089",
+   "kind": "eldercare_other",
+   "name": "Goodlife!",
+   "postal": "440015",
+   "address": "15 Marine Terrace #01-18",
+   "lat": 1.304884,
+   "lon": 103.91394
+  },
+  {
+   "id": "aac-090",
+   "kind": "eldercare_other",
+   "name": "Harmony Activity Centre",
+   "postal": "380098",
+   "address": "98 Aljunied Crescent #01-411",
+   "lat": 1.320865,
+   "lon": 103.885697
+  },
+  {
+   "id": "aac-091",
+   "kind": "aac",
+   "name": "Henderson Senior Activity Centre",
+   "postal": "151117",
+   "address": "Blk 117 Bukit Merah View #01-205",
+   "lat": 1.284348,
+   "lon": 103.821773
+  },
+  {
+   "id": "aac-092",
+   "kind": "eldercare_other",
+   "name": "Indus Moral CARE",
+   "postal": "161079",
+   "address": "79 Indus Rd #01-451",
+   "lat": 1.291075,
+   "lon": 103.82869
+  },
+  {
+   "id": "aac-093",
+   "kind": "aac",
+   "name": "Jia Ying Senior Activity Centre",
+   "postal": "530019",
+   "address": "Blk 19 Hougang Avenue 3 #01-187",
+   "lat": 1.36379,
+   "lon": 103.891813
+  },
+  {
+   "id": "aac-094",
+   "kind": "aac",
+   "name": "Jia Ying Senior Activity Centre @ 25 (Branch)",
+   "postal": "530025",
+   "address": "Blk 25 Hougang Avenue 3 #01-442",
+   "lat": 1.365826,
+   "lon": 103.891706
+  },
+  {
+   "id": "aac-095",
+   "kind": "aac",
+   "name": "Kembangan- Chai Chee Senior Activity Centre",
+   "postal": "461022",
+   "address": "22 Chai Chee Rd #01-538 & #01-508",
+   "lat": 1.325242,
+   "lon": 103.921811
+  },
+  {
+   "id": "aac-096",
+   "kind": "aac",
+   "name": "King George’s Ave Senior Activity Centre",
+   "postal": "200811",
+   "address": "811 French Rd #01-112 & #01-102",
+   "lat": 1.307754,
+   "lon": 103.861291
+  },
+  {
+   "id": "aac-097",
+   "kind": "aac",
+   "name": "Kreta Ayer Senior Activity Centre (Banda)",
+   "postal": "050005",
+   "address": "5 Banda St #03-68",
+   "lat": 1.281176,
+   "lon": 103.843411
+  },
+  {
+   "id": "aac-098",
+   "kind": "aac",
+   "name": "Kreta Ayer Senior Activity Centre (Jalan Kukoh)",
+   "postal": "162008",
+   "address": "8 Jalan Kukoh #04-35 & Blk 9 Jalan Kukoh #04-83",
+   "lat": 1.287378,
+   "lon": 103.839407
+  },
+  {
+   "id": "aac-099",
+   "kind": "aac",
+   "name": "Kreta Ayer Senior Activity Centre (Chin Swee)",
+   "postal": "160051",
+   "address": "Blk 51 Chin Swee Rd #04-83",
+   "lat": 1.287403,
+   "lon": 103.84203
+  },
+  {
+   "id": "aac-100",
+   "kind": "aac",
+   "name": "Lions Befrienders (Ang Mo Kio 318) Senior Activity Centre",
+   "postal": "560318",
+   "address": "318 Ang Mo Kio Avenue 1 #01-1453",
+   "lat": 1.36556,
+   "lon": 103.847648
+  },
+  {
+   "id": "aac-101",
+   "kind": "aac",
+   "name": "Lions Befrienders (Bendemeer) Senior Activity Centre",
+   "postal": "330032",
+   "address": "32 Bendemeer Rd #01-799",
+   "lat": 1.319817,
+   "lon": 103.863376
+  },
+  {
+   "id": "aac-102",
+   "kind": "aac",
+   "name": "Lions Befrienders (Clementi) Senior Activity Centre",
+   "postal": "121420",
+   "address": "Blk 420A Clementi Avenue 1 #02-03",
+   "lat": 1.309791,
+   "lon": 103.768658
+  },
+  {
+   "id": "aac-103",
+   "kind": "aac",
+   "name": "Lions Befrienders (Ghim Moh) Senior Activity Centre",
+   "postal": "270018",
+   "address": "Blk 18 Ghim Moh Rd #01-115",
+   "lat": 1.310151,
+   "lon": 103.787082
+  },
+  {
+   "id": "aac-104",
+   "kind": "aac",
+   "name": "Lions Befrienders (Mei Ling) Senior Activity Centre",
+   "postal": "141150",
+   "address": "150 Mei Ling St #01-53(179sqm) & Block 151 #01-01 (146sqm)",
+   "lat": 1.294903,
+   "lon": 103.803699
+  },
+  {
+   "id": "aac-105",
+   "kind": "aac",
+   "name": "Lions Befrienders (Tampines) Senior Activity Centre",
+   "postal": "520434",
+   "address": "Blk 434 Tampines Street 43 #01-77",
+   "lat": 1.359242,
+   "lon": 103.951613
+  },
+  {
+   "id": "aac-106",
+   "kind": "aac",
+   "name": "Moral Senior Activity Centre (Kaki Bukit)",
+   "postal": "460544",
+   "address": "Blk 544 Bedok North Street 3 #01-1340",
+   "lat": 1.330546,
+   "lon": 103.924247
+  },
+  {
+   "id": "aac-107",
+   "kind": "aac",
+   "name": "PEACE-Connect Senior Activity Centre@8",
+   "postal": "190008",
+   "address": "8 North Bridge Rd #01-4102",
+   "lat": 1.304586,
+   "lon": 103.864004
+  },
+  {
+   "id": "aac-108",
+   "kind": "aac",
+   "name": "Sarah Senior Activity Centre",
+   "postal": "160105",
+   "address": "Blk 105 Jalan Bukit Merah #01-1912",
+   "lat": 1.280632,
+   "lon": 103.824935
+  },
+  {
+   "id": "aac-109",
+   "kind": "aac",
+   "name": "Redhill Moral Senior Activity Centre",
+   "postal": "150089",
+   "address": "Blk 89 Redhill Close #01-448",
+   "lat": 1.285435,
+   "lon": 103.818783
+  },
+  {
+   "id": "aac-110",
+   "kind": "eldercare_other",
+   "name": "Silver Ace @ Taman Jurong",
+   "postal": "611118",
+   "address": "Blk 118A Corporation Drive #01-555",
+   "lat": 1.335581,
+   "lon": 103.723318
+  },
+  {
+   "id": "aac-111",
+   "kind": "eldercare_other",
+   "name": "Silver Ace@Lengkok Bahru",
+   "postal": "151057",
+   "address": "Blk 57 Lengkok Bahru #01-491",
+   "lat": 1.288211,
+   "lon": 103.814148
+  },
+  {
+   "id": "aac-112",
+   "kind": "eldercare_other",
+   "name": "Silver Ace@Redhill",
+   "postal": "150071",
+   "address": "71 Redhill Rd #01-29",
+   "lat": 1.287319,
+   "lon": 103.817476
+  },
+  {
+   "id": "aac-113",
+   "kind": "eldercare_other",
+   "name": "Silver Ace@Telok Blangah",
+   "postal": "090041",
+   "address": "Blk 41 Telok Blangah Rise #01-373",
+   "lat": 1.271472,
+   "lon": 103.822992
+  },
+  {
+   "id": "aac-114",
+   "kind": "eldercare_other",
+   "name": "Silver Ace@Whampoa",
+   "postal": "320022",
+   "address": "22 Jalan Tenteram #01-555",
+   "lat": 1.32641,
+   "lon": 103.859555
+  },
+  {
+   "id": "aac-115",
+   "kind": "aac",
+   "name": "Sunlove Senior Activity Centre (Chai Chee)",
+   "postal": "461031",
+   "address": "Blk 31 Chai Chee Ave #01-150",
+   "lat": 1.324201,
+   "lon": 103.924879
+  },
+  {
+   "id": "aac-116",
+   "kind": "aac",
+   "name": "Sunlove Senior Activity Centre (Marsiling)",
+   "postal": "730003",
+   "address": "3 Marsiling Rd #01-5137",
+   "lat": 1.439408,
+   "lon": 103.776452
+  },
+  {
+   "id": "aac-117",
+   "kind": "aac",
+   "name": "Tembusu Senior Activity Centre",
+   "postal": "401031",
+   "address": "31A Eunos Crescent #06-01",
+   "lat": 1.320034,
+   "lon": 103.901616
+  },
+  {
+   "id": "aac-118",
+   "kind": "aac",
+   "name": "THK SAC @ AMK 257",
+   "postal": "560257",
+   "address": "Blk 257 Ang Mo Kio Avenue 4 #01-67",
+   "lat": 1.37017,
+   "lon": 103.835782
+  },
+  {
+   "id": "aac-119",
+   "kind": "aac",
+   "name": "THK SAC @ AMK 645",
+   "postal": "560645",
+   "address": "Blk 645 Ang Mo Kio Avenue 6 #01-4937",
+   "lat": 1.379285,
+   "lon": 103.842232
+  },
+  {
+   "id": "aac-120",
+   "kind": "aac",
+   "name": "THK SAC @ Toa Payoh 15",
+   "postal": "310015",
+   "address": "Blk 15 Lorong 7 Toa Payoh #01-579",
+   "lat": 1.335922,
+   "lon": 103.859058
+  },
+  {
+   "id": "aac-121",
+   "kind": "aac",
+   "name": "THK SAC @ Bukit Merah",
+   "postal": "150118",
+   "address": "118 Bukit Merah View #02-101",
+   "lat": 1.284057,
+   "lon": 103.821065
+  },
+  {
+   "id": "aac-122",
+   "kind": "aac",
+   "name": "THK SAC @ Henderson (Satellite 93)",
+   "postal": "150093",
+   "address": "Blk 93 Henderson Road #01-210",
+   "lat": 1.286925,
+   "lon": 103.820419
+  },
+  {
+   "id": "aac-123",
+   "kind": "aac",
+   "name": "THK SAC @ MacPherson",
+   "postal": "370090",
+   "address": "90 Pipit Rd #01-103",
+   "lat": 1.32338,
+   "lon": 103.886521
+  },
+  {
+   "id": "aac-124",
+   "kind": "aac",
+   "name": "THK SAC @ Telok Blangah Crescent",
+   "postal": "090003",
+   "address": "3 Telok Blangah Crescent #01-504",
+   "lat": 1.278668,
+   "lon": 103.817527
+  },
+  {
+   "id": "aac-125",
+   "kind": "aac",
+   "name": "THK SAC @ Toa Payoh 31",
+   "postal": "310031",
+   "address": "Blk 31 Lorong 5 Toa Payoh",
+   "lat": 1.333218,
+   "lon": 103.854517
+  },
+  {
+   "id": "aac-126",
+   "kind": "aac",
+   "name": "THK SAC @ AMK 208",
+   "postal": "560208",
+   "address": "Blk 208 Ang Mo Kio Ave 1 #01-1019",
+   "lat": 1.365445,
+   "lon": 103.842715
+  },
+  {
+   "id": "aac-127",
+   "kind": "aac",
+   "name": "Thong Kheng Senior Activity Centre (Queenstown)",
+   "postal": "150003",
+   "address": "3 Jalan Bukit Merah #01-5070",
+   "lat": 1.287134,
+   "lon": 103.807001
+  },
+  {
+   "id": "aac-128",
+   "kind": "aac",
+   "name": "Thong Kheng Senior Activity Centre (Tanglin-Cairnhill)",
+   "postal": "151123",
+   "address": "Blk 123 Bukit Merah View #01-282",
+   "lat": 1.284133,
+   "lon": 103.823203
+  },
+  {
+   "id": "aac-129",
+   "kind": "aac",
+   "name": "TOUCH Senior Activity Centre",
+   "postal": "330061",
+   "address": "61 Geylang Bahru #01-3293",
+   "lat": 1.322311,
+   "lon": 103.869263
+  },
+  {
+   "id": "aac-130",
+   "kind": "aac",
+   "name": "Wesley Senior Activity Centre",
+   "postal": "200025",
+   "address": "25 Jalan Berseh #01-142",
+   "lat": 1.306215,
+   "lon": 103.858222
+  },
+  {
+   "id": "aac-131",
+   "kind": "aac",
+   "name": "Evergreen Circle SAC",
+   "postal": "521827",
+   "address": "Blk 827A Tampines Street 81 #02-350",
+   "lat": 1.349811,
+   "lon": 103.932608
+  },
+  {
+   "id": "aac-132",
+   "kind": "aac",
+   "name": "Fei Yue Senior Activity Centre (Bukit Batok)",
+   "postal": "650183",
+   "address": "183 Bukit Batok Avenue 8 #01-101",
+   "lat": 1.346326,
+   "lon": 103.743379
+  },
+  {
+   "id": "cc-000",
+   "kind": "cc",
+   "name": "Punggol 21 CC",
+   "postal": "828815",
+   "address": "80 Punggol Field",
+   "lat": 1.393606,
+   "lon": 103.913464
+  },
+  {
+   "id": "cc-001",
+   "kind": "cc",
+   "name": "Punggol CC",
+   "postal": "538808",
+   "address": "3 Hougang Avenue 6",
+   "lat": 1.374379,
+   "lon": 103.891815
+  },
+  {
+   "id": "cc-002",
+   "kind": "cc",
+   "name": "Punggol West CC",
+   "postal": "823259",
+   "address": "259C Punggol Field",
+   "lat": 1.404516,
+   "lon": 103.895665
+  },
+  {
+   "id": "cc-003",
+   "kind": "cc",
+   "name": "Queenstown CC",
+   "postal": "149732",
+   "address": "365 Commonwealth Avenue",
+   "lat": 1.29915,
+   "lon": 103.801305
+  },
+  {
+   "id": "cc-004",
+   "kind": "cc",
+   "name": "Telok Blangah CC",
+   "postal": "108943",
+   "address": "450 Telok Blangah Street 31",
+   "lat": 1.274863,
+   "lon": 103.807875
+  },
+  {
+   "id": "cc-005",
+   "kind": "cc",
+   "name": "Keat Hong CC",
+   "postal": "689687",
+   "address": "2 Choa Chu Kang Loop",
+   "lat": 1.384065,
+   "lon": 103.744924
+  },
+  {
+   "id": "cc-006",
+   "kind": "cc",
+   "name": "Kebun Baru CC",
+   "postal": "569897",
+   "address": "216 Ang Mo Kio Avenue 4",
+   "lat": 1.373007,
+   "lon": 103.837612
+  },
+  {
+   "id": "cc-007",
+   "kind": "cc",
+   "name": "Kolam Ayer CC",
+   "postal": "339631",
+   "address": "1 Geylang Bahru Lane",
+   "lat": 1.324154,
+   "lon": 103.869693
+  },
+  {
+   "id": "cc-008",
+   "kind": "cc",
+   "name": "Dover CC",
+   "postal": "130001",
+   "address": "1 Dover Road",
+   "lat": 1.30253,
+   "lon": 103.783272
+  },
+  {
+   "id": "cc-009",
+   "kind": "cc",
+   "name": "Boon Lay CC",
+   "postal": "649882",
+   "address": "10 Boon Lay Place",
+   "lat": 1.348323,
+   "lon": 103.71138
+  },
+  {
+   "id": "cc-010",
+   "kind": "cc",
+   "name": "Bukit Batok CC (Temp office)",
+   "postal": "650119",
+   "address": "119 Bukit Batok West Ave 6",
+   "lat": 1.350422,
+   "lon": 103.746804
+  },
+  {
+   "id": "cc-011",
+   "kind": "cc",
+   "name": "Bukit Panjang CC",
+   "postal": "678295",
+   "address": "8 Pending Road",
+   "lat": 1.376451,
+   "lon": 103.770559
+  },
+  {
+   "id": "cc-012",
+   "kind": "cc",
+   "name": "Ci Yuan CC",
+   "postal": "538776",
+   "address": "51 Hougang Avenue 9",
+   "lat": 1.375149,
+   "lon": 103.882894
+  },
+  {
+   "id": "cc-013",
+   "kind": "cc",
+   "name": "Clementi CC",
+   "postal": "129880",
+   "address": "220 Clementi Avenue 4",
+   "lat": 1.318815,
+   "lon": 103.768154
+  },
+  {
+   "id": "cc-014",
+   "kind": "cc",
+   "name": "Hwi Yoh CC",
+   "postal": "550535",
+   "address": "535 Serangoon North Avenue 4",
+   "lat": 1.3736,
+   "lon": 103.873891
+  },
+  {
+   "id": "cc-015",
+   "kind": "cc",
+   "name": "imPAct@Hong Lim Green",
+   "postal": "58284",
+   "address": "20 Upper Pickering Street",
+   "lat": 1.286329,
+   "lon": 103.846479
+  },
+  {
+   "id": "cc-016",
+   "kind": "cc",
+   "name": "Jalan Besar CC",
+   "postal": "208737",
+   "address": "69 Jellicoe Road",
+   "lat": 1.308004,
+   "lon": 103.861787
+  },
+  {
+   "id": "cc-017",
+   "kind": "cc",
+   "name": "Joo Chiat CC",
+   "postal": "427633",
+   "address": "405 Joo Chiat Road",
+   "lat": 1.307457,
+   "lon": 103.904169
+  },
+  {
+   "id": "cc-018",
+   "kind": "cc",
+   "name": "Jurong Green CC",
+   "postal": "649520",
+   "address": "6 Jurong West Avenue 1",
+   "lat": 1.350556,
+   "lon": 103.725342
+  },
+  {
+   "id": "cc-019",
+   "kind": "cc",
+   "name": "Jurong Spring CC",
+   "postal": "649296",
+   "address": "8 Jurong West Street 52",
+   "lat": 1.34833,
+   "lon": 103.718156
+  },
+  {
+   "id": "cc-020",
+   "kind": "cc",
+   "name": "Kaki Bukit CC",
+   "postal": "469627",
+   "address": "670 Bedok North Street 3",
+   "lat": 1.333382,
+   "lon": 103.926846
+  },
+  {
+   "id": "cc-021",
+   "kind": "cc",
+   "name": "Kallang CC",
+   "postal": "339771",
+   "address": "45 Boon Keng Road",
+   "lat": 1.317803,
+   "lon": 103.862373
+  },
+  {
+   "id": "cc-022",
+   "kind": "cc",
+   "name": "Chua Chu Kang CC",
+   "postal": "688892",
+   "address": "35 Teck Whye Avenue",
+   "lat": 1.381155,
+   "lon": 103.751904
+  },
+  {
+   "id": "cc-023",
+   "kind": "cc",
+   "name": "Tampines North CC",
+   "postal": "529204",
+   "address": "2 Tampines Street 41",
+   "lat": 1.357365,
+   "lon": 103.946603
+  },
+  {
+   "id": "cc-024",
+   "kind": "cc",
+   "name": "Limbang CO c/o Yew Tee CC",
+   "postal": "689286",
+   "address": "20 Choa Chu Kang Street 52",
+   "lat": 1.394918,
+   "lon": 103.744728
+  },
+  {
+   "id": "cc-025",
+   "kind": "cc",
+   "name": "Mountbatten CC",
+   "postal": "390087",
+   "address": "87 Jalan Satu",
+   "lat": 1.309235,
+   "lon": 103.886827
+  },
+  {
+   "id": "cc-026",
+   "kind": "cc",
+   "name": "Nee Soon Central CC",
+   "postal": "768019",
+   "address": "1 Northpoint Drive",
+   "lat": 1.428036,
+   "lon": 103.836092
+  },
+  {
+   "id": "cc-027",
+   "kind": "cc",
+   "name": "Paya Lebar Kovan CC",
+   "postal": "530207",
+   "address": "207 Hougang Street 21",
+   "lat": 1.357799,
+   "lon": 103.886092
+  },
+  {
+   "id": "cc-028",
+   "kind": "cc",
+   "name": "Tampines Central CC",
+   "postal": "528523",
+   "address": "1 Tampines Walk",
+   "lat": 1.353496,
+   "lon": 103.939684
+  },
+  {
+   "id": "cc-029",
+   "kind": "cc",
+   "name": "The Frontier CC",
+   "postal": "648346",
+   "address": "60 Jurong West Central 3",
+   "lat": 1.34047,
+   "lon": 103.704453
+  },
+  {
+   "id": "cc-030",
+   "kind": "cc",
+   "name": "Ulu Pandan CC",
+   "postal": "279621",
+   "address": "170 Ghim Moh Road",
+   "lat": 1.312009,
+   "lon": 103.789211
+  },
+  {
+   "id": "cc-031",
+   "kind": "cc",
+   "name": "The Serangoon CC",
+   "postal": "555877",
+   "address": "10 Serangoon North Avenue 2",
+   "lat": 1.370055,
+   "lon": 103.873928
+  },
+  {
+   "id": "cc-032",
+   "kind": "cc",
+   "name": "Tiong Bahru CC",
+   "postal": "169715",
+   "address": "67A Eu Chin Street",
+   "lat": 1.283453,
+   "lon": 103.831883
+  },
+  {
+   "id": "cc-033",
+   "kind": "cc",
+   "name": "Toa Payoh Central CC",
+   "postal": "319194",
+   "address": "93 Toa Payoh Central",
+   "lat": 1.334935,
+   "lon": 103.850205
+  },
+  {
+   "id": "cc-034",
+   "kind": "cc",
+   "name": "Toa Payoh East CC",
+   "postal": "319380",
+   "address": "160 Lorong 6 Toa Payoh",
+   "lat": 1.336275,
+   "lon": 103.8547
+  },
+  {
+   "id": "cc-035",
+   "kind": "cc",
+   "name": "Buangkok-Fernvale South CO c/o Fernvale CC",
+   "postal": "797650",
+   "address": "21 Sengkang West Ave",
+   "lat": 1.391726,
+   "lon": 103.877
+  },
+  {
+   "id": "cc-036",
+   "kind": "cc",
+   "name": "Changi CO c/o Pasir Ris East CC",
+   "postal": "519457",
+   "address": "1 Pasir Ris Dr 4",
+   "lat": 1.368801,
+   "lon": 103.959182
+  },
+  {
+   "id": "cc-037",
+   "kind": "cc",
+   "name": "Kim Seng CC (U/C)",
+   "postal": "169640",
+   "address": "570 Havelock Road",
+   "lat": 1.289683,
+   "lon": 103.830706
+  },
+  {
+   "id": "cc-038",
+   "kind": "cc",
+   "name": "Marsiling CC (Temp Office)",
+   "postal": "730002",
+   "address": "2 Marsiling Drive",
+   "lat": 1.439938,
+   "lon": 103.776695
+  },
+  {
+   "id": "cc-039",
+   "kind": "cc",
+   "name": "Naval Base CO @ Canberra CC",
+   "postal": "757632",
+   "address": "2 Sembawang Crescent",
+   "lat": 1.445044,
+   "lon": 103.819474
+  },
+  {
+   "id": "cc-040",
+   "kind": "cc",
+   "name": "Punggol Coast CO @ One Punggol CC",
+   "postal": "828629",
+   "address": "1 Punggol Drive",
+   "lat": 1.408522,
+   "lon": 103.905034
+  },
+  {
+   "id": "cc-041",
+   "kind": "cc",
+   "name": "Punggol North CC",
+   "postal": "829913",
+   "address": "88 Punggol Way",
+   "lat": 1.414774,
+   "lon": 103.910614
+  },
+  {
+   "id": "cc-042",
+   "kind": "cc",
+   "name": "Tampines Boulevard CO c/o Tampines Central CC",
+   "postal": "528523",
+   "address": "1 Tampines Walk",
+   "lat": 1.353496,
+   "lon": 103.939684
+  },
+  {
+   "id": "cc-043",
+   "kind": "cc",
+   "name": "Kreta Ayer CC",
+   "postal": "88995",
+   "address": "28A Kreta Ayer Road",
+   "lat": 1.281193,
+   "lon": 103.843013
+  },
+  {
+   "id": "cc-044",
+   "kind": "cc",
+   "name": "Leng Kee CC",
+   "postal": "159049",
+   "address": "400 Lengkok Bahru",
+   "lat": 1.289787,
+   "lon": 103.814448
+  },
+  {
+   "id": "cc-045",
+   "kind": "cc",
+   "name": "MacPherson CC",
+   "postal": "379131",
+   "address": "400 Paya Lebar Way",
+   "lat": 1.323537,
+   "lon": 103.884481
+  },
+  {
+   "id": "cc-046",
+   "kind": "cc",
+   "name": "Bidadari CC",
+   "postal": "367803",
+   "address": "11 Bidadari Park Drive",
+   "lat": 1.338731,
+   "lon": 103.87167
+  },
+  {
+   "id": "cc-047",
+   "kind": "cc",
+   "name": "Buangkok CC",
+   "postal": "544692",
+   "address": "70 Compassvale Bow",
+   "lat": 1.383152,
+   "lon": 103.892296
+  },
+  {
+   "id": "cc-048",
+   "kind": "cc",
+   "name": "Bukit Batok East CC",
+   "postal": "659841",
+   "address": "23 Bukit Batok East Avenue 4",
+   "lat": 1.348987,
+   "lon": 103.758196
+  },
+  {
+   "id": "cc-049",
+   "kind": "cc",
+   "name": "Fuchun CC",
+   "postal": "738581",
+   "address": "1 Woodlands Street 31",
+   "lat": 1.429587,
+   "lon": 103.77485
+  },
+  {
+   "id": "cc-050",
+   "kind": "cc",
+   "name": "Radin Mas CC",
+   "postal": "98917",
+   "address": "51 Telok Blangah Crescent",
+   "lat": 1.275931,
+   "lon": 103.819753
+  },
+  {
+   "id": "cc-051",
+   "kind": "cc",
+   "name": "Rivervale CC",
+   "postal": "544583",
+   "address": "2 Rivervale Close",
+   "lat": 1.385153,
+   "lon": 103.90232
+  },
+  {
+   "id": "cc-052",
+   "kind": "cc",
+   "name": "Sengkang CC",
+   "postal": "545025",
+   "address": "2 Sengkang Square",
+   "lat": 1.392786,
+   "lon": 103.893906
+  },
+  {
+   "id": "cc-053",
+   "kind": "cc",
+   "name": "Senja-Cashew CC",
+   "postal": "679910",
+   "address": "101 Bukit Panjang Road",
+   "lat": 1.381587,
+   "lon": 103.76466
+  },
+  {
+   "id": "cc-054",
+   "kind": "cc",
+   "name": "Siglap CC",
+   "postal": "460151",
+   "address": "151 Bedok South Road",
+   "lat": 1.317292,
+   "lon": 103.946742
+  },
+  {
+   "id": "cc-055",
+   "kind": "cc",
+   "name": "Siglap South CC",
+   "postal": "456441",
+   "address": "6 Palm Road",
+   "lat": 1.313159,
+   "lon": 103.930623
+  },
+  {
+   "id": "cc-056",
+   "kind": "cc",
+   "name": "Taman Jurong CC",
+   "postal": "618495",
+   "address": "1 Yung Sheng Road",
+   "lat": 1.335307,
+   "lon": 103.721626
+  },
+  {
+   "id": "cc-057",
+   "kind": "cc",
+   "name": "Thomson CC",
+   "postal": "574339",
+   "address": "194 Upper Thomson Road",
+   "lat": 1.351254,
+   "lon": 103.836262
+  },
+  {
+   "id": "cc-058",
+   "kind": "cc",
+   "name": "Yuhua CC",
+   "postal": "609958",
+   "address": "90 Boon Lay Way",
+   "lat": 1.339973,
+   "lon": 103.737066
+  },
+  {
+   "id": "cc-059",
+   "kind": "cc",
+   "name": "ACE The Place CC",
+   "postal": "739069",
+   "address": "120 Woodlands Avenue 1",
+   "lat": 1.427493,
+   "lon": 103.792241
+  },
+  {
+   "id": "cc-060",
+   "kind": "cc",
+   "name": "Aljunied CC",
+   "postal": "530110",
+   "address": "110 Hougang Avenue 1",
+   "lat": 1.354658,
+   "lon": 103.889546
+  },
+  {
+   "id": "cc-061",
+   "kind": "cc",
+   "name": "Anchorvale CC",
+   "postal": "544965",
+   "address": "59 Anchorvale Road",
+   "lat": 1.397128,
+   "lon": 103.886666
+  },
+  {
+   "id": "cc-062",
+   "kind": "cc",
+   "name": "Ang Mo Kio CC",
+   "postal": "569976",
+   "address": "795 Ang Mo Kio Avenue 1",
+   "lat": 1.366833,
+   "lon": 103.840668
+  },
+  {
+   "id": "cc-063",
+   "kind": "cc",
+   "name": "Ayer Rajah CC",
+   "postal": "609335",
+   "address": "150 Pandan Gardens",
+   "lat": 1.320799,
+   "lon": 103.74754
+  },
+  {
+   "id": "cc-064",
+   "kind": "cc",
+   "name": "Bedok CC",
+   "postal": "467352",
+   "address": "850 New Upper Changi Road",
+   "lat": 1.324247,
+   "lon": 103.936048
+  },
+  {
+   "id": "cc-065",
+   "kind": "cc",
+   "name": "Bishan CC",
+   "postal": "579799",
+   "address": "51 Bishan Street 13",
+   "lat": 1.349512,
+   "lon": 103.850509
+  },
+  {
+   "id": "cc-066",
+   "kind": "cc",
+   "name": "Toa Payoh South CC",
+   "postal": "319258",
+   "address": "1999 Lorong 8 Toa Payoh",
+   "lat": 1.33489,
+   "lon": 103.859379
+  },
+  {
+   "id": "cc-067",
+   "kind": "cc",
+   "name": "Yew Tee CC",
+   "postal": "689286",
+   "address": "20 Choa Chu Kang Street 52",
+   "lat": 1.394918,
+   "lon": 103.744728
+  },
+  {
+   "id": "cc-068",
+   "kind": "cc",
+   "name": "PAssion WaVe @ Bedok Reservoir (Sea Sports Club)",
+   "postal": "479311",
+   "address": "911 Bedok Reservoir Road",
+   "lat": 1.341398,
+   "lon": 103.932741
+  },
+  {
+   "id": "cc-069",
+   "kind": "cc",
+   "name": "PAssion WaVe @ East Coast (Sea Sports Club)",
+   "postal": "468961",
+   "address": "1390 East Coast Parkway",
+   "lat": 1.311728,
+   "lon": 103.952223
+  },
+  {
+   "id": "cc-070",
+   "kind": "cc",
+   "name": "PAssion WaVe @ Jurong Lake Gardens (Sea Sports Club)",
+   "postal": "618662",
+   "address": "100 Yuan Ching Road",
+   "lat": 1.33936,
+   "lon": 103.727299
+  },
+  {
+   "id": "cc-071",
+   "kind": "cc",
+   "name": "PAssion WaVe @ Marina Bay (Sea Sports Club)",
+   "postal": "437440",
+   "address": "11 Rhu Cross",
+   "lat": 1.294993,
+   "lon": 103.866775
+  },
+  {
+   "id": "cc-072",
+   "kind": "cc",
+   "name": "PAssion WaVe @ Pasir Ris (Sea Sports Club)",
+   "postal": "519926",
+   "address": "125 Elias Road",
+   "lat": 1.384947,
+   "lon": 103.943446
+  },
+  {
+   "id": "cc-073",
+   "kind": "cc",
+   "name": "PAssion WaVe @ Sembawang (Sea Sport Club)",
+   "postal": "759058",
+   "address": "60 Jalan Mempurong",
+   "lat": 1.459038,
+   "lon": 103.84365
+  },
+  {
+   "id": "cc-074",
+   "kind": "cc",
+   "name": "West Coast CC",
+   "postal": "129605",
+   "address": "2 Clementi West Street 2",
+   "lat": 1.302646,
+   "lon": 103.764832
+  },
+  {
+   "id": "cc-075",
+   "kind": "cc",
+   "name": "Whampoa CC",
+   "postal": "327737",
+   "address": "300 Whampoa Drive",
+   "lat": 1.32464,
+   "lon": 103.856979
+  },
+  {
+   "id": "cc-076",
+   "kind": "cc",
+   "name": "Woodgrove CC",
+   "postal": "730353",
+   "address": "353 Woodlands Ave 1",
+   "lat": 1.431771,
+   "lon": 103.785007
+  },
+  {
+   "id": "cc-077",
+   "kind": "cc",
+   "name": "Marine Parade CC (Temp Office)",
+   "postal": "440067",
+   "address": "67 Marine Drive",
+   "lat": 1.304457,
+   "lon": 103.909603
+  },
+  {
+   "id": "cc-078",
+   "kind": "cc",
+   "name": "Tanjong Pagar CC",
+   "postal": "89774",
+   "address": "101 Cantonment Road",
+   "lat": 1.276167,
+   "lon": 103.841584
+  },
+  {
+   "id": "cc-079",
+   "kind": "cc",
+   "name": "Teck Ghee CC",
+   "postal": "569734",
+   "address": "861 Ang Mo Kio Avenue 10",
+   "lat": 1.363089,
+   "lon": 103.853536
+  },
+  {
+   "id": "cc-080",
+   "kind": "cc",
+   "name": "Woodlands Galaxy CC",
+   "postal": "738991",
+   "address": "31 Woodlands Avenue 6",
+   "lat": 1.439042,
+   "lon": 103.802611
+  },
+  {
+   "id": "cc-081",
+   "kind": "cc",
+   "name": "Braddell Heights CC",
+   "postal": "556129",
+   "address": "50 Serangoon Avenue 2",
+   "lat": 1.351612,
+   "lon": 103.870368
+  },
+  {
+   "id": "cc-082",
+   "kind": "cc",
+   "name": "Bukit Batok CC (U/C)",
+   "postal": "659959",
+   "address": "21 Bukit Batok Central",
+   "lat": 1.349898,
+   "lon": 103.747549
+  },
+  {
+   "id": "cc-083",
+   "kind": "cc",
+   "name": "Bukit Timah CC",
+   "postal": "596569",
+   "address": "20 Toh Yi Drive",
+   "lat": 1.340534,
+   "lon": 103.771576
+  },
+  {
+   "id": "cc-084",
+   "kind": "cc",
+   "name": "Buona Vista CC",
+   "postal": "270036",
+   "address": "36 Holland Drive",
+   "lat": 1.309259,
+   "lon": 103.792619
+  },
+  {
+   "id": "cc-085",
+   "kind": "cc",
+   "name": "Geylang Serai CC",
+   "postal": "408528",
+   "address": "1 Engku Aman Turn",
+   "lat": 1.316528,
+   "lon": 103.896555
+  },
+  {
+   "id": "cc-086",
+   "kind": "cc",
+   "name": "Kampong Chai Chee CC",
+   "postal": "469662",
+   "address": "11 Bedok North Street 1",
+   "lat": 1.326985,
+   "lon": 103.931621
+  },
+  {
+   "id": "cc-087",
+   "kind": "cc",
+   "name": "Kampong Kembangan CC (Temp Office)",
+   "postal": "410109",
+   "address": "109 Lengkong Tiga",
+   "lat": 1.324581,
+   "lon": 103.910698
+  },
+  {
+   "id": "cc-088",
+   "kind": "cc",
+   "name": "Brickland-Tenggah CC",
+   "postal": "681811",
+   "address": "811A Choa Chu Kang Avenue 7",
+   "lat": 1.373731,
+   "lon": 103.74593
+  },
+  {
+   "id": "cc-089",
+   "kind": "cc",
+   "name": "Cheng San CC",
+   "postal": "569205",
+   "address": "6 Ang Mo Kio Street 53",
+   "lat": 1.371915,
+   "lon": 103.849375
+  },
+  {
+   "id": "cc-090",
+   "kind": "cc",
+   "name": "Eunos CC",
+   "postal": "479220",
+   "address": "180 Bedok Reservoir Road",
+   "lat": 1.332553,
+   "lon": 103.915144
+  },
+  {
+   "id": "cc-091",
+   "kind": "cc",
+   "name": "Gek Poh Ville CC (Temp office)",
+   "postal": "640760",
+   "address": "760 Jurong West Street 74",
+   "lat": 1.349425,
+   "lon": 103.699782
+  },
+  {
+   "id": "cc-092",
+   "kind": "cc",
+   "name": "Gek Poh Ville CC (U/C)",
+   "postal": "649149",
+   "address": "1 Jurong West Street 74",
+   "lat": 1.34869,
+   "lon": 103.698726
+  },
+  {
+   "id": "cc-093",
+   "kind": "cc",
+   "name": "Sembawang Central CO @ Sembawang CC (Temp Office)",
+   "postal": "752117",
+   "address": "117B Canberra Crescent",
+   "lat": 1.444573,
+   "lon": 103.829993
+  },
+  {
+   "id": "cc-094",
+   "kind": "cc",
+   "name": "Sembawang Central CO @ Sembawang CC (U/C)",
+   "postal": "758528",
+   "address": "2125 Sembawang Road 21KM",
+   "lat": 1.451701,
+   "lon": 103.828807
+  },
+  {
+   "id": "cc-095",
+   "kind": "cc",
+   "name": "Woodlands CC",
+   "postal": "738526",
+   "address": "1 Woodlands Street 81",
+   "lat": 1.43973,
+   "lon": 103.788235
+  },
+  {
+   "id": "cc-096",
+   "kind": "cc",
+   "name": "Zhenghua CC",
+   "postal": "677738",
+   "address": "1 Segar Road",
+   "lat": 1.386807,
+   "lon": 103.771521
+  },
+  {
+   "id": "cc-097",
+   "kind": "cc",
+   "name": "Toa Payoh West CC",
+   "postal": "319642",
+   "address": "200 Lorong 2 Toa Payoh",
+   "lat": 1.335383,
+   "lon": 103.844831
+  },
+  {
+   "id": "cc-098",
+   "kind": "cc",
+   "name": "Tampines East CC",
+   "postal": "529341",
+   "address": "10 Tampines Street 23",
+   "lat": 1.353357,
+   "lon": 103.95462
+  },
+  {
+   "id": "cc-099",
+   "kind": "cc",
+   "name": "Tampines West CC",
+   "postal": "529705",
+   "address": "5 Tampines Avenue 3",
+   "lat": 1.348751,
+   "lon": 103.935633
+  },
+  {
+   "id": "cc-100",
+   "kind": "cc",
+   "name": "Tanglin CC",
+   "postal": "297829",
+   "address": "245 Whitley Road",
+   "lat": 1.323384,
+   "lon": 103.826877
+  },
+  {
+   "id": "cc-101",
+   "kind": "cc",
+   "name": "Nee Soon Link CC",
+   "postal": "760413",
+   "address": "413 Yishun Ring Road",
+   "lat": 1.425036,
+   "lon": 103.846399
+  },
+  {
+   "id": "cc-102",
+   "kind": "cc",
+   "name": "Cairnhill CC",
+   "postal": "229944",
+   "address": "1 Anthony Road",
+   "lat": 1.310434,
+   "lon": 103.838865
+  },
+  {
+   "id": "cc-103",
+   "kind": "cc",
+   "name": "Canberra CC",
+   "postal": "757632",
+   "address": "2 Sembawang Crescent",
+   "lat": 1.445044,
+   "lon": 103.819474
+  },
+  {
+   "id": "cc-104",
+   "kind": "cc",
+   "name": "Changi Simei CC",
+   "postal": "529915",
+   "address": "10 Simei Street 2",
+   "lat": 1.344936,
+   "lon": 103.955111
+  },
+  {
+   "id": "cc-105",
+   "kind": "cc",
+   "name": "Chong Pang CC (Temp Office)",
+   "postal": "760126",
+   "address": "126 Yishun Street 11",
+   "lat": 1.433509,
+   "lon": 103.830012
+  },
+  {
+   "id": "cc-106",
+   "kind": "cc",
+   "name": "Marymount CC",
+   "postal": "575738",
+   "address": "191 Sin Ming Avenue",
+   "lat": 1.362138,
+   "lon": 103.841286
+  },
+  {
+   "id": "cc-107",
+   "kind": "cc",
+   "name": "Nanyang CC",
+   "postal": "649040",
+   "address": "60 Jurong West Street 91",
+   "lat": 1.342364,
+   "lon": 103.69232
+  },
+  {
+   "id": "cc-108",
+   "kind": "cc",
+   "name": "Nee Soon East CC",
+   "postal": "768893",
+   "address": "1 Yishun Avenue 9",
+   "lat": 1.431021,
+   "lon": 103.838488
+  },
+  {
+   "id": "cc-109",
+   "kind": "cc",
+   "name": "Pasir Ris Central CC",
+   "postal": "510536",
+   "address": "536 Pasir Ris Drive 1",
+   "lat": 1.370631,
+   "lon": 103.949828
+  },
+  {
+   "id": "cc-110",
+   "kind": "cc",
+   "name": "Pasir Ris Elias CC",
+   "postal": "519498",
+   "address": "93 Pasir Ris Drive 3",
+   "lat": 1.378429,
+   "lon": 103.942476
+  },
+  {
+   "id": "cc-111",
+   "kind": "cc",
+   "name": "Pek Kio CC",
+   "postal": "219458",
+   "address": "21 Gloucester Road",
+   "lat": 1.313059,
+   "lon": 103.851374
+  },
+  {
+   "id": "cc-112",
+   "kind": "cc",
+   "name": "Potong Pasir CC",
+   "postal": "358361",
+   "address": "6 Potong Pasir Avenue 2",
+   "lat": 1.332536,
+   "lon": 103.867037
+  },
+  {
+   "id": "cc-113",
+   "kind": "cc",
+   "name": "Tengah CC",
+   "postal": "690119",
+   "address": "119 Plantation Crescent",
+   "lat": 1.356752,
+   "lon": 103.7345
+  },
+  {
+   "id": "cc-114",
+   "kind": "cc",
+   "name": "Kampong Glam CC",
+   "postal": "199581",
+   "address": "385 Beach Road",
+   "lat": 1.302795,
+   "lon": 103.863598
+  },
+  {
+   "id": "cc-115",
+   "kind": "cc",
+   "name": "Kampong Ubi CC",
+   "postal": "409075",
+   "address": "10 Jalan Ubi",
+   "lat": 1.317846,
+   "lon": 103.90075
+  },
+  {
+   "id": "cc-116",
+   "kind": "cc",
+   "name": "Nee Soon South CC",
+   "postal": "768455",
+   "address": "30 Yishun Street 81",
+   "lat": 1.415187,
+   "lon": 103.834766
+  },
+  {
+   "id": "cc-117",
+   "kind": "cc",
+   "name": "Tampines Changkat CC",
+   "postal": "529453",
+   "address": "13 Tampines Street 11",
+   "lat": 1.34585,
+   "lon": 103.94755
+  },
+  {
+   "id": "cc-118",
+   "kind": "cc",
+   "name": "Fengshan CC",
+   "postal": "469644",
+   "address": "20 Bedok North Street 2",
+   "lat": 1.330708,
+   "lon": 103.936614
+  },
+  {
+   "id": "cc-119",
+   "kind": "cc",
+   "name": "Fernvale CC",
+   "postal": "797650",
+   "address": "21 Sengkang West Avenue",
+   "lat": 1.391726,
+   "lon": 103.877
+  },
+  {
+   "id": "cc-120",
+   "kind": "cc",
+   "name": "Pasir Ris East CC",
+   "postal": "519457",
+   "address": "1 Pasir Ris Drive 4",
+   "lat": 1.368801,
+   "lon": 103.959182
+  },
+  {
+   "id": "cc-121",
+   "kind": "cc",
+   "name": "Yio Chu Kang CC",
+   "postal": "569163",
+   "address": "50 Ang Mo Kio Street 61",
+   "lat": 1.381517,
+   "lon": 103.841428
+  },
+  {
+   "id": "cc-122",
+   "kind": "cc",
+   "name": "Geylang West CC",
+   "postal": "387311",
+   "address": "1205 Upper Boon Keng Road",
+   "lat": 1.315691,
+   "lon": 103.872388
+  },
+  {
+   "id": "cc-123",
+   "kind": "cc",
+   "name": "Henderson CC",
+   "postal": "159682",
+   "address": "500 Bukit Merah View",
+   "lat": 1.28601,
+   "lon": 103.823315
+  },
+  {
+   "id": "cc-124",
+   "kind": "cc",
+   "name": "Hillview CC",
+   "postal": "667970",
+   "address": "1 Hillview Rise",
+   "lat": 1.361967,
+   "lon": 103.764266
+  },
+  {
+   "id": "cc-125",
+   "kind": "cc",
+   "name": "Hong Kah North CC",
+   "postal": "659440",
+   "address": "30 Bukit Batok Street 31",
+   "lat": 1.359059,
+   "lon": 103.749457
+  },
+  {
+   "id": "cc-126",
+   "kind": "cc",
+   "name": "Hougang CC",
+   "postal": "538840",
+   "address": "35 Hougang Avenue 3",
+   "lat": 1.364757,
+   "lon": 103.892622
+  },
+  {
+   "id": "cc-127",
+   "kind": "cc",
+   "name": "Katong CC",
+   "postal": "438178",
+   "address": "51 Kampong Arang Road",
+   "lat": 1.300591,
+   "lon": 103.884749
+  }
+ ]
+}

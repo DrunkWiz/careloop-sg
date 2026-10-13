@@ -1,0 +1,17 @@
+{
+  "id": "tan-bp-2026-09-03",
+  "senior_id": "tan",
+  "time": "2026-09-03T08:05:00+08:00",
+  "kind": "bp",
+  "source": "synthetic",
+  "confidence": 1,
+  "values": {
+    "systolic": 123,
+    "diastolic": 80,
+    "pulse": 68
+  },
+  "trust": {
+    "ok": true,
+    "flags": []
+  }
+}

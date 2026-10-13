@@ -1,0 +1,23 @@
+{
+  "lang": "en-SG",
+  "bp": [],
+  "pulse": null,
+  "doses": [
+    {
+      "taken": true,
+      "medicine": null,
+      "span": "Eat medicine"
+    }
+  ],
+  "running_out": [],
+  "symptoms": [],
+  "activities": [],
+  "mood": null,
+  "double_dose": false,
+  "questions": [],
+  "english": "Eat medicine already.",
+  "source": "rules",
+  "red_flag": false,
+  "feeling_unwell": false,
+  "social_contact": false
+}

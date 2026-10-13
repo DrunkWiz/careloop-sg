@@ -1,0 +1,34 @@
+{
+  "id": "tan",
+  "name": "Mr Tan",
+  "language": "en-SG",
+  "home_postal": "560999",
+  "region": "central",
+  "path": "family",
+  "aac_id": "aac-100",
+  "conditions": [
+    "hypertension"
+  ],
+  "medicines": [
+    {
+      "name": "amlodipine",
+      "dose_text": "5 mg once a day",
+      "schedule": [
+        "morning"
+      ],
+      "started": "2024-03-01",
+      "for_bp": true
+    }
+  ],
+  "likes": [
+    "mahjong",
+    "kopi"
+  ],
+  "usual_checkin_time": "08:00",
+  "consent": {
+    "family_sees": "readings",
+    "share_words": true,
+    "share_activity": true
+  },
+  "hidden_suggestions": []
+}

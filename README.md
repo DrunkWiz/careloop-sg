@@ -27,15 +27,18 @@ web/           React + Vite, one build
 docs/          README, evaluation page, Tencent tools log
 ```
 
-## Run the web app
+## Run it
 
 ```
-cd web
-npm install
-npm run dev
+# API (Python 3.10+), seeded with the synthetic demo
+python -m venv .venv && .venv/Scripts/pip install -r backend/requirements.txt
+CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 8787
+
+# Web app (without VITE_API_URL the senior app uses an in-browser mock)
+cd web && npm install && VITE_API_URL=http://localhost:8787 npm run dev
 ```
 
-Open `/senior` or `/care`.
+Open `/senior?senior=tan` (demo senior) or `/care`.
 
 Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo URLs:
 
@@ -45,6 +48,15 @@ Without `VITE_API_URL` set, the web app runs on local mock data. Caregiver demo 
 - `/care/aac`: AAC caseload (`?contact=c-aac-daniel` for a second staff member, `?scenario=redflag`), with `/care/aac/programmes` for the timetable
 
 Set `VITE_API_URL` (e.g. in `web/.env.local`) to use the real backend.
+
+## Tests and evaluation
+
+Offline, with no keys and no network.
+
+```
+for s in language engine api synth; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
+```
 
 ## Real vs synthetic
 

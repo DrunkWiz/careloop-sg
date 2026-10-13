@@ -1,0 +1,138 @@
+{
+  "id": "ho-dec-tan-2026-10-24",
+  "senior_id": "tan",
+  "decision_id": "dec-tan-2026-10-24",
+  "opened_at": "2026-10-24T21:00:00+08:00",
+  "kind": "bp_drift",
+  "evidence": {
+    "summary": "7-day average systolic 144, 15 above their own baseline of 129, and over 140 on 4 of 7 days",
+    "bp_series": [
+      {
+        "date": "2026-10-11",
+        "systolic": null,
+        "diastolic": null
+      },
+      {
+        "date": "2026-10-12",
+        "systolic": 131,
+        "diastolic": 77
+      },
+      {
+        "date": "2026-10-13",
+        "systolic": null,
+        "diastolic": null
+      },
+      {
+        "date": "2026-10-14",
+        "systolic": 126,
+        "diastolic": 75
+      },
+      {
+        "date": "2026-10-15",
+        "systolic": 157,
+        "diastolic": 96
+      },
+      {
+        "date": "2026-10-16",
+        "systolic": null,
+        "diastolic": null
+      },
+      {
+        "date": "2026-10-17",
+        "systolic": 126,
+        "diastolic": 79
+      },
+      {
+        "date": "2026-10-18",
+        "systolic": 127,
+        "diastolic": 85
+      },
+      {
+        "date": "2026-10-19",
+        "systolic": 133,
+        "diastolic": 85
+      },
+      {
+        "date": "2026-10-20",
+        "systolic": 139,
+        "diastolic": 88
+      },
+      {
+        "date": "2026-10-21",
+        "systolic": 148,
+        "diastolic": 91
+      },
+      {
+        "date": "2026-10-22",
+        "systolic": 149,
+        "diastolic": 89
+      },
+      {
+        "date": "2026-10-23",
+        "systolic": 155,
+        "diastolic": 95
+      },
+      {
+        "date": "2026-10-24",
+        "systolic": 156,
+        "diastolic": 90
+      }
+    ],
+    "baseline": {
+      "systolic": 129,
+      "diastolic": 78
+    },
+    "dates": [
+      "2026-10-15",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-24"
+    ],
+    "tried": [
+      {
+        "date": "2026-10-15",
+        "rung": "1",
+        "what": "one odd reading 157/96 against a baseline of 128; offer to re-measure"
+      },
+      {
+        "date": "2026-10-17",
+        "rung": "2",
+        "what": "medicine running out (unspecified); suggest collecting a refill"
+      },
+      {
+        "date": "2026-10-21",
+        "rung": "3",
+        "what": "7-day average systolic 138 against a baseline of 128; over 140 on 2 days; not persistent yet"
+      },
+      {
+        "date": "2026-10-22",
+        "rung": "3",
+        "what": "7-day average systolic 137 against a baseline of 129; over 140 on 2 days; not persistent yet"
+      },
+      {
+        "date": "2026-10-23",
+        "rung": "3",
+        "what": "7-day average systolic 140 against a baseline of 129; over 140 on 3 days; not persistent yet"
+      }
+    ]
+  },
+  "options": [
+    {
+      "id": "polyclinic",
+      "label": "Book a polyclinic slot"
+    },
+    {
+      "id": "gp_note",
+      "label": "Draft a note to the GP"
+    },
+    {
+      "id": "call",
+      "label": "Call them today"
+    }
+  ],
+  "status": "open",
+  "claimed_by": null,
+  "claimed_at": null,
+  "choice": null
+}

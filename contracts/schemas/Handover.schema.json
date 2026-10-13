@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Handover.schema.json",
+  "title": "Handover",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "bp_drift",
+        "missed_medicine",
+        "unwell",
+        "activity",
+        "no_contact",
+        "double_dose",
+        "red_flag"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "bp_series": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "systolic": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "diastolic": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "date",
+              "systolic",
+              "diastolic"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "baseline": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "systolic": {
+                  "type": "number"
+                },
+                "diastolic": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "systolic",
+                "diastolic"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "tried": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "rung": {
+                "type": "string",
+                "enum": [
+                  "0",
+                  "1",
+                  "2",
+                  "3",
+                  "4",
+                  "R"
+                ]
+              },
+              "what": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "rung",
+              "what"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "summary",
+        "bp_series",
+        "baseline",
+        "dates",
+        "tried"
+      ],
+      "additionalProperties": false
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "claimed"
+      ]
+    },
+    "claimed_by": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "contact id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "claimed_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "choice": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "option id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "decision_id",
+    "opened_at",
+    "kind",
+    "evidence",
+    "options",
+    "status",
+    "claimed_by",
+    "claimed_at",
+    "choice"
+  ],
+  "additionalProperties": false
+}

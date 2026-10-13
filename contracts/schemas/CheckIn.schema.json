@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CheckIn.schema.json",
+  "title": "CheckIn",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "senior_id": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "voice",
+        "typed",
+        "button",
+        "synthetic"
+      ]
+    },
+    "raw_text": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "en-SG",
+        "zh"
+      ]
+    },
+    "facts": {
+      "$ref": "Facts.schema.json"
+    }
+  },
+  "required": [
+    "id",
+    "senior_id",
+    "time",
+    "source",
+    "raw_text",
+    "language",
+    "facts"
+  ],
+  "additionalProperties": false
+}
