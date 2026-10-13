@@ -35,6 +35,8 @@
     }
   ],
   "mood": "good",
+  "double_dose": false,
+  "questions": [],
   "english": "I'm fine lah, BP 186/112 this morning. Eat medicine already, then mahjong with my kakis. A bit giddy.",
   "source": "rules",
   "red_flag": false,

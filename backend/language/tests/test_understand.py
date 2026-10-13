@@ -82,6 +82,8 @@ class Symptoms(unittest.TestCase):
             "右手没力": "one_sided_weakness",
             "almost pengsan just now": "fainting",
             "早上晕倒了": "fainting",
+            "今天去巴刹，胸口有点痛": "chest_pain",
+            "胸部很闷": "chest_pain",
         }
         for text, code in cases.items():
             f = u(text)
@@ -134,6 +136,21 @@ class DosesAndActivity(unittest.TestCase):
     def test_mahjong_is_social_contact(self):
         self.assertTrue(u("play mahjong whole day").social_contact)
         self.assertTrue(u("今天去打麻将").social_contact)
+
+    def test_brief_example_took_already_but_white_one_finish(self):
+        f = u("took already, but the small white one finish liao")
+        self.assertEqual([d.taken for d in f.doses], [True])
+        self.assertTrue(f.running_out)
+
+    def test_double_dose(self):
+        for text in ["I took my morning pill twice", "早上的药吃了两次"]:
+            self.assertTrue(u(text).double_dose, text)
+
+    def test_medicine_question_is_not_a_missed_dose(self):
+        for text in ["BP already good, can I skip my pill today?", "血压好了，可以不吃药吗？"]:
+            f = u(text)
+            self.assertIn("skip_or_change_medicine", f.questions, text)
+            self.assertNotIn(False, [d.taken for d in f.doses], text)
 
     def test_stayed_home(self):
         self.assertIn("home", {a.kind for a in u("stayed home whole day").activities})

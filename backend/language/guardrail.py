@@ -56,9 +56,13 @@ URGENT = [r"\b995\b", r"\bnow\b", r"\bimmediately\b", r"\bright away\b", r"\beme
 
 OUTDOORS = [
     r"\b(?:go|head|step|walk|jog|run)\s+(?:out|outside|outdoors)\b", r"\boutdoors?\b", r"\boutside\b", r"\bpark\b", r"\bpark connector\b",
-    r"\b(?:go for|take) a (?:walk|jog|stroll)\b", r"\bexercise outside\b",
+    r"\b(?:go|going|head)\s+(?:for\s+)?(?:a\s+|an\s+|your\s+|the\s+)?(?:walk|jog|stroll|run)\b",
+    r"\b(?:take|have)\s+(?:a\s+|your\s+)(?:walk|jog|stroll)\b", r"\bexercise outside\b",
     r"出去", r"出门", r"外出", r"户外", r"公园", r"去散步", r"外面走",
 ]
+
+# During haze the only haze advice is MOH's, from a fixed table: the model never brings up masks.
+MASKS = [r"\bmasks?\b", r"\bN95\b", r"口罩"]
 
 # Numbers allowed in any message: the emergency number and the "rest 5 minutes, measure again" instruction.
 ALWAYS_OK_NUMBERS = {995, 5}
@@ -84,7 +88,7 @@ def check(text: str, *, rung: Rung, to: Audience, facts: Facts, context: dict | 
             reasons.append("calm_on_red_flag")
 
     if _haze(context):
-        if any(re.search(p, t, re.I) for p in OUTDOORS) and not _only_negated_outdoors(t):
+        if (any(re.search(p, t, re.I) for p in OUTDOORS) and not _only_negated_outdoors(t))                 or any(re.search(p, t, re.I) for p in MASKS):
             reasons.append("haze_go_out")
 
     if to == "senior" and re.match(r"^\W*\d", t):

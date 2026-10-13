@@ -28,7 +28,7 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
     "chest_pain": [
         r"chest\s*(?:pain|pains|tight|tightness|hurt|hurts|very pain|pain pain)",
         r"pain\w*\s+(?:in|at|on)\s+(?:my\s+)?chest", r"heart\s*(?:pain|very pain)", r"chest (?:feel|feels) (?:heavy|tight)",
-        r"胸口痛", r"胸痛", r"胸闷", r"心口痛", r"胸口闷", r"心口闷",
+        r"(?:胸口|胸部|胸|心口)[^，。,.!?！？]{0,3}(?:痛|疼|闷|紧|压着)",
     ],
     "face_droop": [
         r"face\s+(?:is\s+|feel\s+|feels\s+)?(?:droop\w*|crooked|senget|one side)", r"(?:droop\w*|crooked)\s+face",
@@ -48,8 +48,8 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
         r"faint(?:ed|ing)?\b", r"pass(?:ed)?\s+out", r"black(?:ed)?\s+out", r"pengsan", r"collapse[d]?",
         r"晕倒", r"昏倒", r"昏过去", r"晕过去",
     ],
-    "headache": [r"headache", r"head\s*(?:pain|very pain|pain pain)", r"头痛", r"头疼"],
-    "dizziness": [r"dizz\w*", r"giddy", r"giddiness", r"头晕", r"头昏"],
+    "headache": [r"headache", r"head\s*(?:pain|very pain|pain pain)", r"头[^，。,.]{0,3}(?:痛|疼)"],
+    "dizziness": [r"dizz\w*", r"giddy", r"giddiness", r"头[^，。,.]{0,3}(?:晕|昏)"],
     "breathless": [r"breathless", r"short(?:ness)? of breath", r"can(?:not|'t) breathe", r"喘不过气", r"呼吸困难", r"气喘"],
     "palpitations": [r"palpitat\w*", r"heart\s+(?:beat\w*|beating)\s+(?:very\s+)?fast", r"心跳很快", r"心跳得很快", r"心慌"],
     "swelling": [r"(?:leg|legs|ankle|ankles|feet|foot)\s+(?:\w+\s+)?swell\w*", r"swollen\s+(?:leg|legs|ankle|ankles|feet)", r"脚肿", r"腿肿"],
@@ -60,7 +60,17 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
 DOSE_TAKEN = [
     rf"(?:took|taken|take(?:n)? already|ate|eat(?:en)?|swallow(?:ed)?)\s+(?:my\s+|the\s+|all\s+(?:my\s+)?)?(?:morning\s+|night\s+)?{MED}",
     rf"{MED}\s+(?:\w+\s+)?(?:taken|eaten|eat already|take already|already take|already eat|done)",
+    r"^\W*(?:took|taken|take|eat|ate)\s+(?:already|liao)\b",  # "took already, ..." answering "taken your pill?"
     r"吃了药", r"吃过药", r"药吃了", r"药已经吃了", r"吃药了", r"吃完药",
+]
+DOSE_TWICE = [
+    rf"(?:took|take|taken|eat|ate|eaten)\s+(?:my\s+|the\s+)?(?:morning\s+|night\s+)?(?:{MED}\s+)?(?:twice|two times|2 times|again)",
+    rf"double\s+(?:dose|{MED})", r"吃了两次", r"吃两次", r"又吃了一次", r"多吃了一[粒片颗次]",
+]
+MEDICINE_QUESTION = [
+    rf"(?:can|should|shall|could|need)\s+(?:i|we)\s+(?:\w+\s+)?(?:skip|stop|not take|don'?t take|no need to take|reduce|take less|take half)",
+    rf"(?:skip|stop|no need)\s+(?:\w+\s+){{0,3}}(?:or not|can or not|ok or not|is it)\b",
+    r"可以不吃药", r"要不要吃药", r"能不能停", r"可以停药", r"不吃可以吗", r"可以少吃", r"不用吃药了吧",
 ]
 DOSE_MISSED = [
     rf"(?:forgot|forget|forgotten)\s+(?:to\s+)?(?:take|eat)?\s*(?:my\s+|the\s+)?{MED}",
@@ -71,6 +81,7 @@ DOSE_MISSED = [
 RUNNING_OUT = [
     rf"{MED}\s+(?:\w+\s+){{0,2}}(?:running out|run out|almost (?:finish|finished|gone)|finish(?:ed)? already|left (?:\w+ )?(?:day|days|pill|pills))",
     rf"(?:running|run|ran)\s+out\s+of\s+(?:my\s+)?{MED}", rf"no more\s+{MED}", rf"(?:need|must|have) to\s+(?:get|collect|refill)\s+(?:more\s+|my\s+)?{MED}",
+    r"(?:white|red|yellow|pink|orange|blue|small|big|round)\s+one\s+(?:\w+\s+)?(?:finish|finished|habis)",
     r"refill", r"药快(?:要)?吃完", r"药吃完了", r"没药了", r"药不够", r"要去拿药", r"药快没了",
 ]
 
@@ -136,8 +147,14 @@ def extract(text: str, lang: Lang | None = None) -> Facts:
             facts.symptoms.append(Symptom(code=code, words=m.group(0), red_flag=code in RED_FLAG_SYMPTOMS))
             seen.add(code)
 
+    # "Can I skip my pill?" is a question for the GP, not a missed dose.
+    question_spans = [(m.start(), m.end()) for m in _matches(MEDICINE_QUESTION, text)]
+    if question_spans:
+        facts.questions.append("skip_or_change_medicine")
     missed_spans = []
     for m in _matches(DOSE_MISSED, text):
+        if any(m.start() < e and s < m.end() for s, e in question_spans):
+            continue
         facts.doses.append(Dose(taken=False, medicine=_medicine_in(m.group(0)), span=m.group(0)))
         missed_spans.append((m.start(), m.end()))
     for m in _matches(DOSE_TAKEN, text):
@@ -145,6 +162,8 @@ def extract(text: str, lang: Lang | None = None) -> Facts:
             continue
         facts.doses.append(Dose(taken=True, medicine=_medicine_in(m.group(0)), span=m.group(0)))
         break  # one "took my pills" is enough
+    if any(True for _ in _matches(DOSE_TWICE, text)):
+        facts.double_dose = True
 
     for m in _matches(RUNNING_OUT, text):
         name = _medicine_in(m.group(0)) or "unspecified"
