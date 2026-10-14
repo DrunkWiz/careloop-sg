@@ -54,6 +54,11 @@ export interface CheckInResult {
   message: Message | null;
 }
 
+export interface ReadingResult {
+  message: Message | null;
+  rung: Rung;
+}
+
 export interface Suggestion {
   id: string;
   place: string;
@@ -64,6 +69,7 @@ export interface Suggestion {
 }
 
 export interface Today {
+  date?: string;
   senior: { id: string; name: string; language: Lang };
   pills_taken: boolean;
   bp_logged: boolean;

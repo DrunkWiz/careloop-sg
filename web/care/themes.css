@@ -19,7 +19,7 @@
 .finding.is-watch .finding-icon { background: var(--cl-warn-soft); color: var(--cl-warn); }
 .finding.is-good .finding-icon { background: var(--cl-accent-soft); color: var(--cl-accent); }
 .finding.is-neutral .finding-icon { background: var(--cl-surface); color: var(--cl-muted); }
-.finding .finding-tone { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cl-muted); }
+.finding .finding-tone { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--cl-muted); }
 .finding.is-watch .finding-tone { color: var(--cl-warn); }
 .finding .finding-n { font-size: 12px; color: var(--cl-muted); margin-top: 4px; }
 .findings-note { font-size: 12px; margin: 4px 0 0; }

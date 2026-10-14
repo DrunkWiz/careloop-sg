@@ -1,10 +1,10 @@
 /* Design tokens. Placeholder until exported from Tencent Design Miora (Nathan). */
 :root {
   --cl-font: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --cl-bg: #ffffff;
-  --cl-text: #1a1a1a;
-  --cl-accent: #0b6e4f;
-  --cl-alert: #b3261e;
+  --cl-bg: #f5f7f2;
+  --cl-text: #203b34;
+  --cl-accent: #24533f;
+  --cl-alert: #a51f18;
 
   /* Senior app: very large type, high contrast, 48px+ tap targets */
   --cl-senior-text: 20px;
@@ -13,6 +13,14 @@
   /* Caregiver app: calm, dense enough to scan */
   --cl-care-text: 15px;
 }
+
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid #467764; outline-offset: 4px; }
+.cl-brand { display: inline-flex; align-items: center; gap: 10px; color: #234b3b; text-decoration: none; font-size: 23px; font-weight: 750; letter-spacing: -.8px; }
+.cl-brand-mark { width: 34px; height: 34px; display: grid; place-items: center; }.cl-brand-mark svg { width: 30px; height: 30px; }
+.cl-brand-sg { display: inline-block; font-size: 10px; vertical-align: top; letter-spacing: .8px; margin: 4px 0 0 4px; }
+.cl-brand-light { color: white; }
 
 body {
   margin: 0;

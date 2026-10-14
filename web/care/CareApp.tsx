@@ -18,8 +18,10 @@ import CarePlan from './CarePlan';
 import LookingAfterYou from './LookingAfterYou';
 import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
+import Brand from '../shared/Brand';
 import './care.css';
 import './themes.css';
+import './refresh.css';
 
 export default function CareApp() {
   const params = new URLSearchParams(window.location.search);
@@ -92,8 +94,8 @@ function FamilyApp({ contactId }: { contactId: string }) {
   const onClaimed = (h: Handover) =>
     setView((v) => v && { ...v, handovers: v.handovers.map((x) => (x.id === h.id ? { ...x, ...h } : x)) });
 
-  if (error && !view) return <p className="care-error">Could not load: {error}</p>;
-  if (!view) return <p className="care-muted">Loading…</p>;
+  if (error && !view) return <section className="care-card" role="alert"><h1>We couldn't load this family</h1><p className="care-error">{error}</p><button className="care-secondary" onClick={load}>Try again</button><a className="care-link" href="/care">Choose a demo family</a></section>;
+  if (!view) return <p className="care-muted" role="status">Loading your family’s care…</p>;
 
   // A red flag goes full screen until someone claims its handover. If the engine raised the flag without a
   // red-flag handover, it shows the message until this person says they've seen it.
@@ -127,6 +129,8 @@ function FamilyApp({ contactId }: { contactId: string }) {
 
   return (
     <div className="fam">
+      <header className="family-masthead"><Brand /><span className="family-space">FAMILY SPACE</span><a className="family-profile" href="/care" aria-label="Switch demo family"><span className="family-avatar" aria-hidden="true">{view.contact.name.charAt(0)}</span><span>{view.contact.name}<small>Switch family ↗</small></span></a></header>
+      <div className="family-content">
       {error && <p className="care-error">Showing the last update. {error}</p>}
       {route.name === 'handover' ? (
         <HandoverView
@@ -165,6 +169,7 @@ function FamilyApp({ contactId }: { contactId: string }) {
       ) : (
         <FamilyHome view={view} log={log} />
       )}
+      </div>
       <TabBar active={route.name} badge={openCount} />
     </div>
   );

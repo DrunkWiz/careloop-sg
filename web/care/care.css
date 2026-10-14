@@ -205,7 +205,7 @@
   border: 0; border-radius: 8px; background: none; cursor: pointer; font: inherit;
 }
 .tl-day.is-selected { background: var(--cl-surface); outline: 2px solid var(--cl-accent); }
-.tl-date { font-size: 11px; color: var(--cl-muted); font-variant-numeric: tabular-nums; }
+.tl-date { font-size: 12px; color: var(--cl-muted); font-variant-numeric: tabular-nums; }
 .tl-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--cl-muted); margin-bottom: 10px; }
 .tl-legend > span { display: inline-flex; align-items: center; gap: 4px; }
 .tl-legend .tl-dot { width: 10px; height: 10px; }

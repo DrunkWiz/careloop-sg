@@ -14,7 +14,9 @@ import { Confirm } from './screens/Confirm';
 import { RedFlag } from './screens/RedFlag';
 import { Knows } from './screens/Knows';
 import { Pair } from './screens/Pair';
+import Brand from '../shared/Brand';
 import './senior.css';
+import './refresh.css';
 
 type View =
   | { name: 'home' }
@@ -37,8 +39,8 @@ export default function SeniorApp() {
   const [seniorId, setSeniorId] = useState<string | null>(() => {
     const demo = params.get('senior');
     if (demo) {
+      if (store.get('seniorId') !== demo) store.remove('lang');
       store.set('seniorId', demo);
-      store.remove('lang');
     }
     return forcePair ? null : demo || store.get('seniorId');
   });
@@ -47,6 +49,8 @@ export default function SeniorApp() {
   const [view, setView] = useState<View>({ name: 'home' });
   const [redFlag, setRedFlag] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
+  const [loadError, setLoadError] = useState(false);
   const [toastText, setToastText] = useState<string | null>(null);
   const toastTimer = useRef<number>();
 
@@ -71,9 +75,11 @@ export default function SeniorApp() {
     try {
       const t = await api.today(seniorId);
       setToday(t);
+      setLoadError(false);
       // Until the senior picks a language on this phone, use the one set up for them.
       if (!store.get('lang') && t.senior.language !== lang) setLangState(t.senior.language);
     } catch {
+      setLoadError(true);
       toast(translate(lang, 'common.offline'));
     }
   }, [seniorId, lang, toast]);
@@ -82,7 +88,8 @@ export default function SeniorApp() {
   useEffect(() => { document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en-SG'; }, [lang]);
 
   const checkin = async (text: string, source: 'voice' | 'typed' | 'button', thanks: StringKey = 'checkin.thanks') => {
-    if (!seniorId) return;
+    if (!seniorId || submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     try {
       const res = await api.checkin(seniorId, text, lang, source);
@@ -97,25 +104,32 @@ export default function SeniorApp() {
           toast(res.message?.text || t(thanks));
         }
       }
-      refresh();
+      await refresh();
     } catch {
       toast(t('common.offline'));
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   };
 
   const saveReading = async (bp: BPEntry, source: 'cuff' | 'voice') => {
-    if (!seniorId) return;
+    if (!seniorId || submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     try {
-      await api.reading(seniorId, bp, source);
-      setView({ name: 'home' });
-      toast(t('common.saved'));
-      refresh();
+      const result = await api.reading(seniorId, bp, source);
+      if (result.message?.rung === 'R') {
+        setRedFlag(result.message);
+      } else {
+        setView({ name: 'home' });
+        toast(result.message?.text || t('common.saved'));
+      }
+      await refresh();
     } catch {
       toast(t('common.offline'));
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   };
@@ -126,6 +140,7 @@ export default function SeniorApp() {
     return (
       <LangContext.Provider value={lang}>
         <div className="sa-app">
+          <header className="sa-top"><Brand href={null} /></header>
           <Pair lang={lang} setLang={setLang} onPaired={(r) => {
             store.set('seniorId', r.senior_id);
             setSeniorId(r.senior_id);
@@ -144,10 +159,12 @@ export default function SeniorApp() {
     <LangContext.Provider value={lang}>
       <div className="sa-app">
         <header className="sa-top">
-          <span className="sa-brand">{t('app.name')}</span>
+          <Brand href={null} />
           <button className="sa-lang" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>{t('lang.switch')}</button>
         </header>
-        {usingMock && <p className="sa-demo">{t('demo.banner')}</p>}
+        <p className="sa-demo">{t('demo.banner')}</p>
+        {loadError && <div className="sa-card sa-warn" role="alert"><p>{t('common.offline')}</p><button type="button" className="sa-chip" onClick={refresh}>{t('common.retry')}</button></div>}
+        {talk.state === 'denied' && view.name === 'home' && <p className="sa-note" role="alert">{t('checkin.micDenied')}</p>}
 
         {redFlag ? (
           <RedFlag message={redFlag} onClose={() => { setRedFlag(null); setView({ name: 'home' }); }} />
@@ -164,6 +181,8 @@ export default function SeniorApp() {
         ) : today ? (
           <Home
             today={today}
+            busy={busy}
+            talkSupported={talk.supported}
             listening={talk.state === 'listening'}
             interim={talk.interim}
             onPills={() => (today.pills_taken ? toast(t('home.pills.done')) : checkin(t('checkin.text.pills'), 'button', 'common.saved'))}
@@ -183,7 +202,7 @@ export default function SeniorApp() {
             onKnows={() => setView({ name: 'knows' })}
           />
         ) : (
-          <p className="sa-loading" aria-busy>…</p>
+          !loadError && <p className="sa-loading" role="status" aria-busy>{t('common.loading')}</p>
         )}
         <Toast text={toastText} />
       </div>

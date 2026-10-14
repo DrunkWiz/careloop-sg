@@ -4,8 +4,10 @@ import { LangContext, useT } from '../../shared/i18n';
 import type { Today } from '../types';
 import { BigButton, Icon, TalkButton } from '../ui';
 
-export function Home({ today, listening, interim, onPills, onBP, onFeel, onTalkStart, onTalkStop, onNotForMe, onKnows }: {
+export function Home({ today, busy, talkSupported, listening, interim, onPills, onBP, onFeel, onTalkStart, onTalkStop, onNotForMe, onKnows }: {
   today: Today;
+  busy: boolean;
+  talkSupported: boolean;
   listening: boolean;
   interim: string;
   onPills: () => void;
@@ -20,10 +22,16 @@ export function Home({ today, listening, interim, onPills, onBP, onFeel, onTalkS
   const comma = useContext(LangContext) === 'zh' ? '，' : ', ';
   const hour = new Date().getHours();
   const greeting = t(hour < 12 ? 'home.greeting.morning' : hour < 18 ? 'home.greeting.afternoon' : 'home.greeting.evening');
+  const lang = useContext(LangContext);
+  const complete = [today.pills_taken, today.bp_logged, today.feel_logged].filter(Boolean).length;
+  const date = new Date(today.date ? `${today.date}T12:00:00` : Date.now()).toLocaleDateString(lang === 'zh' ? 'zh-SG' : 'en-SG', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
     <div className="sa-home">
-      <h1 className="sa-greeting">{greeting}{today.senior.name ? comma + today.senior.name : ''}</h1>
+      <div className="sa-welcome"><p className="sa-date">{date}</p><h1 className="sa-greeting">{greeting}{today.senior.name ? comma + today.senior.name : ''}</h1><p className="sa-welcome-note">{t('home.subtitle')}</p><span className="sa-sun" aria-hidden="true">☀</span></div>
+      <div className="sa-home-grid"><section className="sa-daily">
+      <div className="sa-daily-head"><h2>{t('home.today')}</h2><span>{t('home.progress', { count: complete })}</span></div>
+      <div className="sa-progress" aria-hidden="true">{[0,1,2].map((i) => <span key={i} className={i < complete ? 'is-complete' : ''} />)}</div>
 
       {today.checkin_due && (
         <div className="sa-card sa-checkin">
@@ -34,14 +42,17 @@ export function Home({ today, listening, interim, onPills, onBP, onFeel, onTalkS
       )}
 
       <div className="sa-buttons">
-        <BigButton icon={Icon.pill} label={t(today.pills_taken ? 'home.pills.done' : 'home.pills')} done={today.pills_taken} onClick={onPills} />
-        <BigButton icon={Icon.heart} label={t(today.bp_logged ? 'home.bp.done' : 'home.bp')} done={today.bp_logged} onClick={onBP} />
-        <BigButton icon={Icon.smile} label={t('home.feel')} done={today.feel_logged} onClick={onFeel} />
+        <BigButton icon={Icon.pill} label={t(today.pills_taken ? 'home.pills.done' : 'home.pills')} done={today.pills_taken} onClick={onPills} disabled={busy} />
+        <BigButton icon={Icon.heart} label={t(today.bp_logged ? 'home.bp.done' : 'home.bp')} done={today.bp_logged} onClick={onBP} disabled={busy} />
+        <BigButton icon={Icon.smile} label={t('home.feel')} done={today.feel_logged} onClick={onFeel} disabled={busy} />
       </div>
 
-      <TalkButton listening={listening} onStart={onTalkStart} onStop={onTalkStop}
-        label={listening ? t('checkin.release') : t('home.talk')} />
+      {talkSupported ? <TalkButton disabled={busy} listening={listening} onStart={onTalkStart} onStop={onTalkStop}
+        label={listening ? t('checkin.release') : t('home.talk')} /> : <BigButton tone="primary" icon={Icon.list} label={t('home.type')} onClick={onFeel} disabled={busy} />}
+      {talkSupported && <button type="button" className="sa-type-link" onClick={onFeel} disabled={busy}>{t('home.type')}</button>}
       {listening && <p className="sa-interim" aria-live="polite">{interim || t('checkin.listening')}</p>}
+      {busy && <p className="sa-note" role="status">{t('common.saving')}</p>}
+      </section><aside className="sa-beside">
 
       {today.haze && (
         <div className="sa-card sa-haze">
@@ -72,6 +83,7 @@ export function Home({ today, listening, interim, onPills, onBP, onFeel, onTalkS
       )}
 
       <button className="sa-link" onClick={onKnows}><span aria-hidden>{Icon.list}</span> {t('home.knows')}</button>
+      </aside></div>
     </div>
   );
 }

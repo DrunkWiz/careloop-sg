@@ -53,9 +53,6 @@ export default function FamilyHome({ view, log }: { view: FamilyView; log: LogDa
 
   return (
     <>
-      <header className="care-header">
-        <p className="care-eyebrow">CareLoop SG · {contact.name}</p>
-      </header>
 
       <section className={`hero is-${tone}`}>
         <div className="hero-top">

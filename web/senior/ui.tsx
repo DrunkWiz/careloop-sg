@@ -6,7 +6,7 @@ export function BigButton({ icon, label, onClick, done, tone = 'plain', disabled
   icon?: ReactNode; label: string; onClick: () => void; done?: boolean; tone?: 'plain' | 'primary' | 'alert'; disabled?: boolean;
 }) {
   return (
-    <button className={`sa-big sa-${tone}${done ? ' sa-done' : ''}`} onClick={onClick} disabled={disabled}>
+    <button type="button" className={`sa-big sa-${tone}${done ? ' sa-done' : ''}`} onClick={onClick} disabled={disabled}>
       {icon && <span className="sa-big-icon" aria-hidden>{icon}</span>}
       <span>{label}</span>
       {done && <span className="sa-check" aria-hidden>{Icon.check}</span>}
@@ -14,11 +14,13 @@ export function BigButton({ icon, label, onClick, done, tone = 'plain', disabled
   );
 }
 
-export function TalkButton({ listening, onStart, onStop, label }: {
-  listening: boolean; onStart: () => void; onStop: () => void; label: string;
+export function TalkButton({ listening, onStart, onStop, label, disabled }: {
+  listening: boolean; onStart: () => void; onStop: () => void; label: string; disabled?: boolean;
 }) {
   return (
     <button
+      type="button"
+      disabled={disabled}
       className={`sa-talk${listening ? ' sa-listening' : ''}`}
       onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); onStart(); }}
       onPointerUp={onStop}

@@ -2,6 +2,14 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 14 Oct 2026: app design and interaction fixes
+
+- Added a shared home page at `/`, with separate senior, family and centre entry points and clearly labelled synthetic demos.
+- Reworked the family layout for desktop and mobile; Health now leads with BP and medicine, provides 14/30-day periods (the insights backend has a 14-day minimum), and expands supporting findings on request. Added loading/retry and empty-chart states, and keyboard access to BP readings.
+- Reworked the senior page with a daily completion indicator, large controls, a direct typing option, responsive layout, translated UI labels and persistent language choice. API-authored content still follows the senior's stored profile language; a full runtime language switch for that content remains a separate backend task.
+- Fixed manual BP entry ignoring the API's urgent reply, duplicate text-form submissions, overlapping check-ins, and the client clock overriding the advanced demo date. No clinical thresholds or contract shapes changed.
+- Review fixes: the senior app's logo is no longer a link (a stray tap took seniors out of their app to the home page); removed the repeated "CareLoop SG · name" line under the family masthead; raised meaningful 9–11px labels (Health tiles, findings, "Switch family", timeline dates) to 12px. Decorative spaced labels stay small.
+- Validation: production TypeScript/Vite build; all 125 existing offline tests (54 language, 25 engine, 34 API, 4 synth, 8 reports); browser checks of desktop/390px layouts, 14-day period, one request per typed/pills submission, urgent BP response, and language persistence. Used a separate in-memory backend for mutations. Physical-phone speech recognition was not tested.
 ## Status, Tue 13 Oct 2026 evening
 
 | Piece | State |
