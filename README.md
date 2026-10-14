@@ -1,13 +1,55 @@
 # CareLoop SG
 
 CareLoop SG supports Singapore seniors with hypertension between doctor visits.
-Two apps, one codebase: a senior app (big buttons + voice, English/Singlish/Mandarin)
-and a caregiver app with a family view and an AAC (Active Ageing Centre) view.
-It stays quiet until something is wrong for *this* senior, then hands over with evidence.
+It stays quiet until something is wrong for *this* senior, then hands over to their family,
+or to their Active Ageing Centre (AAC) if they have no family, with the evidence.
 
 **Rules pick the rung. The model only understands and writes words.**
 
 Tencent Cloud Hackathon SG 2026, Healthcare track, NTU LKCMedicine Challenge 2.
+
+## The interfaces
+
+One web build, three apps, one backend. A check-in on the senior app shows up in the family app and the centre console.
+
+| Interface | Address | Who uses it |
+|---|---|---|
+| Home page | `/` | Everyone: three doors, for seniors, family and centres |
+| **Senior app** | `/senior?senior=tan` | The senior: big buttons, hold-to-talk or type, English, Singlish or Mandarin |
+| Role chooser | `/care` | Family or centre staff pick who they are |
+| **Family app** | `/care/family?contact=tan-weiling` | Family: Today, Health, Plan, Activities, You |
+| **CareLoop for Centres** | `/care/aac?worker=aac-siti` | AAC staff: Caseload, Report, Programmes |
+
+The family app and the centre console also print a one-page **GP brief** (PDF) for the doctor.
+
+Screenshots are from the synthetic demo after its fortnight (`POST /demo/advance {"days": 11}`). Mr Tan and Mr Ng are not real people.
+
+### Home page
+
+<img src="docs/screenshots/home.png" alt="CareLoop home page with three doors" width="800">
+
+### Senior app
+
+A short daily check-in. Mr Tan can talk or type; CareLoop pulls out the reading and checks anything it isn't sure of.
+
+<img src="docs/screenshots/senior.png" alt="Senior app check-in for Mr Tan" width="300">
+
+### Family app
+
+| Today | Health | A handover |
+|---|---|---|
+| <img src="docs/screenshots/family-today.png" alt="Family app Today tab" width="260"> | <img src="docs/screenshots/family-health.png" alt="Family app Health tab" width="260"> | <img src="docs/screenshots/family-handover.png" alt="Handover with evidence" width="260"> |
+| Status, today's check-in, what CareLoop noticed, and every day's decision, quiet days included | 14 or 30 days of blood pressure against their usual, the medicine calendar and steps | Why CareLoop handed over, what it already tried, and the options. Nothing happens until someone picks one |
+
+### CareLoop for Centres
+
+The caseload, sorted by who needs a look. At most one non-urgent alert per senior a week.
+
+<img src="docs/screenshots/centre-caseload.png" alt="Centre caseload" width="800">
+
+One senior: the day-by-day log, patterns in their own data, a befriending record ready to paste, and the care plan.
+
+<img src="docs/screenshots/centre-senior.png" alt="Centre view of one senior" width="800">
 
 ## Layout
 
@@ -18,13 +60,13 @@ backend/
   env/         data.gov.sg PSI + rainfall, with offline fixtures            (Vibu)
   synth/       persona generator, tuning set, frozen held-out set          (Vibu)
   language/    transcription, extraction, writer, guardrail                 (Mingyu)
-  reports/     weekly digest, handover pack, GP brief PDF                   (Nathan)
+  reports/     GP brief PDF, insights (patterns), activities nearby         (Nathan)
   api/         HTTP endpoints                                               (Vibu)
-web/           React + Vite, one build
+web/           React + Vite, one build: / home, /senior, /care
   shared/      design tokens, API client, i18n strings   (Nathan tokens, Mingyu i18n)
   senior/      the /senior app                           (Mingyu)
-  care/        the /care app: family view + AAC view     (Nathan)
-docs/          README, evaluation page, Tencent tools log
+  care/        /care chooser, family app, centre console (Nathan)
+docs/          evaluation, build log, user research, Tencent tools log, screenshots
 ```
 
 ## Run it
@@ -38,13 +80,15 @@ CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 87
 cd web && npm install && npm run dev:live
 ```
 
-Without the API (`npm run dev`), both apps run on in-browser mocks in the same shapes.
+Without the API (`npm run dev`), the apps run on in-browser mocks in the same shapes.
 
-**Senior app:** `/senior?senior=tan` (the demo senior).
+**Home page:** `/`.
+
+**Senior app:** `/senior?senior=tan` (the demo senior). Say "I'm fine lah, BP 186/112" for the red flag.
 
 **Caregiver app:**
 - `/care`: pick who you are. Family and centre staff get separate apps.
-- `/care/family?contact=tan-weiling`: the family app (Today, Health, Activities, Settings). Use `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
+- `/care/family?contact=tan-weiling`: the family app (Today, Health, Plan, Activities, You). Use `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
 - `/care/aac?worker=aac-siti`: CareLoop for Centres, the AAC staff console. `/care/aac/programmes` is the timetable and who each programme suits.
 - `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
 - Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
