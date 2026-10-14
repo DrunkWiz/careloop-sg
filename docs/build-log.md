@@ -55,10 +55,9 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - **Same-day red flag has no handover (engine bug).** When a rung-4 handover already exists that day, a red flag the same day reuses its `handover_id` (`ladder.py`, `if out.rung in ("4", "R") and not decision["handover_id"]`), so no `red_flag` handover is made. Messages and `status` are right, so nothing is held back, but there is nothing to claim. The demo hits this: advance 11 days, then say the red flag. The app falls back to showing the message with "I've seen this".
    - **Caseload drops claimed handovers.** It returns only open ones, so a claimed row loses its "handling it" state.
    - **Caseload has no centre.** The app reads the AAC id and name from a senior's `brief.json` to find the programmes.
-   - **Decision log endpoint added by Nathan** (`GET /senior/{id}/log`, in `backend/api/app.py`, tests in `test_log.py`): needs Vibu's OK. For a family contact it applies consent: `nothing` shows only red-flag days, `digest` hides numbers and the engine's reasons (they quote readings), `share_words: false` hides check-in words.
-   - **No sample programmes in the seed.** The AAC timetable starts empty on the API.
-   - **GP brief gaps.** `brief.json` has adherence for all medicines together, not per medicine, and nothing holds the family's questions (the brief leaves lines to write on).
-2. **Tencent tools gate.** Per the handbook, the project is not scored without proof it was built with CodeBuddy or WorkBuddy. Nothing is logged in `docs/tencent-tools.md` yet. Plan:
+   - **GP brief gap.** `brief.json` has adherence for all medicines together, not per medicine.
+   - **Engine wording.** For an AAC-path senior, rung 0 with an open handover says "waiting for the family to pick a next step" (it's the centre). The red-flag template (Mingyu's) says "reported BP" even when a synced cuff sent it.
+2. **Tencent tools gate (blocks scoring; do before the 18:00 Thu code freeze).** Per the handbook, the project is not scored without proof it was built with CodeBuddy or WorkBuddy. Nothing is logged in `docs/tencent-tools.md` yet, and Claude Code sessions don't count. Each of us does one real task in CodeBuddy and logs it with screenshots. Plan:
    - CodeBuddy for building and tests.
    - WorkBuddy for the weekly digest and GP brief if it fits.
    - Miora for design.
@@ -68,7 +67,10 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - The double-dose rule.
 4. **Decisions Vibu still has to confirm:**
    - **Hosting:** one always-on service plus managed Postgres for the deploy; SQLite on the demo laptop.
-   - **New endpoints:** `/pair`, `/care/pair-code`, the suggestion response, `/aac/{id}/programmes`, `brief.json`.
+   - **New endpoints** (all marked "(added)" in `contracts/README.md`):
+     - From the first build: `/pair`, `/care/pair-code`, the suggestion response, `/aac/{id}/programmes`, `brief.json`.
+     - Nathan's, for the caregiver app: `GET /senior/{id}/log` (consent applied for family: `nothing` shows only red-flag days, `digest` hides numbers and the engine's reasons, `share_words: false` hides check-in words), `/insights`, `/activities`, `GET/PUT /care-notes` (new store kind `carenotes`), `POST/GET /health-sync`, `POST /aac/{id}/programmes/import`, `GET/DELETE /aac/{id}/programmes/feed`, `POST /demo/health-sync/{id}`.
+   - **Engine and demo files Nathan changed:** `backend/engine/history.py` (steps keep the day's largest total, not the sum), `backend/api/demo.py` (12 seniors, phones, care plan, timetable), `backend/api/tests/test_api.py` (the caseload test now expects Mr Chandran's handover too).
    - **Invented rules:**
      - A double dose is rung 4.
      - "No reply for 3 days" is rung 3 for family-path seniors but rung 4 for AAC-path seniors.
@@ -81,6 +83,13 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - Installing the app on a real phone (needs HTTPS hosting).
    - Fitbit and OMRON data from a real phone: the CareLoop phone app that would read Apple Health or Health Connect isn't built; `backend/healthsync/simulate.py` stands in for it.
 6. **Still to collect:** the real family story for the video opening (with consent), and optionally a quote from an AAC worker.
+7. **Hosting on HTTPS.** Needed for judges to open a link, for installing the app on a phone, and for hold-to-talk on a phone. Waits on Vibu's hosting decision (item 4).
+8. **Not making it; say so in the deck:** the CareLoop phone app that reads Apple Health or Health Connect (simulated instead), a Chinese caregiver app, Postgres in use.
+
+### Done since this list was written
+
+- Sample programmes in the seed: the AAC-path seniors' Tampines centre has a timetable; the Ang Mo Kio centre starts empty, to show the import.
+- The GP brief prints the family's open questions and the next appointment (from the care plan).
 
 ## Decisions
 
