@@ -21,7 +21,7 @@ export function Feel({ prompt, talk, busy, onSend, onBack }: {
 
       {talk.supported ? (
         <>
-          <TalkButton listening={listening} onStart={talk.start} onStop={talk.stop}
+          <TalkButton listening={listening} disabled={busy} onStart={talk.start} onStop={talk.stop}
             label={listening ? t('checkin.release') : t('checkin.hold')} />
           {listening && <p className="sa-interim" aria-live="polite">{talk.interim || t('checkin.listening')}</p>}
           {talk.state === 'denied' && <p className="sa-note">{t('checkin.micDenied')}</p>}
@@ -36,7 +36,7 @@ export function Feel({ prompt, talk, busy, onSend, onBack }: {
         <BigButton label={t('checkin.quick.unwell')} onClick={() => onSend(t('checkin.text.unwell'), 'button')} disabled={busy} />
       </div>
 
-      <form className="sa-typed" onSubmit={(e) => { e.preventDefault(); if (text.trim()) onSend(text.trim(), 'typed'); }}>
+      <form className="sa-typed" onSubmit={(e) => { e.preventDefault(); if (!busy && text.trim()) onSend(text.trim(), 'typed'); }}>
         <label htmlFor="sa-feel-text">{t('checkin.type')}</label>
         <textarea id="sa-feel-text" rows={3} value={text} placeholder={t('checkin.placeholder')} onChange={(e) => setText(e.target.value)} />
         <BigButton tone="primary" label={t('common.send')} onClick={() => text.trim() && onSend(text.trim(), 'typed')} disabled={busy || !text.trim()} />

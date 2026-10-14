@@ -11,6 +11,7 @@ const fmtLong = (d: string) => new Date(d).toLocaleDateString('en-SG', { weekday
 
 export function BpTrend({ series, baseline }: { series: BpPoint[]; baseline: { systolic: number; diastolic: number } }) {
   const [hover, setHover] = useState<number | null>(null);
+  if (!series.length) return <p className="care-muted">No blood pressure readings yet.</p>;
   const W = 340, H = 190, P = { t: 14, r: 46, b: 22, l: 30 };
   const vals = series.flatMap((p) => [p.systolic, p.diastolic]).filter((v): v is number => v != null).concat(baseline.systolic, baseline.diastolic, 140);
   const lo = Math.floor((Math.min(...vals) - 5) / 10) * 10;
@@ -61,7 +62,7 @@ export function BpTrend({ series, baseline }: { series: BpPoint[]; baseline: { s
         )}
         {/* Hit targets wider than the marks: one column per day. */}
         {series.map((p, i) => (
-          <rect key={`hit-${p.date}`} x={x(i) - step / 2} y={P.t} width={step} height={H - P.t - P.b} fill="transparent"
+          <rect key={`hit-${p.date}`} tabIndex={0} role="button" aria-label={p.systolic != null ? `${fmtLong(p.date)}: ${p.systolic}/${p.diastolic} mmHg` : `${fmtLong(p.date)}: no reading`} onFocus={() => setHover(i)} onBlur={() => setHover(null)} x={x(i) - step / 2} y={P.t} width={step} height={H - P.t - P.b} fill="transparent"
             onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => setHover(i)}>
             <title>{p.systolic != null ? `${fmtLong(p.date)}: ${p.systolic}/${p.diastolic}` : `${fmtLong(p.date)}: no reading`}</title>
           </rect>
@@ -90,6 +91,7 @@ export function BpTrend({ series, baseline }: { series: BpPoint[]; baseline: { s
 // --- Medicine calendar ----------------------------------------------------------------------
 
 export function PillCalendar({ calendar }: { calendar: Insights['adherence']['calendar'] }) {
+  if (!calendar.length) return <p className="care-muted">No medicine reports yet.</p>;
   // Monday-first weeks, so a weekday pattern lines up in a column.
   const first = new Date(calendar[0].date);
   const pad = (first.getDay() + 6) % 7;
@@ -124,6 +126,7 @@ export function PillCalendar({ calendar }: { calendar: Insights['adherence']['ca
 
 export function StepsBars({ steps, baseline }: { steps: { date: string; steps: number | null }[]; baseline: number | null }) {
   const [hover, setHover] = useState<number | null>(null);
+  if (!steps.length) return <p className="care-muted">No activity reports yet.</p>;
   const W = 340, H = 120, P = { t: 10, r: 46, b: 20, l: 30 };
   const max = Math.max(...steps.map((s) => s.steps ?? 0), baseline ?? 0, 1000);
   const top = Math.ceil(max / 2000) * 2000;

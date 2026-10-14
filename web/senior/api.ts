@@ -1,7 +1,7 @@
 // Senior app's API client. Talks to Vibu's API when VITE_API_URL is set; otherwise to an
 // in-browser mock (mock.ts) so the app works before the contract freezes and without a backend.
 import type { Lang } from '../shared/i18n';
-import type { CheckInResult, Consent, KnownFact, PairResult, Today } from './types';
+import type { CheckInResult, Consent, KnownFact, PairResult, ReadingResult, Today } from './types';
 import { mock } from './mock';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
@@ -25,14 +25,13 @@ export const api = {
   checkin: (seniorId: string, text: string, lang: Lang, source: 'voice' | 'typed' | 'button'): Promise<CheckInResult> =>
     usingMock
       ? mock.checkin(seniorId, text, lang)
-      : http('POST', '/checkin', { senior_id: seniorId, text, language: lang, source, time: new Date().toISOString() }),
+      : http('POST', '/checkin', { senior_id: seniorId, text, language: lang, source }),
 
-  reading: (seniorId: string, bp: { systolic: number; diastolic: number; pulse?: number | null }, source: 'cuff' | 'voice'): Promise<void> =>
+  reading: (seniorId: string, bp: { systolic: number; diastolic: number; pulse?: number | null }, source: 'cuff' | 'voice'): Promise<ReadingResult> =>
     usingMock
-      ? mock.reading(seniorId, bp)
+      ? mock.reading(seniorId, bp).then(() => ({ message: null, rung: '0' as const }))
       : http('POST', '/reading', {
           senior_id: seniorId,
-          time: new Date().toISOString(),
           kind: 'bp',
           values: bp,
           source,
