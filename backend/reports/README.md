@@ -29,3 +29,19 @@ python -m unittest discover -s backend/reports/tests -t .
 ```
 
 The API imports this lazily, so without reportlab only `brief.pdf` fails (501), not the whole API.
+
+## Insights (`insights.py`)
+
+Patterns in one senior's own data, for the Health tab and the centre console (`GET /senior/{id}/insights`).
+Plain statistics over the engine's daily history, no model: BP trend (least-squares slope per week), this week
+against last, weekday patterns in missed doses, BP the day after a missed dose, BP on social days against other
+days, steps against their usual, check-in punctuality, haze days. Each finding carries `n`, the days or readings
+it rests on, and is only made above a minimum (`MIN_*` at the top of the file). They are patterns, not causes
+or diagnoses, and the app says so. It never picks a rung or contacts anyone: the rules do that.
+
+## Activities (`activities.py`)
+
+`GET /senior/{id}/activities`: the senior's own AAC and its weekly programmes (entered by staff, or the
+samples), the nearest AACs and community clubs from data.gov.sg with distances, what CareLoop would suggest
+today (worked out with `backend/env/places.suggest()`, not stored), and the last two weeks' suggestions with
+the senior's answers. Read-only.

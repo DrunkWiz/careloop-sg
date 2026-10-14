@@ -39,10 +39,10 @@ backend/
   env/              data.gov.sg PSI / rainfall / AAC + CC places, offline fixtures, suggest()  (Vibu)
   synth/            persona generator, tuning set, frozen held-out set, evaluate.py            (Vibu)
   api/              FastAPI app, store (SQLite or Postgres), demo seed + clock                 (Vibu)
-  reports/          GP brief PDF (gp_brief_pdf, needs reportlab)                              (Nathan)
+  reports/          GP brief PDF (needs reportlab), insights (patterns), activities nearby   (Nathan)
 web/                React + Vite, one build, two front doors
   senior/           /senior: big buttons, hold-to-talk, check-in, red flag, pairing           (Mingyu)
-  care/             /care family view, /care/aac AAC view; ?demo shows the demo clock bar     (Nathan)
+  care/             /care chooser, /care/family app, /care/aac centre console; ?demo clock   (Nathan)
   shared/           tokens.css (Nathan), i18n.ts (Mingyu), api.ts + contract.ts (Nathan)
 docs/               evaluation.md (blind, generated), evaluation-notes.md, build-log.md, tencent-tools.md
 ```
@@ -54,7 +54,7 @@ Each `backend/*/README.md` documents its own module.
 ```
 python -m venv .venv && .venv/Scripts/pip install -r backend/requirements.txt     # bin/ on macOS/Linux
 CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 8787
-cd web && npm install && npm run dev:live         # uses web/.env.live (API on :8787); /senior?senior=tan, /care?demo
+cd web && npm install && npm run dev:live         # uses web/.env.live (API on :8787); /senior?senior=tan, /care
 
 for s in language engine api synth reports; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
 cd web && npm run build                                                           # typecheck + build

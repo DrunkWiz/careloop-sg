@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import type { FamilyView, PairCodeOut } from '../shared/contract';
 import { createPairCode } from '../shared/api';
-import { BackLink } from './HandoverView';
 
 const SEES: Record<FamilyView['family_sees'], string> = {
   nothing: 'Only red flags.',
@@ -40,8 +39,7 @@ export default function Pairing({ view }: { view: FamilyView }) {
 
   return (
     <>
-      <BackLink to="/care" />
-      <h1>Settings</h1>
+      <h2 className="care-section-title">Settings</h2>
 
       <section className="care-card">
         <h2>What {view.senior.name} shares with you</h2>
@@ -50,6 +48,8 @@ export default function Pairing({ view }: { view: FamilyView }) {
           {view.senior.name} chose this on their phone and can change it there. It is their choice.
         </p>
       </section>
+
+      <AlertsCard />
 
       <section className="care-card">
         <h2>Family on CareLoop</h2>
@@ -96,5 +96,26 @@ export default function Pairing({ view }: { view: FamilyView }) {
         )}
       </section>
     </>
+  );
+}
+
+function AlertsCard() {
+  const supported = 'Notification' in window;
+  const [perm, setPerm] = useState(supported ? Notification.permission : 'denied');
+  return (
+    <section className="care-card">
+      <h2>Alerts on this device</h2>
+      {!supported ? (
+        <p className="care-muted">This browser can't show alerts.</p>
+      ) : perm === 'granted' ? (
+        <p className="care-muted">On. While CareLoop is open in a tab, you'll get an alert for a red flag or a handover.</p>
+      ) : perm === 'denied' ? (
+        <p className="care-muted">Blocked in this browser's settings.</p>
+      ) : (
+        <button className="care-secondary" onClick={async () => setPerm(await Notification.requestPermission())}>
+          Turn on alerts
+        </button>
+      )}
+    </section>
   );
 }

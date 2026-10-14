@@ -167,13 +167,22 @@ export interface BriefData {
   aac: { id: string; name: string | null; going: string[] } | null;
 }
 
-// Proposed, not in the contract yet: GET /senior/{id}/log?days=7, for the AAC befriending record.
+// GET /senior/{id}/log?days=N&contact=… (added, needs team OK): every day's decision, newest first.
+// For a family contact the senior's consent applies: null means "not shared" (or no decision that day).
 export interface LogDay {
   date: string;
-  rung: Rung;
-  rule_id: string;
-  reason: string;
-  checkins: { time: string; raw_text: string; language: Lang }[];
+  rung: Rung | null;
+  rule_id: string | null;
+  reason: string | null; // engine wording; only when readings are shared, or on a red flag
+  decision_id: string | null;
+  checkins: { time: string; raw_text: string; language: Lang }[]; // only when words are shared
+  replied: boolean | null;
+  pills: 'taken' | 'missed' | null;
+  social: boolean | null;
+  bp: { systolic: number; diastolic: number } | null;
+  psi: number | null;
+  rain_mm: number | null;
+  festival: string | null;
 }
 
 // POST /care/pair-code
@@ -190,4 +199,121 @@ export interface PairCodeOut {
   code: string;
   senior_id: string;
   contact_id: string;
+}
+
+// GET /senior/{id}/insights?days=30&contact=… (added, needs team OK): patterns in the senior's own data.
+export interface Finding {
+  id: string;
+  tone: 'watch' | 'good' | 'neutral';
+  title: string;
+  detail: string;
+  n: number; // how many days or readings it rests on
+}
+
+export interface Insights {
+  period: { from: string; to: string; days: number };
+  bp: {
+    shared: boolean;
+    series: BpPoint[];
+    baseline: { systolic: number; diastolic: number; fallback: boolean } | null;
+    last7_systolic: number | null;
+    prev7_systolic: number | null;
+    slope_per_week: number | null;
+    trend: 'rising' | 'falling' | 'steady' | 'unclear';
+    days_over_140: number | null;
+    readings_days: number;
+  };
+  adherence: {
+    reported_days: number;
+    taken_days: number;
+    missed_days: number;
+    streak_days: number;
+    by_weekday: { day: Weekday; missed: number; reported: number }[];
+    calendar: { date: string; pills: 'taken' | 'missed' | null }[];
+  };
+  activity: {
+    steps: { date: string; steps: number | null }[];
+    steps_baseline: number | null;
+    steps_last7_avg: number | null;
+    social_days_last7: number;
+    social_days_prev7: number;
+  } | null;
+  checkins: { replied_days: number; days: number; usual_time: string; median_first_time: string | null };
+  context: { rain_days: number; haze_days: number; festival_days: number };
+  findings: Finding[];
+  medicines: Medicine[];
+  running_low: { date: string; items: string[] }[];
+  note: string;
+}
+
+// GET /senior/{id}/activities?contact=… (added, needs team OK)
+export interface Place {
+  id: string;
+  kind: 'aac' | 'cc';
+  name: string;
+  address: string | null;
+  postal: string | null;
+  km: number;
+  lat: number;
+  lon: number;
+}
+
+export interface Activities {
+  today: string;
+  weekday: Weekday;
+  indoor_only: boolean;
+  why_indoor: 'rain' | 'haze' | null;
+  psi: number | null;
+  rain_mm: number | null;
+  likes: string[];
+  distance_from: string;
+  own_aac: {
+    id: string;
+    name: string;
+    address: string | null;
+    programmes: (ProgrammeIn & { id: string; sample: boolean; fits: string | null; today: boolean; hidden: boolean })[];
+  } | null;
+  nearby_aacs: Place[];
+  nearby_ccs: Place[];
+  suggested_today: { place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean; as_told_to_senior?: string }[];
+  suggestions: { id: string; date: string; place: string; kind: string; why_it_fits: string; indoor: boolean; sample: boolean; response: 'going' | 'not_for_me' | null }[];
+  source: string;
+}
+
+// GET/PUT /senior/{id}/care-notes?contact=… (added, needs team OK): kept together by every linked contact.
+export interface Appointment {
+  id: string;
+  date: string;
+  time?: string | null;
+  place: string;
+  purpose: string;
+  who_goes?: string | null;
+  notes_after: string;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  by: string;
+  added: string;
+  asked: boolean;
+  answer: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  due?: string | null;
+  owner?: string | null;
+  done: boolean;
+  done_by?: string | null;
+}
+
+export interface CareNotes {
+  appointments: Appointment[];
+  questions: Question[];
+  tasks: Task[];
+  emergency: { allergies: string; gp_name: string; gp_phone: string; home_address: string; notes: string };
+  updated_by?: string | null;
+  updated_at?: string | null;
 }

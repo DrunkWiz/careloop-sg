@@ -428,8 +428,182 @@ def brief_data(sid: str, days: int = 90):
         "events": [{"date": d["date"], "rung": d["rung"], "rule_id": d["rule_id"], "reason": d["reason"], "decision_id": d["id"]}
                    for d in decisions if d["rung"] in ("3", "4", "R")],
         "in_their_words": words, "aac": aac,
+        # From the care notes the family and centre keep (added: Nathan): their questions, and the next visit.
+        "family_questions": [q["text"] for q in (store.get("carenotes", f"notes-{sid}") or {}).get("questions", []) if not q.get("asked")],
+        "next_appointment": next((a for a in sorted((store.get("carenotes", f"notes-{sid}") or {}).get("appointments", []), key=lambda a: a["date"])
+                                  if a["date"] >= t.isoformat()), None),
         "note": "Generated from the CareLoop decision log. Not connected to any clinic system. Synthetic data in the demo.",
     }
+
+
+@app.get("/senior/{sid}/log")
+def decision_log(sid: str, days: int = 14, contact: Optional[str] = None):
+    """Every day's decision, rung 0 included, with that day's facts. Newest first. (added: Nathan, needs team OK)
+
+    For the family timeline and the AAC befriending record. Pass `contact` when a family member asks: the
+    senior's consent then applies. Red-flag days are always shown in full.
+    - family_sees "nothing": only red-flag days carry a rung and reason.
+    - family_sees "digest": no numbers (reasons are left out, since they quote readings; rule ids stay).
+    - share_words false: no check-in words.
+    AAC staff, and calls without `contact`, see everything (AAC consent is given at enrolment).
+    """
+    senior = senior_or_404(sid)
+    days = max(1, min(days, 60))
+    family = False
+    if contact is not None:
+        c = store.get("contact", contact)
+        if c is None or c["senior_id"] != sid:
+            raise HTTPException(403, "not a contact for this senior")
+        family = c["role"] == "family"
+    consent = senior.get("consent") or {}
+    sees = consent.get("family_sees", "digest") if family else "readings"
+    words_ok = consent.get("share_words", False) if family else True
+    activity_ok = consent.get("share_activity", True) if family else True
+
+    t = today()
+    start = t - timedelta(days - 1)
+    hist = build(store, senior, t, days=days)
+    decisions = {d["date"]: d for d in store.list("decision", senior_id=sid, day_from=start.isoformat(), day_to=t.isoformat())}
+    checkins: dict[str, list[dict]] = {}
+    for c in store.list("checkin", senior_id=sid, day_from=start.isoformat(), day_to=t.isoformat()):
+        checkins.setdefault(c["time"][:10], []).append(c)
+
+    out = []
+    for i in range(days):
+        d = t - timedelta(i)
+        key = d.isoformat()
+        dec = decisions.get(key)
+        h = hist.get(d)
+        red = bool(dec and dec["rung"] == "R")
+        hidden = sees == "nothing" and not red
+        numbers = sees == "readings" or red
+        out.append({
+            "date": key,
+            "rung": None if hidden or not dec else dec["rung"],
+            "rule_id": None if hidden or not dec else dec["rule_id"],
+            "reason": dec["reason"] if dec and numbers and not hidden else None,
+            "decision_id": dec["id"] if dec and not hidden else None,
+            "checkins": [{"time": c["time"], "raw_text": c["raw_text"], "language": c["language"]}
+                         for c in sorted(checkins.get(key, []), key=lambda c: c["time"])] if words_ok and not hidden else [],
+            "replied": bool(h and h.replies) if not hidden else None,
+            "pills": (None if hidden or not h else ("taken" if h.taken else "missed" if h.missed else None)),
+            "social": bool(h and h.social) if activity_ok and not hidden else None,
+            "bp": ({"systolic": round(h.sys), "diastolic": round(h.dia)} if h and h.sys and h.dia and numbers and not hidden else None),
+            "psi": h.psi if h else None, "rain_mm": h.rain_mm if h else None, "festival": h.festival if h else None,
+        })
+    return out
+
+
+def _viewer(sid: str, contact: Optional[str]) -> tuple[dict, bool, dict]:
+    """The senior, whether a family member is asking, and what they may see (consent applies to family only)."""
+    senior = senior_or_404(sid)
+    family = False
+    if contact is not None:
+        c = store.get("contact", contact)
+        if c is None or c["senior_id"] != sid:
+            raise HTTPException(403, "not a contact for this senior")
+        family = c["role"] == "family"
+    consent = senior.get("consent") or {}
+    return senior, family, {
+        "sees": consent.get("family_sees", "digest") if family else "readings",
+        "activity": consent.get("share_activity", True) if family else True,
+    }
+
+
+@app.get("/senior/{sid}/insights")
+def senior_insights(sid: str, days: int = 30, contact: Optional[str] = None):
+    """Patterns in the senior's own data: trends, weekday patterns, simple comparisons. (added: Nathan, needs team OK)
+
+    Plain statistics (backend/reports/insights.py), no model. For family, consent applies: "nothing" is 403
+    (red flags reach them anyway), "digest" drops readings, share_activity false drops steps and contact.
+    """
+    from backend.reports.insights import insights
+
+    senior, family, see = _viewer(sid, contact)
+    if see["sees"] == "nothing":
+        raise HTTPException(403, "the senior shares only red flags")
+    return insights(store, senior, today(), days=days, numbers=see["sees"] == "readings", activity=see["activity"])
+
+
+@app.get("/senior/{sid}/activities")
+def senior_activities(sid: str, contact: Optional[str] = None):
+    """Their own AAC's programmes, the nearest AACs and CCs (data.gov.sg), recent suggestions and answers,
+    and whether today calls for indoor options. (added: Nathan, needs team OK)"""
+    from backend.reports.activities import activities
+
+    senior, family, see = _viewer(sid, contact)
+    return activities(store, senior, today(), responses=see["activity"])
+
+
+# --- care notes: what the family and centre keep together (added: Nathan, needs team OK) -----------------
+
+class Appointment(BaseModel):
+    id: str = Field(max_length=40)
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time: Optional[str] = Field(default=None, max_length=10)
+    place: str = Field(default="", max_length=120)
+    purpose: str = Field(default="", max_length=200)
+    who_goes: Optional[str] = Field(default=None, max_length=60)
+    notes_after: str = Field(default="", max_length=1000)
+
+
+class Question(BaseModel):
+    id: str = Field(max_length=40)
+    text: str = Field(min_length=1, max_length=300)
+    by: str = Field(default="", max_length=60)
+    added: str = Field(default="", max_length=30)
+    asked: bool = False
+    answer: str = Field(default="", max_length=500)
+
+
+class Task(BaseModel):
+    id: str = Field(max_length=40)
+    title: str = Field(min_length=1, max_length=200)
+    due: Optional[str] = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    owner: Optional[str] = Field(default=None, max_length=60)
+    done: bool = False
+    done_by: Optional[str] = Field(default=None, max_length=60)
+
+
+class Emergency(BaseModel):
+    allergies: str = Field(default="", max_length=300)
+    gp_name: str = Field(default="", max_length=120)
+    gp_phone: str = Field(default="", max_length=30)
+    home_address: str = Field(default="", max_length=200)
+    notes: str = Field(default="", max_length=500)
+
+
+class CareNotes(BaseModel):
+    appointments: list[Appointment] = Field(default_factory=list, max_length=50)
+    questions: list[Question] = Field(default_factory=list, max_length=50)
+    tasks: list[Task] = Field(default_factory=list, max_length=100)
+    emergency: Emergency = Field(default_factory=Emergency)
+
+
+def _linked_contact(sid: str, contact: Optional[str]) -> dict:
+    c = store.get("contact", contact) if contact else None
+    if c is None or c["senior_id"] != sid:
+        raise HTTPException(403, "not a contact for this senior")
+    return c
+
+
+@app.get("/senior/{sid}/care-notes")
+def get_care_notes(sid: str, contact: Optional[str] = None):
+    """Appointments, questions for the doctor, shared to-dos and the emergency card. Every linked contact
+    sees and edits the same notes. Nothing here changes what the engine decides."""
+    senior_or_404(sid)
+    _linked_contact(sid, contact)
+    doc = store.get("carenotes", f"notes-{sid}")
+    return doc or {"id": f"notes-{sid}", "senior_id": sid, **CareNotes().model_dump(), "updated_by": None, "updated_at": None}
+
+
+@app.put("/senior/{sid}/care-notes")
+def put_care_notes(sid: str, body: CareNotes, contact: Optional[str] = None):
+    senior_or_404(sid)
+    c = _linked_contact(sid, contact)
+    doc = {"id": f"notes-{sid}", "senior_id": sid, **body.model_dump(), "updated_by": c["name"], "updated_at": now().isoformat()}
+    store.put("carenotes", doc)
+    return doc
 
 
 @app.get("/senior/{sid}/brief.pdf")

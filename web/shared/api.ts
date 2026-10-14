@@ -1,7 +1,10 @@
 // Caregiver-app API client. Set VITE_API_URL to hit the real backend; without it, calls are served by
 // in-browser mocks with the same shapes (web/care/mock.ts, web/care/mockAac.ts).
 import type {
+  Activities,
   BriefData,
+  CareNotes,
+  Insights,
   Caseload,
   FamilyView,
   Handover,
@@ -13,6 +16,7 @@ import type {
 } from './contract';
 import * as mock from '../care/mock';
 import * as mockAac from '../care/mockAac';
+import * as mockInsights from '../care/mockInsights';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
 
@@ -63,15 +67,41 @@ export function briefPdfUrl(seniorId: string): string | null {
   return BASE ? `${BASE}/senior/${seniorId}/brief.pdf` : null;
 }
 
-// Proposed endpoint, not in the contract yet. Returns null when the API doesn't have it.
-export async function getLog(seniorId: string, days = 7): Promise<LogDay[] | null> {
-  if (!BASE) return mockAac.getLog(seniorId);
+// Added endpoint (needs team OK). Pass the family contact so the senior's consent applies.
+// Returns null when the API doesn't have it.
+export async function getLog(seniorId: string, days = 14, contactId?: string): Promise<LogDay[] | null> {
+  if (!BASE) return seniorId === 'tan' ? mock.getLog(days) : mockAac.getLog(seniorId, days);
   try {
-    return await http(`/senior/${seniorId}/log?days=${days}`);
+    return await http(`/senior/${seniorId}/log?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) return null;
     throw e;
   }
+}
+
+// Added endpoints (need team OK). Pass the family contact so the senior's consent applies.
+export function getInsights(seniorId: string, contactId?: string, days = 30): Promise<Insights> {
+  return BASE
+    ? http(`/senior/${seniorId}/insights?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mockInsights.getInsights(seniorId);
+}
+
+export function getActivities(seniorId: string, contactId?: string): Promise<Activities> {
+  return BASE
+    ? http(`/senior/${seniorId}/activities${contactId ? `?contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mockInsights.getActivities(seniorId);
+}
+
+// Added endpoint (needs team OK). Every linked contact reads and writes the same notes.
+export function getCareNotes(seniorId: string, contactId: string): Promise<CareNotes> {
+  return BASE ? http(`/senior/${seniorId}/care-notes?contact=${encodeURIComponent(contactId)}`) : mock.getCareNotes(seniorId);
+}
+
+export function putCareNotes(seniorId: string, contactId: string, notes: CareNotes): Promise<CareNotes> {
+  const { updated_by: _b, updated_at: _a, ...body } = notes;
+  return BASE
+    ? http(`/senior/${seniorId}/care-notes?contact=${encodeURIComponent(contactId)}`, { method: 'PUT', body: JSON.stringify(body) })
+    : mock.putCareNotes(seniorId, notes);
 }
 
 export function getProgrammes(aacId: string): Promise<Programme[]> {

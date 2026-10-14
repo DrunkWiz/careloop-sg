@@ -38,7 +38,11 @@ Owner: Vibu. Frozen Tue 13 Oct 23:00. **After the freeze, a change needs all thr
 | `GET/PUT /aac/{aac_id}/programmes` (weekly timetable, entered once) **(added)** | AAC view |
 | `POST /handover/{id}/claim` `{contact_id, choice}`; 400 if `choice` isn't an option | Both care views |
 | `GET /senior/{id}/brief.json` (everything the GP brief needs) **(added)** | Family view, reports |
-| `GET /senior/{id}/brief.pdf` (501 until `backend/reports` has `gp_brief_pdf`) | Family view |
+| `GET /senior/{id}/brief.pdf` (one-page GP brief, `backend/reports`) | Family view |
+| `GET /senior/{id}/log?days=14&contact={id}` (every day's decision, rung 0 included; consent applied for family) **(added)** | Family timeline, AAC befriending record |
+| `GET /senior/{id}/insights?days=30&contact={id}` (patterns in their own data, `backend/reports/insights.py`; consent applied) **(added)** | Family Health tab, centre console |
+| `GET /senior/{id}/activities?contact={id}` (own AAC programmes, nearest AACs and CCs, today's suggestions) **(added)** | Family Activities tab, centre console |
+| `GET/PUT /senior/{id}/care-notes?contact={id}` (appointments, questions for the doctor, shared to-dos, emergency card; any linked contact; new store kind `carenotes`) **(added)** | Family Plan tab, centre console, GP brief |
 | `POST /demo/advance` `{days}`, `POST /demo/reset` | Demo only |
 | `GET /meta` (model chain, data sources, version) | Everyone |
 

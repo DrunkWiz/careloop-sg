@@ -51,3 +51,34 @@ export function markRedFlagSeen(id: string) {
   }
 }
 
+
+// While something needs the person: badge the tab title, and (if they turned alerts on) one notification
+// per new alert. Only while CareLoop is open in a tab; there is no push service.
+export function useAlert(title: string | null, body: string) {
+  useEffect(() => {
+    const base = 'CareLoop SG';
+    document.title = title ? `(!) ${title} · ${base}` : base;
+    if (!title) return;
+    const key = `careloop-alerted:${title}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      /* no storage: may notify again on reload */
+    }
+    if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible') {
+      new Notification(title, { body });
+    }
+  }, [title, body]);
+}
+
+// Bumps when the demo clock moves (or anything else asks for a refresh), so data that isn't polled reloads.
+export function useRefreshTick(): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const on = () => setTick((n) => n + 1);
+    window.addEventListener(REFRESH_EVENT, on);
+    return () => window.removeEventListener(REFRESH_EVENT, on);
+  }, []);
+  return tick;
+}

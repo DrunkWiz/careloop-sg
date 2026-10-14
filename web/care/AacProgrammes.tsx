@@ -1,9 +1,10 @@
 // Weekly programme timetable (GET/PUT /aac/{aac_id}/programmes). Staff enter it once; it feeds every
 // linked senior's suggestions.
 import { useEffect, useState } from 'react';
-import type { Programme, ProgrammeIn, Weekday } from '../shared/contract';
-import { getProgrammes, putProgrammes } from '../shared/api';
+import type { Activities, CaseloadRow, Programme, ProgrammeIn, Weekday } from '../shared/contract';
+import { getActivities, getProgrammes, putProgrammes } from '../shared/api';
 import { BackLink } from './HandoverView';
+import { timeKey } from './ActivitiesView';
 
 const DAYS: { id: Weekday; label: string }[] = [
   { id: 'mon', label: 'Mon' },
@@ -21,7 +22,29 @@ const strip = ({ title, title_zh, weekdays, time, tags, indoor, free }: Programm
 
 const blank = { title: '', weekdays: [] as Weekday[], time: '10:00', indoor: true, free: true };
 
-export default function AacProgrammes({ centre }: { centre: { id: string; name: string } }) {
+// Which seniors each programme suits, from what they told CareLoop they like (the same match the
+// engine's suggestions use). Matched by title, so it works for entered and sample timetables alike.
+function useSuits(seniors: CaseloadRow[]) {
+  const [acts, setActs] = useState<{ name: string; a: Activities }[]>([]);
+  // Refetch when the caseload's members change, not on every 15-second refresh.
+  const key = seniors.map((r) => `${r.senior.id}:${r.contact_id}`).join(',');
+  useEffect(() => {
+    Promise.all(seniors.map((r) => getActivities(r.senior.id, r.contact_id).then((a) => ({ name: r.senior.name, a }), () => null))).then(
+      (xs) => setActs(xs.filter((x): x is { name: string; a: Activities } => !!x)),
+    );
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  const suits = (title: string) =>
+    acts.flatMap(({ name, a }) => {
+      const p = a.own_aac?.programmes.find((x) => x.title === title);
+      return p?.fits ? [{ name, like: p.fits }] : [];
+    });
+  return { acts, suits };
+}
+
+export default function AacProgrammes({ centre, seniors }: { centre: { id: string; name: string }; seniors: CaseloadRow[] }) {
+  const { acts, suits } = useSuits(seniors);
+  const samples = acts.find((x) => x.a.own_aac?.id === centre.id)?.a.own_aac?.programmes.filter((p) => p.sample) ?? [];
+  const ccs = acts[0]?.a.nearby_ccs ?? [];
   const [list, setList] = useState<Programme[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -70,11 +93,24 @@ export default function AacProgrammes({ centre }: { centre: { id: string; name: 
       {error && <p className="care-error">{error}</p>}
       {!list && !error && <p className="care-muted">Loading…</p>}
       {list?.some((p) => p.sample) && <p className="care-notice">These are sample programmes for the demo. Replace them with your centre's.</p>}
-      {list && !list.length && <p className="care-muted">No programmes yet.</p>}
+      {list && !list.length && (
+        <section className="care-card">
+          <p>No timetable entered yet. Seniors are being offered the sample timetable meanwhile.</p>
+          {samples.length > 0 && (
+            <button
+              className="care-secondary"
+              disabled={busy}
+              onClick={() => save(samples.map(({ title, title_zh, weekdays, time, tags, indoor, free }) => ({ title, title_zh, weekdays, time, tags, indoor, free })))}
+            >
+              Start from the sample timetable ({samples.length} programmes)
+            </button>
+          )}
+        </section>
+      )}
 
       {list &&
         DAYS.map(({ id, label }) => {
-          const items = list.filter((p) => p.weekdays.includes(id)).sort((a, b) => a.time.localeCompare(b.time));
+          const items = list.filter((p) => p.weekdays.includes(id)).sort((a, b) => timeKey(a.time) - timeKey(b.time));
           if (!items.length) return null;
           return (
             <section key={id} className="care-card aac-day">
@@ -89,6 +125,16 @@ export default function AacProgrammes({ centre }: { centre: { id: string; name: 
                         {p.indoor ? 'Indoor' : 'Outdoor'} · {p.free ? 'Free' : 'Small fee'}
                         {p.sample && ' · Sample'}
                       </span>
+                      {suits(p.title).length > 0 && (
+                        <span className="suits">
+                          Suits{' '}
+                          {suits(p.title).map((x) => (
+                            <span key={x.name} className="suit-chip">
+                              {x.name} <em>({x.like})</em>
+                            </span>
+                          ))}
+                        </span>
+                      )}
                     </span>
                     <button className="care-link aac-remove" disabled={busy} onClick={() => remove(p)} aria-label={`Remove ${p.title}`}>
                       Remove
@@ -146,6 +192,24 @@ export default function AacProgrammes({ centre }: { centre: { id: string; name: 
             Add a programme
           </button>
         )
+      )}
+
+      {ccs.length > 0 && (
+        <section className="care-card">
+          <h2>Community clubs nearby</h2>
+          <p className="care-muted">From PA's list on data.gov.sg. CareLoop offers the nearest one when there's nothing at your centre that day.</p>
+          <ul className="act-list">
+            {ccs.map((c) => (
+              <li key={c.id} className="act-item">
+                <span className="act-kind is-cc">CC</span>
+                <span className="act-body">
+                  <strong>{c.name}</strong>
+                  <span className="care-muted">{c.km} km · {c.address}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </>
   );

@@ -15,7 +15,7 @@ import threading
 from typing import Iterable
 
 KINDS = ("senior", "contact", "reading", "checkin", "envday", "decision", "message", "handover",
-         "suggestion", "knows", "paircode", "programme")
+         "suggestion", "knows", "paircode", "programme", "carenotes")  # carenotes: added by Nathan, needs team OK
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS docs (

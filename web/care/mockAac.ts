@@ -77,8 +77,7 @@ const aminahHandover: Handover = {
     baseline: null,
     dates: [day(2), day(1), day(0)],
     tried: [
-      { date: day(2), rung: '1', what: 'no reply; check-in sent again at noon' },
-      { date: day(1), rung: '1', what: 'no reply; a gentler check-in in the evening' },
+      { date: day(1), rung: '3', what: 'no reply and no steps for 2 days' },
     ],
   },
   options: [
@@ -141,13 +140,13 @@ export function getBrief(seniorId: string): Promise<BriefData> {
 // --- befriending record (proposed endpoint) ------------------------------------------------
 
 const quiet = (said: string, time = '09:15'): [Rung, string, string, string | null, string] =>
-  ['0', '0.in_range', 'no action, because BP within range for them; movement normal for them', said, time];
+  ['0', '0.nothing', 'no action, because BP within range for them; movement normal for them', said, time];
 
 const LOGS: Record<string, [Rung, string, string, string | null, string][]> = {
   aminah: [
     ['4', '4.no_contact', 'no reply to check-ins for 3 days and very low movement, not explained by rain or haze', null, ''],
-    ['1', '1.no_reply', 'no reply; a gentler check-in in the evening', null, ''],
-    ['1', '1.no_reply', 'no reply; check-in sent again at noon', null, ''],
+    ['3', '3.no_data', 'no reply and no steps for 2 days', null, ''],
+    ['0', '0.nothing', 'no action, because one day without a reply never escalates', null, ''],
     quiet('Morning! Took my medicine. Going to the market.', '09:30'),
     quiet('Ok, medicine taken.'),
     quiet('Good morning. Cooking for my neighbour today.'),
@@ -163,27 +162,37 @@ const LOGS: Record<string, [Rung, string, string, string | null, string][]> = {
     ['1', '1.odd_reading', 'one odd reading 141/86 against a baseline of 130; offer to re-measure', '早', '09:01'],
   ],
   ng: [
-    ['3', '3.low_activity', 'low movement and low contact on 4 days this week (AAC caseload row only, no alert)', 'Stay home today lor.', '09:30'],
-    ['0', '0.rain', 'no action, because low movement explained by rain (NEA rainfall, nearest station)', 'Raining, stay home.', '09:40'],
+    ['3', '3.activity_week', 'low movement and low contact on 4 days this week (AAC caseload row only, no alert)', 'Stay home today lor.', '09:30'],
+    ['0', '0.nothing', 'no action, because low movement explained by rain (NEA rainfall, nearest station)', 'Raining, stay home.', '09:40'],
     quiet('Eat medicine already.'),
-    ['0', '0.low_day', 'no action, because one low day never escalates', 'Stay home today lor.', '09:20'],
+    ['0', '0.nothing', 'no action, because one low day never escalates', 'Stay home today lor.', '09:20'],
     quiet('Kopi with my kakis.'),
-    ['0', '0.low_day', 'no action, because one low day never escalates', 'Stay home today lor.', '09:25'],
+    ['0', '0.nothing', 'no action, because one low day never escalates', 'Stay home today lor.', '09:25'],
     quiet('Ok lah, today fine.'),
   ],
 };
 
-export function getLog(seniorId: string): Promise<LogDay[] | null> {
-  const days = LOGS[seniorId] ?? Array.from({ length: 7 }, () => quiet(S[seniorId]?.language === 'zh' ? '我吃了药。' : 'Took my pills.'));
+export function getLog(seniorId: string, n = 7): Promise<LogDay[] | null> {
+  const base = LOGS[seniorId] ?? [];
+  const filler = quiet(S[seniorId]?.language === 'zh' ? '我吃了药。' : 'Took my pills.');
+  const days = Array.from({ length: n }, (_, i) => base[i] ?? filler);
   const red = seniorId === 'lee' && new URLSearchParams(window.location.search).get('scenario') === 'redflag';
   return delay(
-    days.map(([rung, rule_id, reason, said, time], i) => {
+    days.map(([rung, rule_id, reason, said, time], i): LogDay => {
       if (red && i === 0) {
         [rung, rule_id, reason, said, time] = ['R', 'R.symptom', 'danger symptom reported: chest pain', 'chest pain since morning', '09:18'];
       }
+      const bp = reason.match(/BP (\d+)\/(\d+)/);
       return {
-        date: day(i), rung, rule_id, reason,
+        date: day(i), rung, rule_id, reason, decision_id: `dec-${seniorId}-${day(i)}`,
         checkins: said ? [{ time: `${day(i)}T${time}:00+08:00`, raw_text: said, language: S[seniorId]?.language ?? 'en' }] : [],
+        replied: !!said,
+        pills: said ? 'taken' : null,
+        social: !!said && /kopi|friends|kakis|咖啡|market|neighbour/i.test(said),
+        bp: bp ? { systolic: +bp[1], diastolic: +bp[2] } : null,
+        psi: 45,
+        rain_mm: /rain/i.test(reason) ? 8.4 : 0,
+        festival: null,
       };
     }),
   );

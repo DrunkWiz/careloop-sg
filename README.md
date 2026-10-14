@@ -43,9 +43,9 @@ Without the API (`npm run dev`), both apps run on in-browser mocks in the same s
 **Senior app:** `/senior?senior=tan` (the demo senior).
 
 **Caregiver app:**
-- `/care`: the family view, as Wei Ling. Add `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
-- `/care/aac`: the AAC caseload, as worker Siti (`?worker=aac-siti`). `/care/aac/programmes` is the timetable.
-- `/care/pair`: settings and pairing codes.
+- `/care`: pick who you are. Family and centre staff get separate apps.
+- `/care/family?contact=tan-weiling`: the family app (Today, Health, Activities, Settings). Use `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
+- `/care/aac?worker=aac-siti`: CareLoop for Centres, the AAC staff console. `/care/aac/programmes` is the timetable and who each programme suits.
 - `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
 - Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
 
