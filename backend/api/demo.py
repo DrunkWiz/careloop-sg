@@ -1,20 +1,32 @@
 """Demo data and the demo clock. Synthetic people only, said plainly in the app.
 
-seed(): two family-path seniors and three AAC-path seniors with 40 calm days ending on the demo
-"today". advance(n): moves the clock n days; each new day gets scripted synthetic data and the
-engine runs for every senior. Mr Tan's script is the video: two quiet weeks in which a BP drift
-starts, rungs 1-3 try gently, and rung 4 hands over to his daughter. The red flag ("I'm fine lah"
-at 186/112) is NOT scripted: it is said live into the senior app.
+seed(): twelve seniors (five on the family path, seven on the AAC path, at two centres) with 40 calm days
+ending on the demo "today". advance(n): moves the clock n days; each new day gets scripted synthetic data
+and the engine runs for every senior. Mr Tan's script is the video: two quiet weeks in which a BP drift
+starts, rungs 1-3 try gently, and rung 4 hands over to his daughter. The red flag ("I'm fine lah" at
+186/112) is NOT scripted: it is said live into the senior app.
+
+The other scripts, over the same fortnight:
+- Mdm Kaur: all quiet. Her Fitbit and OMRON cuff sync through Apple Health.
+- Encik Rahman: forgets his pill on Sundays (a weekday pattern). Fitbit through Health Connect.
+- Mdm Chua: one odd reading, then a mild rise. She shares a weekly summary only, not her readings.
+- Mr Lim: stops answering check-ins, but his Fitbit still syncs steps, so it isn't treated as no contact.
+- Mr Chandran: a BP drift seen through his OMRON cuff, handed over to his centre.
+- Mr Osman: no reply and no steps for days, no weather excuse: handed over to his centre.
+Five seniors have a phone that syncs from Health Connect or Apple Health (DEVICES); for the others,
+steps are synthetic phone-pedometer counts.
 """
 from __future__ import annotations
 
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 from backend.engine import run_day, trust_check
 from backend.engine.ladder import SGT
 from backend.env.data import envday, fetch_envday
 from backend.env.places import sample_programmes
+from backend.healthsync import ingest
+from backend.healthsync.simulate import phone_day
 from backend.language import understand
 from backend.language.gateway import Chain
 
@@ -29,20 +41,49 @@ SENIORS = [
     ("lee", "Mdm Lee", "en", "520999", "east", "aac", "aac-105", ["crafts", "chatting"], (135, 84), 3000),
     ("goh", "Mr Goh", "zh", "521999", "east", "aac", "aac-105", ["exercise", "walking"], (126, 78), 6100),
     ("ng", "Mr Ng", "en-SG", "529999", "east", "aac", "aac-105", ["kopi", "chatting"], (138, 86), 2600),
+    ("kaur", "Mdm Kaur", "en", "460999", "east", "family", "aac-105", ["walking", "gardening", "chatting"], (124, 76), 6800),
+    ("rahman", "Encik Rahman", "en", "650999", "west", "family", "aac-002", ["kopi", "exercise"], (134, 84), 4200),
+    ("chua", "Mdm Chua", "zh", "310999", "central", "family", "aac-100", ["karaoke", "mahjong"], (130, 80), 3500),
+    ("lim", "Mr Lim", "en-SG", "522999", "east", "aac", "aac-105", ["walking", "kopi"], (130, 82), 5600),
+    ("chandran", "Mr Chandran", "en", "523999", "east", "aac", "aac-105", ["exercise", "health"], (129, 80), 4800),
+    ("yeo", "Mdm Yeo", "zh", "561999", "central", "aac", "aac-100", ["crafts", "singing"], (127, 79), 3300),
+    ("osman", "Mr Osman", "en-SG", "562999", "central", "aac", "aac-100", ["mahjong", "kopi"], (133, 83), 2900),
 ]
 CONTACTS = {
+    # An AAC contact's id starts with its worker: "aac-siti:lee" is Siti's link to Mdm Lee.
     "tan": [("tan-weiling", "Wei Ling", "family", "en"), ("tan-kelvin", "Kelvin", "family", "en")],
     "wong": [("wong-mei", "Mei", "family", "zh")],
     "lee": [("aac-siti:lee", "Siti (AAC)", "aac", "en")],
     "goh": [("aac-siti:goh", "Siti (AAC)", "aac", "en")],
     "ng": [("aac-siti:ng", "Siti (AAC)", "aac", "en")],
+    "kaur": [("kaur-priya", "Priya", "family", "en"), ("kaur-arjun", "Arjun", "family", "en")],
+    "rahman": [("rahman-nur", "Nur", "family", "en"), ("rahman-maria", "Maria (helper)", "family", "en")],
+    "chua": [("chua-junjie", "Jun Jie", "family", "en"), ("chua-huimin", "Hui Min", "family", "zh")],
+    "lim": [("aac-siti:lim", "Siti (AAC)", "aac", "en")],
+    "chandran": [("aac-siti:chandran", "Siti (AAC)", "aac", "en")],
+    "yeo": [("aac-farid:yeo", "Farid (AAC)", "aac", "en")],
+    "osman": [("aac-farid:osman", "Farid (AAC)", "aac", "en")],
 }
 AAC_WORKER = "aac-siti"
+CONSENT = {  # everyone else shares readings, words and activity
+    "chua": {"family_sees": "digest", "share_words": False, "share_activity": True},
+    "kaur": {"family_sees": "readings", "share_words": False, "share_activity": True},
+}
+# The phone each senior's data syncs from: platform, apps writing to it, usual resting heart rate.
+DEVICES = {
+    "tan": ("health_connect", ("fitbit", "omron"), 68),
+    "kaur": ("healthkit", ("fitbit", "omron"), 64),
+    "rahman": ("health_connect", ("fitbit",), 72),
+    "lim": ("health_connect", ("fitbit",), 70),
+    "chandran": ("health_connect", ("fitbit", "omron"), 74),
+}
 
 TEXT = {
-    "en": {"ok": "Feeling ok today.", "took": "Took my pills.", "social": "Went to the centre with friends.", "home": "Stayed home today."},
-    "en-SG": {"ok": "Ok lah, today fine.", "took": "Eat medicine already.", "social": "Kopi with my kakis.", "home": "Stay home today lor."},
-    "zh": {"ok": "今天还好。", "took": "我吃了药。", "social": "和朋友去了活动中心。", "home": "今天在家。"},
+    "en": {"ok": "Feeling ok today.", "took": "Took my pills.", "social": "Went to the centre with friends.", "home": "Stayed home today.",
+           "missed": "Didn't take my medicine today, forgot."},
+    "en-SG": {"ok": "Ok lah, today fine.", "took": "Eat medicine already.", "social": "Kopi with my kakis.", "home": "Stay home today lor.",
+              "missed": "Never eat my medicine today, forgot."},
+    "zh": {"ok": "今天还好。", "took": "我吃了药。", "social": "和朋友去了活动中心。", "home": "今天在家。", "missed": "今天忘了吃药。"},
 }
 
 
@@ -51,25 +92,66 @@ def today(store) -> date:
     return date.fromisoformat(v) if v else datetime.now(SGT).date()
 
 
+def _phone(store, sid: str, d: date, *, steps: int | None, bp: list[tuple[str, int, int]], upto: datetime | None = None) -> dict:
+    """The senior's phone syncs: Fitbit and OMRON records, through Health Connect or Apple Health."""
+    platform, apps, hr = DEVICES[sid]
+    rng = random.Random(f"phone-num-{sid}-{d}")
+    records = phone_day(sid, d, platform=platform, apps=apps, steps=steps, resting_hr=hr + rng.randint(-3, 3),
+                        sleep_hours=round(rng.uniform(5.6, 7.8), 1), bp=bp, upto=upto)
+    return ingest(store, sid, platform, records, now=upto or datetime.combine(d, time(22, 30), SGT))
+
+
+def phone_sync(store, sid: str, now: datetime, bp: tuple[int, int] | None = None) -> dict | None:
+    """For the demo's "sync now": what the phone has for today so far, plus a cuff measurement if given."""
+    if sid not in DEVICES:
+        return None
+    done = store.get("reading", f"hs-{sid}-steps-{now.date()}")
+    steps = done["values"]["count"] if done else next(s[9] for s in SENIORS if s[0] == sid)
+    cuff = [(now.strftime("%H:%M"), bp[0], bp[1])] if bp else []
+    return _phone(store, sid, now.date(), steps=steps, bp=cuff, upto=now)
+
+
 def _day_data(store, sid: str, d: date, *, lang: str, base: tuple[int, int], steps: int, extra_sys: float = 0,
-              text_kind: str | None = None, steps_mult: float = 1.0, psi: int = 45, region: str = "central") -> None:
+              text_kind: str | None = None, steps_mult: float = 1.0, psi: int = 45, region: str = "central",
+              silent: bool = False, no_steps: bool = False) -> None:
+    # The random draws stay in the order they had before phones were added, so every day's numbers are unchanged.
     rng = random.Random(f"{sid}-{d}")
     t = lambda hhmm: f"{d.isoformat()}T{hhmm}:00+08:00"
+    device = DEVICES.get(sid)
+    cuff = bool(device and "omron" in device[1])
+    bp = None
     if rng.random() < 0.85:
+        bp = (round(rng.gauss(base[0] + extra_sys, 4)), round(rng.gauss(base[1] + extra_sys / 2, 3)), rng.randint(64, 82))
+    count = max(0, round(rng.gauss(steps * steps_mult, steps * 0.1)))
+    if silent:
+        bp = None
+    if bp and not cuff:
         r = {"id": f"{sid}-bp-{d}", "senior_id": sid, "time": t("08:05"), "kind": "bp", "source": "synthetic", "confidence": 1,
-             "values": {"systolic": round(rng.gauss(base[0] + extra_sys, 4)), "diastolic": round(rng.gauss(base[1] + extra_sys / 2, 3)),
-                        "pulse": rng.randint(64, 82)}}
+             "values": {"systolic": bp[0], "diastolic": bp[1], "pulse": bp[2]}}
         store.put("reading", {**r, "trust": trust_check(r)})
-    r = {"id": f"{sid}-steps-{d}", "senior_id": sid, "time": t("21:00"), "kind": "steps", "source": "synthetic", "confidence": 1,
-         "values": {"count": max(0, round(rng.gauss(steps * steps_mult, steps * 0.1)))}}
-    store.put("reading", {**r, "trust": trust_check(r)})
-    for j, kind in enumerate([text_kind or ("social" if rng.random() < 0.35 else "ok"), "took"]):
+    if device:
+        _phone(store, sid, d, steps=None if no_steps else count, bp=[("08:05", bp[0], bp[1])] if bp and cuff else [])
+    elif not no_steps:
+        r = {"id": f"{sid}-steps-{d}", "senior_id": sid, "time": t("21:00"), "kind": "steps", "source": "synthetic", "confidence": 1,
+             "values": {"count": count}}
+        store.put("reading", {**r, "trust": trust_check(r)})
+    kinds = [text_kind or ("social" if rng.random() < 0.35 else "ok"), "took"]
+    if text_kind == "missed":
+        kinds = ["missed"]
+    for j, kind in enumerate([] if silent else kinds):
         raw = TEXT[lang][kind] if kind in TEXT[lang] else kind
         facts = understand(raw, lang, gateway=NO_MODEL)
         store.put("checkin", {"id": f"{sid}-ck-{d}-{j}", "senior_id": sid, "time": t(f"0{8 + j}:30"), "source": "synthetic",
                               "raw_text": raw, "language": lang, "facts": facts.to_dict()})
     if store.get("envday", f"env-{d.isoformat()}-{region}") is None:
         store.put("envday", envday(d, region, psi=psi, rainfall_mm=0.0 if rng.random() < 0.8 else round(rng.uniform(1, 12), 1)))
+
+
+def _routine(sid: str, d: date) -> dict:
+    """Habits that run through the whole history, not only the fortnight."""
+    if sid == "rahman" and d.weekday() == 6:
+        return {"text_kind": "missed"}  # forgets his pill on Sundays
+    return {}
 
 
 def seed(store, *, days: int = 40) -> None:
@@ -82,14 +164,14 @@ def seed(store, *, days: int = 40) -> None:
             "conditions": ["hypertension"],
             "medicines": [{"name": "amlodipine", "dose_text": "5 mg once a day", "schedule": ["morning"], "started": "2024-03-01", "for_bp": True}],
             "likes": likes, "usual_checkin_time": "08:00",
-            "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}, "hidden_suggestions": [],
+            "consent": CONSENT.get(sid, {"family_sees": "readings", "share_words": True, "share_activity": True}), "hidden_suggestions": [],
         })
         for cid, cname, role, clang in CONTACTS[sid]:
             store.put("contact", {"id": cid, "senior_id": sid, "role": role, "primary": True, "name": cname, "language": clang,
-                                  "worker_id": AAC_WORKER if role == "aac" else None})
+                                  "worker_id": cid.split(":")[0] if role == "aac" else None})
         for i in range(days):
             d = start + timedelta(i)
-            _day_data(store, sid, d, lang=lang, base=base, steps=steps, region=region)
+            _day_data(store, sid, d, lang=lang, base=base, steps=steps, region=region, **_routine(sid, d))
             run_day(store, sid, d, gateway=NO_MODEL)
         # Today's haze is real: the newest data.gov.sg fixture (PSI 115-165 on 13 Oct 2026).
         store.put("envday", fetch_envday(DEMO_TODAY, region))
@@ -147,6 +229,18 @@ def _script(sid: str, n: int) -> dict:
     if sid == "ng":
         # Lives alone: from day 5, low movement and no social contact.
         return {"steps_mult": 0.3, "text_kind": "home"} if n >= 5 else {}
+    if sid == "chua":
+        # Day 3: one odd reading (rung 1 asks to re-measure). Days 7-10: a mild rise, noted but not handed over.
+        return {"extra_sys": 24} if n == 3 else {"extra_sys": 9} if 7 <= n <= 10 else {}
+    if sid == "lim":
+        # From day 6 he stops answering, but his Fitbit keeps syncing his walks.
+        return {"silent": True} if n >= 6 else {}
+    if sid == "chandran":
+        # From day 4 a drift, measured by his OMRON cuff and synced through Health Connect.
+        return {"extra_sys": min(24, (n - 3) * 4)} if n >= 4 else {}
+    if sid == "osman":
+        # From day 5: no reply and no steps (he has no watch), on dry days: no weather excuse.
+        return {"silent": True, "no_steps": True} if n >= 5 else {}
     return {}
 
 
@@ -159,7 +253,7 @@ def advance(store, days: int, *, gateway=None) -> date:
         for sid, name, lang, postal, region, path, aac, likes, base, steps in SENIORS:
             if sid not in seniors:
                 continue
-            _day_data(store, sid, t, lang=lang, base=base, steps=steps, region=region, **_script(sid, n))
+            _day_data(store, sid, t, lang=lang, base=base, steps=steps, region=region, **{**_routine(sid, t), **_script(sid, n)})
         for sid in seniors:
             run_day(store, sid, t, gateway=gateway if gateway is not None else NO_MODEL)
     store.set_setting("demo_today", t.isoformat())

@@ -174,7 +174,7 @@ export default function AacApp({ workerId }: { workerId: string }) {
             Programmes
           </button>
         </nav>
-        <span className="console-user">{workerId === 'aac-siti' ? 'Siti' : workerId}</span>
+        <span className="console-user">{workerName(workerId)}</span>
       </header>
       {error && <p className="care-error">Showing the last update. {error}</p>}
       <div className="console-body">{body}</div>
@@ -317,4 +317,10 @@ function NotFound() {
       <p className="care-muted">Not found in this caseload.</p>
     </>
   );
+}
+
+// Until login exists the worker is named in the link: aac-siti is Siti.
+function workerName(id: string): string {
+  const n = id.replace(/^aac-/, '');
+  return n.charAt(0).toUpperCase() + n.slice(1);
 }

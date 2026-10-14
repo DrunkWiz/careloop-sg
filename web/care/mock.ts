@@ -264,3 +264,20 @@ export function putCareNotes(seniorId: string, notes: CareNotes): Promise<CareNo
   }
   return delay(out);
 }
+
+// Mr Tan's phone: Fitbit and an OMRON cuff through Health Connect. Synthetic, read-only in the mocks.
+export function getHealthSync(seniorId: string, days = 7): Promise<import('../shared/contract').HealthSyncView> {
+  if (seniorId !== 'tan') return delay({ connected: false, status: null, days: [], shares_readings: true, shares_activity: true });
+  const today = new Date('2026-10-24T22:30:00+08:00');
+  const rows = Array.from({ length: days }, (_, i) => {
+    const d = new Date(today.getTime() - (days - 1 - i) * 86400000).toISOString().slice(0, 10);
+    return { date: d, steps: [5480, 4930, 5650, 6010, 5210, 4870, 4470][i % 7], resting_hr: [67, 69, 68, 70, 66, 68, 71][i % 7],
+      sleep_hours: [6.9, 6.2, 7.4, 6.6, 7.1, 5.9, 6.8][i % 7], bp: [{ time: `${d}T08:05:00+08:00`, systolic: 140 + i * 2, diastolic: 85 + i }] };
+  });
+  return delay({
+    connected: true,
+    status: { platform: 'health_connect', platform_name: 'Health Connect', apps: ['Fitbit', 'OMRON connect'], kinds: ['blood pressure', 'heart rate', 'sleep', 'steps'],
+      last_sync: today.toISOString(), last_batch: { records: 19, readings: 4, skipped: 0 } },
+    days: rows, shares_readings: true, shares_activity: true,
+  });
+}

@@ -4,8 +4,10 @@
 """
 from __future__ import annotations
 
+import json
 import os
 import random
+import urllib.request
 from datetime import date, datetime, timedelta
 from statistics import mean
 from typing import Literal, Optional
@@ -21,6 +23,8 @@ from backend.engine.config import haze_band
 from backend.engine.history import build
 from backend.engine.ladder import SEVERITY, SGT, contacts_for
 from backend.env.data import region_for_postal
+from backend import healthsync
+from backend.healthsync.ingest import recent as healthsync_recent
 from backend.language import describe as model_chain
 from backend.language import understand, write
 from backend.language.facts import Facts
@@ -379,15 +383,20 @@ def claim_handover(hid: str, body: ClaimIn):
         raise HTTPException(400, str(e))
 
 
+def _programmes(aac_id: str) -> list[dict]:
+    return [p for p in store.list("programme") if p["place_id"] == aac_id]
+
+
 @app.get("/aac/{aac_id}/programmes")
 def get_programmes(aac_id: str):
-    return [p for p in store.list("programme") if p["place_id"] == aac_id]
+    _refresh_feed(aac_id)
+    return _programmes(aac_id)
 
 
 @app.put("/aac/{aac_id}/programmes")
 def put_programmes(aac_id: str, programmes: list[Programme] = Body(...)):
     """AAC staff enter their weekly timetable once; it feeds every linked senior's suggestions."""
-    for p in get_programmes(aac_id):
+    for p in _programmes(aac_id):
         store.delete("programme", p["id"])
     out = []
     for i, p in enumerate(programmes):
@@ -395,6 +404,82 @@ def put_programmes(aac_id: str, programmes: list[Programme] = Body(...)):
         store.put("programme", doc)
         out.append(doc)
     return out
+
+
+# --- Timetable import (added: Nathan, needs team OK) ---------------------------------------------
+# Centres already keep a calendar or a spreadsheet. Import it instead of retyping it; a calendar link is
+# pulled again once a day, so a change in the centre's calendar reaches seniors' suggestions on its own.
+
+FEED_REFRESH = timedelta(hours=24)
+
+
+class TimetableIn(BaseModel):
+    text: Optional[str] = Field(default=None, max_length=200_000)
+    url: Optional[str] = Field(default=None, max_length=500)
+    save: bool = False
+
+
+def _fetch(url: str) -> str:
+    url = "https://" + url[len("webcal://"):] if url.startswith("webcal://") else url
+    if not url.startswith(("https://", "http://")):
+        raise HTTPException(400, "a calendar link starts with https://")
+    req = urllib.request.Request(url, headers={"User-Agent": "CareLoop-SG timetable import"})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as r:
+            return r.read(1_000_000).decode("utf-8", errors="replace")
+    except OSError as e:
+        raise HTTPException(502, f"could not fetch the calendar: {e}")
+
+
+def _feed(aac_id: str) -> dict | None:
+    v = store.setting(f"programme_feed:{aac_id}")
+    return json.loads(v) if v else None
+
+
+def _refresh_feed(aac_id: str) -> None:
+    """Pull a saved calendar link again if it's a day old. A failed pull keeps the last good timetable."""
+    feed = _feed(aac_id)
+    if not feed or datetime.now(SGT) - datetime.fromisoformat(feed["pulled_at"]) < FEED_REFRESH:
+        return
+    from backend.reports.timetable import parse
+
+    try:
+        progs, warnings = parse(_fetch(feed["url"]), today=today())
+        if progs:
+            put_programmes(aac_id, [Programme(**p) for p in progs])
+        feed.update(pulled_at=datetime.now(SGT).isoformat(), error=None, count=len(progs), warnings=warnings)
+    except HTTPException as e:
+        feed.update(pulled_at=datetime.now(SGT).isoformat(), error=e.detail)
+    store.set_setting(f"programme_feed:{aac_id}", json.dumps(feed))
+
+
+@app.post("/aac/{aac_id}/programmes/import")
+def import_programmes(aac_id: str, body: TimetableIn):
+    """Read a .ics calendar or a .csv timetable (pasted, uploaded or a link). With save=false it only shows what
+    would be imported, so staff can check the guessed tags first; save=true replaces the timetable."""
+    from backend.reports.timetable import parse
+
+    if not body.text and not body.url:
+        raise HTTPException(400, "send the file's text or a calendar link")
+    progs, warnings = parse(body.text if body.text else _fetch(body.url), today=today())
+    saved = []
+    if body.save and progs:
+        saved = put_programmes(aac_id, [Programme(**p) for p in progs])
+        if body.url:
+            store.set_setting(f"programme_feed:{aac_id}", json.dumps(
+                {"url": body.url, "pulled_at": datetime.now(SGT).isoformat(), "error": None, "count": len(progs), "warnings": warnings}))
+    return {"programmes": saved or progs, "warnings": warnings, "saved": bool(saved), "feed": _feed(aac_id)}
+
+
+@app.get("/aac/{aac_id}/programmes/feed")
+def programme_feed(aac_id: str):
+    return _feed(aac_id)
+
+
+@app.delete("/aac/{aac_id}/programmes/feed")
+def stop_programme_feed(aac_id: str):
+    store.set_setting(f"programme_feed:{aac_id}", "")
+    return None
 
 
 @app.get("/senior/{sid}/brief.json")
@@ -615,7 +700,73 @@ def brief_pdf(sid: str):
     return Response(gp_brief_pdf(brief_data(sid)), media_type="application/pdf")
 
 
+# --- Health apps on the senior's phone (added: Nathan, needs team OK) ------------------------------
+# Apple Health (iPhone) and Health Connect (Android). A Fitbit and an OMRON cuff both write to them.
+# A CareLoop app on the senior's phone would post the day's records here; in the demo, backend/healthsync/
+# simulate.py stands in for that phone.
+
+class HealthSyncIn(BaseModel):
+    platform: Literal["health_connect", "healthkit"]
+    records: list[dict] = Field(max_length=5000)
+
+
+def _after_sync(sid: str, out: dict, t: datetime) -> dict:
+    """Run today again if the sync touched it, as after any new reading (a synced 186/112 is a red flag)."""
+    rung, reply = None, None
+    if t.date().isoformat() in out["days"]:
+        before = set((store.get("decision", f"dec-{sid}-{t.date()}") or {}).get("message_ids", []))
+        decision = run_day(store, sid, t.date(), now=t)
+        rung = decision["rung"]
+        new = [store.get("message", m) for m in decision["message_ids"] if m not in before]
+        reply = next((m for m in new if m and m["to"] == "senior"), None)
+    kinds: dict[str, int] = {}
+    for r in out["readings"]:
+        kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
+    return {"status": out["status"], "imported": kinds, "days": out["days"], "skipped": out["skipped"], "rung": rung, "message": reply}
+
+
+@app.post("/senior/{sid}/health-sync")
+def post_health_sync(sid: str, body: HealthSyncIn):
+    """Records from the senior's phone. Steps, resting heart rate and sleep become one reading a day (each sync
+    replaces it); each BP measurement becomes a reading. Every reading passes the trust check."""
+    senior_or_404(sid)
+    t = now()
+    return _after_sync(sid, healthsync.ingest(store, sid, body.platform, body.records, now=t), t)
+
+
+@app.get("/senior/{sid}/health-sync")
+def get_health_sync(sid: str, days: int = 7, contact: Optional[str] = None):
+    """What's connected, when it last synced, and the last days of synced data. Consent applies to family."""
+    senior, family, see = _viewer(sid, contact)
+    if see["sees"] == "nothing":
+        raise HTTPException(403, "the senior shares only red flags")
+    st = healthsync.status(store, sid)
+    rows = healthsync_recent(store, sid, today(), days=max(1, min(days, 30))) if st else []
+    for r in rows:
+        if not see["activity"]:
+            r.update(steps=None, resting_hr=None, sleep_hours=None)
+        if see["sees"] != "readings":
+            r["bp"] = []
+    return {"connected": st is not None, "status": st, "days": rows, "shares_readings": see["sees"] == "readings",
+            "shares_activity": see["activity"]}
+
+
 # --- demo ----------------------------------------------------------------------------------
+
+class DemoSyncIn(BaseModel):
+    bp: Optional[tuple[int, int]] = None
+
+
+@app.post("/demo/health-sync/{sid}")
+def demo_health_sync(sid: str, body: Optional[DemoSyncIn] = None):
+    """Stands in for the senior's phone syncing now: today's Fitbit records so far, and a cuff reading if given."""
+    senior_or_404(sid)
+    t = now()
+    out = demo.phone_sync(store, sid, t, bp=body.bp if body else None)
+    if out is None:
+        raise HTTPException(409, "no phone is connected for this senior in the demo")
+    return _after_sync(sid, out, t)
+
 
 @app.post("/demo/advance")
 def demo_advance(days: int = Body(1, embed=True, ge=1, le=60)):

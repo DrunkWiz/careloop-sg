@@ -4,6 +4,16 @@ Weekly digest, handover pack, GP brief PDF. Every line traces to the decision lo
 
 Owner: Nathan
 
+## Timetable import
+
+`timetable.parse(text, today=...)` reads a centre's own timetable: a calendar (.ics, as Google Calendar or
+Outlook export it, or a calendar link) or a spreadsheet (.csv with columns for the programme, days and
+time). Weekly events become programmes; one-off events and runs that have ended are skipped with a reason.
+Tags (the words seniors' likes use), indoor or outdoor, and free or not are guessed from each title by
+keyword rules, and shown before anything is saved. There's no open feed of AAC or CC programmes, so this
+is the way in without retyping. `POST /aac/{id}/programmes/import` calls it; a saved calendar link is
+pulled again once a day.
+
 ## GP brief
 
 `gp_brief_pdf(data) -> bytes` turns the dict from `GET /senior/{id}/brief.json` into a one-page A4 PDF.

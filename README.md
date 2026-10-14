@@ -24,7 +24,41 @@ The family app and the centre console also print a one-page **GP brief** (PDF) f
 
 Screenshots are from the synthetic demo after its fortnight (`POST /demo/advance {"days": 11}`). Mr Tan and Mr Ng are not real people.
 
-**Steps** can come from a watch: `POST /reading` with `source: "watch"` takes the day's step total, heart rate and sleep, as Apple Health or Health Connect give them (a Fitbit syncs to both). A phone app to read them and send them in isn't built yet; in the demo, steps are synthetic. Blood pressure comes from the home cuff, said or typed into the check-in.
+### Health apps on the senior's phone
+
+A Fitbit and an OMRON BP cuff both sync to **Apple Health** (iPhone) and **Health Connect** (Android). `backend/healthsync` turns their records into CareLoop readings: steps, resting heart rate, sleep and BP, with nothing typed in. A synced red-flag reading is a red flag at once. Syncing again never counts twice. Fitbit doesn't measure BP; the cuff does.
+
+A web page can't read either store, so this needs a small CareLoop phone app that isn't built yet. **In the demo it is simulated**: five seniors have a synthetic phone, and the "Health apps" card (family Health tab, centre senior page) can sync now or send a cuff reading.
+
+<img src="docs/screenshots/family-health-apps.png" alt="Health apps card: Fitbit and OMRON through Health Connect, last 7 days" width="300">
+
+### Activities
+
+- **Suggested automatically, every day.** The senior app shows up to three options each day: programmes at their own centre that match what they like, then the nearest community club. On rainy or hazy days only indoor ones. On a low day (moving less, seeing no one) CareLoop also nudges with the best one. "Not for me" is remembered.
+- **Pulled in from what centres already keep.** There's no open feed of AAC or CC programmes (data.gov.sg has their locations only), so a centre imports its own calendar (.ics file or a Google Calendar or Outlook link) or spreadsheet (.csv). CareLoop guesses each programme's tags, indoor or outdoor and fee from the title, shows it all before saving, and pulls a calendar link again every day.
+
+<img src="docs/screenshots/centre-import.png" alt="Importing a centre's timetable from a spreadsheet" width="785">
+
+### The demo's people
+
+All synthetic. Twelve seniors, nine family caregivers and two centre befrienders, each with a story over the video's fortnight:
+
+| Senior | Who looks after them | Phone | The fortnight |
+|---|---|---|---|
+| Mr Tan | Wei Ling (daughter), Kelvin (son) | Fitbit and OMRON, Health Connect | The video: a BP drift, gentle steps, then handed to his family |
+| Mdm Wong | Mei (daughter) | | Quiet |
+| Mdm Kaur | Priya (daughter, in London), Arjun (son) | Fitbit and OMRON, Apple Health | Quiet; shares readings but not her words |
+| Encik Rahman | Nur (daughter), Maria (helper) | Fitbit, Health Connect | Forgets his pill on Sundays: a habit tip |
+| Mdm Chua | Jun Jie (son), Hui Min (daughter-in-law) | | One odd reading, then a mild rise, noted; shares a weekly summary only |
+| Mdm Lee, Mr Goh | Siti (centre) | | Quiet |
+| Mr Ng | Siti (centre) | | Moving less and seeing no one: noted on his centre's caseload; handed over if it carries on |
+| Mr Lim | Siti (centre) | Fitbit, Health Connect | Stops answering, but his watch shows him walking, so no alarm |
+| Mr Chandran | Siti (centre) | Fitbit and OMRON, Health Connect | A BP drift seen through his cuff: handed to his centre |
+| Mdm Yeo | Farid (centre) | | Quiet |
+| Mr Osman | Farid (centre) | | No reply and no steps for three dry days: handed to his centre |
+
+Pick any of them at `/care`. Mr Tan, Mdm Wong and Siti also work offline (`npm run dev`); the rest need the API.
+
 
 ### Home page
 
@@ -100,7 +134,7 @@ Without the API (`npm run dev`), the apps run on in-browser mocks in the same sh
 **Caregiver app:**
 - `/care`: pick who you are. Family and centre staff get separate apps.
 - `/care/family?contact=tan-weiling`: the family app (Today, Health, Plan, Activities, You). Use `?contact=tan-kelvin` in a second tab to act as Kelvin: claims show for both.
-- `/care/aac?worker=aac-siti`: CareLoop for Centres, the AAC staff console. `/care/aac/programmes` is the timetable and who each programme suits.
+- `/care/aac?worker=aac-siti`: CareLoop for Centres, the AAC staff console (`?worker=aac-farid` for the second centre). `/care/aac/programmes` is the timetable, its import, and who each programme suits.
 - `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
 - Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
 

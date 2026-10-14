@@ -126,9 +126,10 @@ class Api(unittest.TestCase):
         demo.seed(s)
         self.c.post("/demo/advance", json={"days": 14})
         rows = self.c.get("/care/aac/aac-siti/caseload").json()["seniors"]
-        self.assertEqual(rows[0]["senior"]["name"], "Mr Ng")
-        self.assertEqual(rows[0]["status"], "handover")
-        self.assertTrue(all(r["status"] == "quiet" for r in rows[1:]))
+        need = [r for r in rows if r["status"] == "handover"]
+        self.assertEqual({r["senior"]["name"] for r in need}, {"Mr Ng", "Mr Chandran"})  # Mr Chandran's drift: demo.py
+        self.assertEqual(rows[:len(need)], need)  # those who need a look come first
+        self.assertTrue(all(r["status"] == "quiet" for r in rows[len(need):]))
 
     def test_programmes_feed_suggestions(self):
         r = self.c.put("/aac/aac-002/programmes", json=[{"title": "Karaoke", "title_zh": "卡拉OK", "weekdays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],

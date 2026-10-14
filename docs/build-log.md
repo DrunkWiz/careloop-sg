@@ -2,6 +2,15 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: phone health apps (simulated), more demo people, timetable import
+
+- **Apple Health and Health Connect, simulated** (`backend/healthsync`, new; Nathan). Records as each platform hands them over (Health Connect `StepsRecord`, `RestingHeartRateRecord`, `SleepSessionRecord`, `BloodPressureRecord`; HealthKit samples and the BP correlation) become readings: steps, resting heart rate, sleep (source `watch`) and BP (source `cuff`). Steps are merged by record id across syncs, so a full or partial re-sync never counts twice; unknown types and wrong units are skipped, never converted; future records are skipped; every reading passes the trust check. `POST /senior/{id}/health-sync` stores a sync and runs today again, so a synced 186/112 is a red flag at once (tested in the browser: the family app's full-screen red flag came up). `GET /senior/{id}/health-sync` shows what's connected (consent applies). `simulate.py` stands in for the phone app, which isn't built. Endpoints need the team's OK.
+- **Demo: 12 seniors, 9 family caregivers, 2 centres** (`backend/api/demo.py`). New: Mdm Kaur, Encik Rahman (with a helper as a caregiver), Mdm Chua (weekly summary only), Mr Lim, Mr Chandran, Mdm Yeo, Mr Osman, and Farid at the Ang Mo Kio centre. Each has a scripted fortnight; five have a phone. The existing seniors' random draws are unchanged, so Mr Tan's video story is the same (checked: same rungs, handover on 24 Oct). `backend/api/tests/test_api.py` now expects Mr Chandran's handover next to Mr Ng's.
+- **Timetable import** (`backend/reports/timetable.py`). A centre's own .ics calendar (file or link) or .csv spreadsheet becomes weekly programmes; tags, indoor and fee are guessed from titles and shown before saving; a saved link is pulled again daily (a failed pull keeps the last good timetable). `POST /aac/{id}/programmes/import`, `GET/DELETE /aac/{id}/programmes/feed`. No open feed of AAC or CC programmes exists (checked data.gov.sg and onePA).
+- **Web:** "Health apps" card on the family Health tab and the centre senior page (with demo sync and cuff buttons); "Bring in your timetable" on the centre's Programmes page; the role chooser lists the new people.
+- **Engine wording to look at (not changed):** for an AAC-path senior, rung 0 with an open handover says "waiting for the family to pick a next step" (it's the centre). The red-flag template says "reported BP" even when the cuff sent it.
+- Tests: 9 healthsync, 11 timetable, 11 API (sync, consent, red flag, demo phone, import, daily re-pull, the new stories). Not tested: a real phone, a real Google Calendar link (needs network).
+
 ## 15 Oct 2026: installable as phone apps (PWA)
 
 - Each front door installs as its own app: `web/public/senior.webmanifest`, `family.webmanifest` and `centre.webmanifest` (own name, start page and icon; green for senior and family, navy for centres). `web/shared/pwa.ts` adds the right manifest, icon and theme colour per door; the home page and `/care` chooser stay plain web pages.
@@ -70,7 +79,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - Postgres.
    - Hold-to-talk over HTTPS on a phone (the Web Speech API needs HTTPS or localhost).
    - Installing the app on a real phone (needs HTTPS hosting).
-   - Fitbit data from a real phone: no app reads Apple Health or Health Connect yet (see 14 Oct, watch steps).
+   - Fitbit and OMRON data from a real phone: the CareLoop phone app that would read Apple Health or Health Connect isn't built; `backend/healthsync/simulate.py` stands in for it.
 6. **Still to collect:** the real family story for the video opening (with consent), and optionally a quote from an AAC worker.
 
 ## Decisions

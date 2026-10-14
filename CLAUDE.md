@@ -39,7 +39,8 @@ backend/
   env/              data.gov.sg PSI / rainfall / AAC + CC places, offline fixtures, suggest()  (Vibu)
   synth/            persona generator, tuning set, frozen held-out set, evaluate.py            (Vibu)
   api/              FastAPI app, store (SQLite or Postgres), demo seed + clock                 (Vibu)
-  reports/          GP brief PDF (needs reportlab), insights (patterns), activities nearby   (Nathan)
+  reports/          GP brief PDF (needs reportlab), insights, activities nearby, timetable import (Nathan)
+  healthsync/       Apple Health and Health Connect records -> readings; phone simulator (Nathan)
 web/                React + Vite, one build, two front doors
   senior/           /senior: big buttons, hold-to-talk, check-in, red flag, pairing           (Mingyu)
   care/             /care chooser, /care/family app, /care/aac centre console; ?demo clock   (Nathan)
@@ -56,7 +57,7 @@ python -m venv .venv && .venv/Scripts/pip install -r backend/requirements.txt   
 CARELOOP_SEED=demo .venv/Scripts/python -m uvicorn backend.api.app:app --port 8787
 cd web && npm install && npm run dev:live         # uses web/.env.live (API on :8787); /senior?senior=tan, /care
 
-for s in language engine api synth reports; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+for s in language engine api synth reports healthsync; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
 cd web && npm run build                                                           # typecheck + build
 python -m backend.synth.evaluate              # tuning set (ok to look at and tune on)
 python -m backend.api.write_examples          # regenerate contracts/examples after changing shapes

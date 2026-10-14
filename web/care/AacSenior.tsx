@@ -11,6 +11,7 @@ import { navigate } from './nav';
 import Findings from './Findings';
 import ActivitiesView from './ActivitiesView';
 import CarePlan from './CarePlan';
+import HealthApps from './HealthApps';
 import { BpTrend, PillCalendar } from './charts';
 
 const fmtDay = (d: string) => new Date(d).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -129,6 +130,7 @@ export default function AacSenior({ row, insights, today }: { row: CaseloadRow; 
             <PillCalendar calendar={insights.adherence.calendar} />
           </section>
         )}
+        <HealthApps seniorId={row.senior.id} contactId={row.contact_id} name={row.senior.name} compact />
         <h2 className="care-section-title">Things to do</h2>
         <ActivitiesView seniorId={row.senior.id} contactId={row.contact_id} name={row.senior.name} compact />
       </aside>

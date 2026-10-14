@@ -317,3 +317,55 @@ export interface CareNotes {
   updated_by?: string | null;
   updated_at?: string | null;
 }
+
+// GET /senior/{id}/health-sync (added: Nathan, needs team OK). Apple Health or Health Connect on the senior's phone.
+export interface HealthSyncStatus {
+  platform: 'health_connect' | 'healthkit';
+  platform_name: string;
+  apps: string[];
+  kinds: string[];
+  last_sync: string;
+  last_batch: { records: number; readings: number; skipped: number };
+}
+
+export interface HealthSyncDay {
+  date: string;
+  steps: number | null;
+  resting_hr: number | null;
+  sleep_hours: number | null;
+  bp: { time: string; systolic: number; diastolic: number }[];
+}
+
+export interface HealthSyncView {
+  connected: boolean;
+  status: HealthSyncStatus | null;
+  days: HealthSyncDay[];
+  shares_readings: boolean;
+  shares_activity: boolean;
+}
+
+// POST /senior/{id}/health-sync and POST /demo/health-sync/{id}
+export interface HealthSyncResult {
+  status: HealthSyncStatus;
+  imported: Record<string, number>;
+  days: string[];
+  skipped: number;
+  rung: Rung | null;
+  message: { text: string } | null;
+}
+
+// POST /aac/{id}/programmes/import (added: Nathan, needs team OK)
+export interface ProgrammeFeed {
+  url: string;
+  pulled_at: string;
+  error: string | null;
+  count: number;
+  warnings: string[];
+}
+
+export interface TimetableImport {
+  programmes: ProgrammeIn[];
+  warnings: string[];
+  saved: boolean;
+  feed: ProgrammeFeed | null;
+}

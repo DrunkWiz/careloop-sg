@@ -250,3 +250,40 @@
 .red-flag-info { margin-top: 20px; }
 .red-flag-info .care-card { color: var(--cl-text); }
 .care-engine-inline { display: block; font-size: 12px; color: var(--cl-muted); }
+
+/* Health apps on the senior's phone (HealthApps.tsx) */
+.hs-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 4px 0 10px; }
+.hs-flow li { display: inline-flex; flex-direction: column; padding: 6px 10px; border-radius: 10px; background: var(--cl-accent-soft); color: var(--cl-accent); font-weight: 600; font-size: 14px; }
+.hs-flow li small { font-weight: 400; font-size: 12px; opacity: .8; }
+.hs-flow li { position: relative; }
+.hs-flow li:not(:last-child) { margin-right: 18px; }
+.hs-flow li:not(:last-child)::after { content: "→"; position: absolute; right: -15px; top: 50%; transform: translateY(-50%); color: var(--cl-muted); font-weight: 400; }
+.hs-table { display: grid; gap: 0; margin: 8px 0; font-size: 14px; }
+.hs-row { display: grid; grid-template-columns: 1fr 1fr 1fr .8fr 1fr; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--cl-border); font-variant-numeric: tabular-nums; }
+.hs-row.is-head { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--cl-muted); }
+.hs-demo { margin-top: 14px; padding: 12px; border: 1px dashed var(--cl-border); border-radius: 12px; }
+.hs-demo-label { margin: 0 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--cl-muted); }
+.hs-demo-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.hs-cuff { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hs-cuff label { display: flex; align-items: center; gap: 6px; }
+.hs-cuff input { width: 64px; min-height: 40px; padding: 0 8px; border: 1px solid var(--cl-border); border-radius: 8px; font: inherit; }
+.hs-result { margin: 10px 0 0; font-weight: 600; }
+.hs-result.is-red { color: #a61b1b; }
+@media (max-width: 400px) { .hs-row { grid-template-columns: 1fr 1fr 1fr .8fr; } .hs-row > :nth-child(5) { grid-column: 1 / -1; color: var(--cl-muted); } }
+.hs-demo .care-secondary { width: auto; padding-left: 18px; padding-right: 18px; }
+.hs-cuff input { width: 78px; }
+.health-apps { grid-column: 1 / -1; min-width: 0; } .health-apps > .care-card { margin: 0; }
+
+/* Timetable import (TimetableImport.tsx) */
+.tti-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 10px 0; }
+.tti-way { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1px solid var(--cl-border); border-radius: 12px; }
+.tti-link { display: flex; gap: 8px; }
+.tti-link .care-secondary { width: auto; flex: none; padding-left: 16px; padding-right: 16px; }
+.tti-link input { flex: 1; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid var(--cl-border); border-radius: 8px; font: inherit; }
+.tti-preview { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--cl-border); }
+.tti-preview h3 { margin: 0 0 8px; font-size: 16px; }
+.tti-list, .tti-warnings { margin: 0 0 10px; padding-left: 18px; }
+.tti-list li { margin-bottom: 6px; }
+.tti-tags { display: block; font-size: 13px; color: var(--cl-accent); }
+.tti-warnings li { color: #8a5a00; font-size: 14px; }
+.tti-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

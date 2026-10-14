@@ -8,6 +8,10 @@ import type {
   Caseload,
   FamilyView,
   Handover,
+  HealthSyncResult,
+  HealthSyncView,
+  ProgrammeFeed,
+  TimetableImport,
   LogDay,
   PairCodeIn,
   PairCodeOut,
@@ -125,4 +129,31 @@ export function demoAdvance(days: number): Promise<{ today: string }> {
 
 export function demoReset(): Promise<{ today: string }> {
   return BASE ? http('/demo/reset', { method: 'POST' }) : Promise.reject(new Error('Demo controls need the API'));
+}
+
+// Added endpoints (need team OK): health apps on the senior's phone. Mocks show Mr Tan's phone, read-only.
+export function getHealthSync(seniorId: string, contactId?: string, days = 7): Promise<HealthSyncView> {
+  return BASE
+    ? http(`/senior/${seniorId}/health-sync?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mock.getHealthSync(seniorId, days);
+}
+
+// Demo only: stands in for the senior's phone syncing now, with an optional cuff measurement.
+export function demoHealthSync(seniorId: string, bp?: [number, number]): Promise<HealthSyncResult> {
+  return http(`/demo/health-sync/${seniorId}`, { method: 'POST', body: JSON.stringify(bp ? { bp } : {}) });
+}
+
+// Added endpoints (need team OK): import a centre's own calendar (.ics) or spreadsheet (.csv).
+export function importTimetable(aacId: string, body: { text?: string; url?: string; save?: boolean }): Promise<TimetableImport> {
+  return BASE
+    ? http(`/aac/${aacId}/programmes/import`, { method: 'POST', body: JSON.stringify(body) })
+    : Promise.reject(new ApiError(501, 'Importing needs the API (npm run dev:live).'));
+}
+
+export async function getProgrammeFeed(aacId: string): Promise<ProgrammeFeed | null> {
+  return BASE ? http(`/aac/${aacId}/programmes/feed`) : null;
+}
+
+export function stopProgrammeFeed(aacId: string): Promise<null> {
+  return http(`/aac/${aacId}/programmes/feed`, { method: 'DELETE' });
 }
