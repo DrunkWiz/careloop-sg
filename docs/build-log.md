@@ -2,6 +2,13 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 14 Oct 2026: watch steps, demo plans, README screenshots
+
+- **Steps fix (engine, Vibu's file, changed at Nathan's request):** `backend/engine/history.py` added up every steps reading in a day. A watch syncing through Apple Health or Health Connect sends the day's running total several times, so each sync counted the day again (tested live: 1,064 + 900 became 1,964). A day now keeps the largest total. The synthetic personas send one steps reading a day, so tuning and held-out results don't change; any re-run is still not blind. Test: `backend/engine/tests/test_steps.py`.
+- **Wearables, as they stand:** `POST /reading` takes `source: "watch"` for steps, heart rate and sleep, and they pass the trust check. Heart rate and sleep are stored but nothing reads them yet. Nothing on a phone reads Fitbit data from Apple Health or Health Connect: a web app can't, only an installed app can. Fitbit doesn't measure blood pressure; that still comes from the home cuff.
+- **Demo plans:** the seed now writes Mr Tan's care plan (a past and a next GP visit, questions for the doctor, to-dos, emergency card; clinic, doctor, phone and address made up) and the timetable for the AAC-path seniors' centre, so the Plan tab and the Programmes page aren't empty. Test: `backend/api/tests/test_demo_plans.py`.
+- **README:** the five interfaces, with screenshots from the demo in `docs/screenshots/`.
+
 ## 14 Oct 2026: app design and interaction fixes
 
 - Added a shared home page at `/`, with separate senior, family and centre entry points and clearly labelled synthetic demos.
@@ -55,6 +62,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - Tencent Cloud ASR (`transcribe()`).
    - Postgres.
    - Hold-to-talk over HTTPS on a phone (the Web Speech API needs HTTPS or localhost).
+   - Fitbit data from a real phone: no app reads Apple Health or Health Connect yet (see 14 Oct, watch steps).
 6. **Still to collect:** the real family story for the video opening (with consent), and optionally a quote from an AAC worker.
 
 ## Decisions

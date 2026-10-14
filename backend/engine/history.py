@@ -60,8 +60,10 @@ def build(store, senior: dict, upto: date, days: int = 60) -> dict[date, Day]:
             else:
                 d.bp_flagged.append(r)
         elif r["kind"] == "steps":
+            # A steps reading is the day's total so far: a watch syncs it through Apple Health or Health Connect
+            # several times a day. Keep the largest, never the sum, or each sync would count the day again.
             if trust["ok"]:
-                d.steps = (d.steps or 0) + int(v["count"])
+                d.steps = max(d.steps or 0, int(v["count"]))
         elif not trust["ok"]:
             d.other_flagged.append(r)
 

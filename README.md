@@ -24,6 +24,8 @@ The family app and the centre console also print a one-page **GP brief** (PDF) f
 
 Screenshots are from the synthetic demo after its fortnight (`POST /demo/advance {"days": 11}`). Mr Tan and Mr Ng are not real people.
 
+**Steps** can come from a watch: `POST /reading` with `source: "watch"` takes the day's step total, heart rate and sleep, as Apple Health or Health Connect give them (a Fitbit syncs to both). A phone app to read them and send them in isn't built yet; in the demo, steps are synthetic. Blood pressure comes from the home cuff, said or typed into the check-in.
+
 ### Home page
 
 <img src="docs/screenshots/home.png" alt="CareLoop home page with three doors" width="800">
@@ -41,6 +43,11 @@ A short daily check-in. Mr Tan can talk or type; CareLoop pulls out the reading 
 | <img src="docs/screenshots/family-today.png" alt="Family app Today tab" width="260"> | <img src="docs/screenshots/family-health.png" alt="Family app Health tab" width="260"> | <img src="docs/screenshots/family-handover.png" alt="Handover with evidence" width="260"> |
 | Status, today's check-in, what CareLoop noticed, and every day's decision, quiet days included | 14 or 30 days of blood pressure against their usual, the medicine calendar and steps | Why CareLoop handed over, what it already tried, and the options. Nothing happens until someone picks one |
 
+| Plan |
+|---|
+| <img src="docs/screenshots/family-plan.png" alt="Family app Plan tab" width="260"> |
+| Shared by the whole family: appointments, questions for the doctor (printed on the GP brief), to-dos with owners, medicines and the emergency card |
+
 ### CareLoop for Centres
 
 The caseload, sorted by who needs a look. At most one non-urgent alert per senior a week.
@@ -50,6 +57,10 @@ The caseload, sorted by who needs a look. At most one non-urgent alert per senio
 One senior: the day-by-day log, patterns in their own data, a befriending record ready to paste, and the care plan.
 
 <img src="docs/screenshots/centre-senior.png" alt="Centre view of one senior" width="800">
+
+Programmes: the centre types in its timetable once; CareLoop shows which seniors each programme suits and suggests them.
+
+<img src="docs/screenshots/centre-programmes.png" alt="Centre weekly programmes" width="800">
 
 ## Layout
 

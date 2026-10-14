@@ -14,6 +14,7 @@ from datetime import date, datetime, timedelta
 from backend.engine import run_day, trust_check
 from backend.engine.ladder import SGT
 from backend.env.data import envday, fetch_envday
+from backend.env.places import sample_programmes
 from backend.language import understand
 from backend.language.gateway import Chain
 
@@ -92,6 +93,45 @@ def seed(store, *, days: int = 40) -> None:
             run_day(store, sid, d, gateway=NO_MODEL)
         # Today's haze is real: the newest data.gov.sg fixture (PSI 115-165 on 13 Oct 2026).
         store.put("envday", fetch_envday(DEMO_TODAY, region))
+    _seed_plans(store)
+
+
+def _day(n: int) -> str:
+    return (DEMO_TODAY + timedelta(n)).isoformat()
+
+
+def _seed_plans(store) -> None:
+    """What a family and a centre would have typed in by the demo: Mr Tan's care plan and the centre's timetable.
+    Dates count from the demo start; the to-dos fall just after the video's fortnight (24 Oct).
+    The clinic, doctor, phone number and address are made up."""
+    store.put("carenotes", {
+        "id": "notes-tan", "senior_id": "tan", "updated_by": "Wei Ling", "updated_at": f"{_day(-3)}T20:15:00+08:00",
+        "appointments": [
+            {"id": "ap-1", "date": _day(-11), "time": "10:00", "place": "Ang Mo Kio Family Clinic (demo)", "purpose": "BP review",
+             "who_goes": "Wei Ling", "notes_after": "BP fine at the clinic. Same amlodipine dose. Keep measuring at home each morning."},
+            {"id": "ap-2", "date": _day(16), "time": "09:30", "place": "Ang Mo Kio Family Clinic (demo)", "purpose": "BP review and medicine refill",
+             "who_goes": "Kelvin", "notes_after": ""},
+        ],
+        "questions": [
+            {"id": "q-1", "text": "His morning readings are higher than at the clinic. Which ones should we trust?", "by": "Wei Ling",
+             "added": _day(-3), "asked": False, "answer": ""},
+            {"id": "q-2", "text": "Is it fine for him to take his pill after kopi instead of before breakfast?", "by": "Kelvin",
+             "added": _day(-2), "asked": False, "answer": ""},
+            {"id": "q-3", "text": "Should he keep using the old BP monitor?", "by": "Wei Ling", "added": _day(-12), "asked": True,
+             "answer": "Yes, but bring it to the next visit so the clinic can check it."},
+        ],
+        "tasks": [
+            {"id": "t-1", "title": "Collect amlodipine refill from the clinic", "due": _day(14), "owner": "Kelvin", "done": False, "done_by": None},
+            {"id": "t-2", "title": "Buy new AA batteries for the BP monitor", "due": _day(12), "owner": "Wei Ling", "done": False, "done_by": None},
+            {"id": "t-3", "title": "Put the emergency card on the fridge", "due": None, "owner": None, "done": True, "done_by": "Wei Ling"},
+        ],
+        "emergency": {"allergies": "Penicillin (rash)", "gp_name": "Dr Lim, Ang Mo Kio Family Clinic (demo)", "gp_phone": "6000 0000",
+                      "home_address": "Blk 999 Ang Mo Kio Ave 9, #05-123 (demo address)",
+                      "notes": "Lives alone on weekdays. Spare key with the neighbour at #05-125."},
+    })
+    # Mr Lee, Mr Goh and Mr Ng's centre has entered its timetable (the sample one), so it is no longer marked as a sample.
+    for p in sample_programmes("aac-105"):
+        store.put("programme", {**p, "sample": False})
 
 
 def _script(sid: str, n: int) -> dict:

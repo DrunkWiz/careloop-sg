@@ -25,7 +25,8 @@ class CareNotes(unittest.TestCase):
         self.c = TestClient(api.app)
 
     def test_empty_until_written(self):
-        d = self.c.get("/senior/tan/care-notes?contact=tan-weiling").json()
+        # Mdm Wong's family hasn't written anything in the demo (Mr Tan's plan is seeded).
+        d = self.c.get("/senior/wong/care-notes?contact=wong-mei").json()
         self.assertEqual(d["tasks"], [])
         self.assertIsNone(d["updated_by"])
 
