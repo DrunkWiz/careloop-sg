@@ -1,0 +1,18 @@
+{
+  "id": "/care/aac",
+  "name": "CareLoop for Centres",
+  "short_name": "CL Centres",
+  "description": "CareLoop SG. Synthetic demo: not real people.",
+  "start_url": "/care/aac",
+  "scope": "/care/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f5f8",
+  "theme_color": "#23264f",
+  "lang": "en-SG",
+  "icons": [
+    { "src": "/icons/navy-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/navy-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/navy-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -16,12 +16,24 @@ import ActivitiesView from './ActivitiesView';
 import RoleChooser from './RoleChooser';
 import CarePlan from './CarePlan';
 import LookingAfterYou from './LookingAfterYou';
+import InstallCard from './InstallCard';
 import { REFRESH_EVENT, markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
 import Brand from '../shared/Brand';
 import './care.css';
 import './themes.css';
 import './refresh.css';
+
+// An installed app opens at its start page with no ?contact= or ?worker=, so remember the last one given.
+function remembered(params: URLSearchParams, key: 'contact' | 'worker', fallback: string): string {
+  const given = params.get(key);
+  try {
+    if (given) localStorage.setItem(`careloop.${key}`, given);
+    return given ?? localStorage.getItem(`careloop.${key}`) ?? fallback;
+  } catch {
+    return given ?? fallback;
+  }
+}
 
 export default function CareApp() {
   const params = new URLSearchParams(window.location.search);
@@ -36,9 +48,9 @@ export default function CareApp() {
     <main className={`care theme-${door} ${largeText() ? 'is-large-text' : ''}`}>
       {params.has('demo') && !usingMocks && door !== 'choose' && <DemoBar />}
       {door === 'centre' ? (
-        <AacApp workerId={params.get('worker') ?? 'aac-siti'} />
+        <AacApp workerId={remembered(params, 'worker', 'aac-siti')} />
       ) : door === 'family' ? (
-        <FamilyApp contactId={params.get('contact') ?? 'tan-weiling'} />
+        <FamilyApp contactId={remembered(params, 'contact', 'tan-weiling')} />
       ) : (
         <RoleChooser />
       )}
@@ -149,6 +161,7 @@ function FamilyApp({ contactId }: { contactId: string }) {
           <TabHeader title="You" senior={view.contact.name} />
           <LookingAfterYou />
           <TextSizeCard />
+          <InstallCard senior={view.senior.name} />
           <Pairing view={view} />
         </>
       ) : route.name === 'plan' ? (

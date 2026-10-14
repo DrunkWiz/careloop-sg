@@ -104,6 +104,18 @@ Without the API (`npm run dev`), the apps run on in-browser mocks in the same sh
 - `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
 - Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
 
+### On a phone, as an app
+
+The senior app, the family app and the centre console each install as their own app ("Add to Home Screen"), with their own icon and name, full screen with no browser bar. The app itself opens without a connection; health data always comes fresh from the API.
+
+```
+cd web && npx vite build --mode live && npm run preview -- --port 4173     # the installable build
+```
+
+- Installing needs the production build (`npm run dev` has no service worker, so edits show at once) and HTTPS, or `localhost` on the same computer. To try it on a real phone, the app has to be hosted on HTTPS.
+- Android or desktop Chrome: the browser offers "Install app", or use the button in the family app's You tab. iPhone: Safari, Share, "Add to Home Screen".
+- An installed app opens at its start page without `?senior=`, `?contact=` or `?worker=`, so the app remembers the last one it was given. For the demo, open `/senior?senior=tan` (or `/care/family?contact=tan-kelvin`) once, then install.
+
 ## Tests and evaluation
 
 Offline, with no keys and no network.

@@ -2,6 +2,13 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: installable as phone apps (PWA)
+
+- Each front door installs as its own app: `web/public/senior.webmanifest`, `family.webmanifest` and `centre.webmanifest` (own name, start page and icon; green for senior and family, navy for centres). `web/shared/pwa.ts` adds the right manifest, icon and theme colour per door; the home page and `/care` chooser stay plain web pages.
+- `web/public/sw.js` keeps the app shell (pages, built files, icons) so it opens offline. It never caches API answers. Registered in production builds only.
+- The family app and centre console remember the last `?contact=` and `?worker=` (an installed app opens without them). The family You tab has an "Add to home screen" card (a button on Android and Chrome, the Safari steps on iPhone, and the link for the senior's phone).
+- Tested on the built app at 375px in Chrome: each door's manifest and icons load, the service worker activates and controls the page, Kelvin was remembered without `?contact=`, and with the web server stopped the app still opened from its saved copy. Not tested: installing on a real iPhone or Android phone, which needs the app hosted on HTTPS.
+
 ## 14 Oct 2026: watch steps, demo plans, README screenshots
 
 - **Steps fix (engine, Vibu's file, changed at Nathan's request):** `backend/engine/history.py` added up every steps reading in a day. A watch syncing through Apple Health or Health Connect sends the day's running total several times, so each sync counted the day again (tested live: 1,064 + 900 became 1,964). A day now keeps the largest total. The synthetic personas send one steps reading a day, so tuning and held-out results don't change; any re-run is still not blind. Test: `backend/engine/tests/test_steps.py`.
@@ -62,6 +69,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - Tencent Cloud ASR (`transcribe()`).
    - Postgres.
    - Hold-to-talk over HTTPS on a phone (the Web Speech API needs HTTPS or localhost).
+   - Installing the app on a real phone (needs HTTPS hosting).
    - Fitbit data from a real phone: no app reads Apple Health or Health Connect yet (see 14 Oct, watch steps).
 6. **Still to collect:** the real family story for the video opening (with consent), and optionally a quote from an AAC worker.
 
