@@ -103,7 +103,7 @@ def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, ga
         "handover_id": prev.get("handover_id") if prev else None, "created_at": now.isoformat(),
     }
 
-    if out.rung in ("4", "R") and not decision["handover_id"]:
+    if out.rung == "R" or (out.rung == "4" and not decision["handover_id"]):
         ho = _handover(store, senior, out, days, day, did, recent, now)
         decision["handover_id"] = ho["id"]
 
@@ -233,7 +233,7 @@ def _handover(store, senior, out: Outcome, days: dict[date, Day], day: date, did
     kind = out.kind or "red_flag"
     options = OPTIONS.get(kind) or OPTIONS["aac" if senior.get("path") == "aac" else "family"]
     ho = {
-        "id": f"ho-{did}", "senior_id": senior["id"], "decision_id": did, "opened_at": now.isoformat(), "kind": kind,
+        "id": f"ho-{did}-R" if out.rung == "R" else f"ho-{did}", "senior_id": senior["id"], "decision_id": did, "opened_at": now.isoformat(), "kind": kind,
         "evidence": {
             "summary": out.reason,
             "bp_series": [{"date": x.date.isoformat(), "systolic": round(x.sys, 1) if x.sys else None,

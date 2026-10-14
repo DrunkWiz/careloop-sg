@@ -242,6 +242,26 @@ class Scenarios(unittest.TestCase):
             d = w.run(start + timedelta(j))
         self.assertEqual(d["rule_id"], "4.unwell")
 
+    def test_rung4_handover_then_red_flag_same_day_gets_two_handovers(self):
+        w = World()
+        # First: a rung-4 handover (double dose).
+        w.day(TODAY, bp=(124, 78), text="Aiyo I took my morning pill twice")
+        d1 = w.run(TODAY)
+        self.assertEqual(d1["rung"], "4")
+        self.assertIsNotNone(d1["handover_id"])
+
+        # Then: a red flag on the same day (BP 190/125, above the 180/120 floor).
+        w.day(TODAY, bp=(190, 125), text="Ok lah")
+        d2 = w.run(TODAY)
+        self.assertEqual(d2["rung"], "R")
+
+        # Two handovers exist; the second is kind red_flag.
+        handovers = w.store.list("handover", senior_id=w.sid)
+        self.assertEqual(len(handovers), 2)
+        self.assertNotEqual(handovers[0]["id"], handovers[1]["id"])
+        self.assertNotEqual(handovers[0]["kind"], "red_flag")
+        self.assertEqual(handovers[1]["kind"], "red_flag")
+
     def test_every_day_is_logged_with_a_reason_rung_0_too(self):
         w = World()
         logged = w.store.list("decision", senior_id=w.sid)
