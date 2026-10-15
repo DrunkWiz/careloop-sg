@@ -394,3 +394,44 @@ export function deleteRota(_seniorId: string): Promise<RotaView> {
   mockRota.on_duty = null;
   return delay(structuredClone(mockRota));
 }
+
+// Mr Tan's phone: Fitbit and an OMRON cuff through Health Connect. Synthetic, read-only in the mocks.
+export function getHealthSync(seniorId: string, days = 7): Promise<import('../shared/contract').HealthSyncView> {
+  if (seniorId !== 'tan') return delay({ connected: false, status: null, days: [], shares_readings: true, shares_activity: true });
+  const today = new Date('2026-10-24T22:30:00+08:00');
+  const rows = Array.from({ length: days }, (_, i) => {
+    const d = new Date(today.getTime() - (days - 1 - i) * 86400000).toISOString().slice(0, 10);
+    return { date: d, steps: [5480, 4930, 5650, 6010, 5210, 4870, 4470][i % 7], resting_hr: [67, 69, 68, 70, 66, 68, 71][i % 7],
+      sleep_hours: [6.9, 6.2, 7.4, 6.6, 7.1, 5.9, 6.8][i % 7], bp: [{ time: `${d}T08:05:00+08:00`, systolic: 140 + i * 2, diastolic: 85 + i }] };
+  });
+  return delay({
+    connected: true,
+    status: { platform: 'health_connect', platform_name: 'Health Connect', apps: ['Fitbit', 'OMRON connect'], kinds: ['blood pressure', 'heart rate', 'sleep', 'steps'],
+      last_sync: today.toISOString(), last_batch: { records: 19, readings: 4, skipped: 0 } },
+    days: rows, shares_readings: true, shares_activity: true,
+  });
+}
+
+// Mr Tan's medicine notes and staying-well list, as the API gives them (synthetic; offline mocks only).
+export function getMedicines(): Promise<import('../shared/contract').MedicinesView> {
+  return delay({
+    medicines: [{ name: 'amlodipine', dose_text: '5 mg once a day', when: ['in the morning'], for_bp: true, known: true, generic: 'amlodipine', group: 'BP',
+      what_for: 'Lowers blood pressure.', how_it_helps: 'It relaxes the blood vessels so blood flows more easily.',
+      look_out_for: ['Swollen ankles can happen. Tell your doctor if they bother you.', 'Some people feel flushed or get a headache at first.'] }],
+    always: 'Take it as on your label, even on days you feel well. If anything on this page worries you, ask your pharmacist or doctor.',
+    note: 'Plain-language notes for the demo, from standard patient-leaflet wording. PLACEHOLDER until a pharmacist or the medical student checks them.',
+  });
+}
+
+export function getPrevention(): Promise<import('../shared/contract').PreventionView> {
+  const item = (id: string, title: string, why: string, where: string, status: 'due' | 'done' | 'not_recorded' | 'booked', status_text: string, last_done: string | null, next_due: string | null) =>
+    ({ id, title, why, where, every_days: 365, last_done, next_due, status, status_text, placeholder: false });
+  return delay({
+    items: [
+      item('flu', 'Flu vaccine', "Flu is more serious for older adults. The vaccine changes each year, so it's once a year.", 'Polyclinic, a CHAS or Healthier SG clinic, or some pharmacies', 'due', 'Due', '2025-10-04', '2026-10-04'),
+      item('fit', 'Bowel cancer screening (FIT kit)', 'A simple stool test done at home, once a year from 50.', 'Collect a kit at a Healthier SG clinic', 'not_recorded', 'Not recorded yet', null, null),
+      item('pneumococcal', 'Pneumococcal vaccine', 'Protects against a common cause of pneumonia. Recommended once from 65.', 'Polyclinic or a CHAS or Healthier SG clinic', 'done', 'Done', '2024-11-12', null),
+    ],
+    note: 'For adults 65 and over with high blood pressure. Vaccines from MOH\'s adult immunisation schedule; screenings from Screen for Life.',
+  });
+}

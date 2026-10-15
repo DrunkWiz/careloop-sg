@@ -309,6 +309,9 @@ def _story(data: dict) -> list:
     for _ in range(blank):
         story.append(_table([[""]], [BODY_W]))
         story.append(Spacer(1, 6))
+    due = data.get("prevention_due") or []
+    if due:
+        story.append(Paragraph("<b>Vaccines and check-ups due or not recorded:</b> " + "; ".join(_text(d) for d in due[:6]) + ".", S_BODY))
 
     # AAC: the small bridge from primary care to the senior's centre
     if aac and aac.get("name"):

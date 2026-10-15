@@ -373,6 +373,7 @@ export interface CareNotes {
   questions: Question[];
   tasks: Task[];
   emergency: { allergies: string; gp_name: string; gp_phone: string; home_address: string; notes: string };
+  prevention?: Record<string, string>; // staying-well item id -> date last done
   updated_by?: string | null;
   updated_at?: string | null;
 }
@@ -385,4 +386,95 @@ export interface VentPost {
   time: string; // ISO datetime
   hugs: number;
   hidden: boolean;
+}
+
+// GET /senior/{id}/health-sync (added: Nathan, needs team OK). Apple Health or Health Connect on the senior's phone.
+export interface HealthSyncStatus {
+  platform: 'health_connect' | 'healthkit';
+  platform_name: string;
+  apps: string[];
+  kinds: string[];
+  last_sync: string;
+  last_batch: { records: number; readings: number; skipped: number };
+}
+
+export interface HealthSyncDay {
+  date: string;
+  steps: number | null;
+  resting_hr: number | null;
+  sleep_hours: number | null;
+  bp: { time: string; systolic: number; diastolic: number }[];
+}
+
+export interface HealthSyncView {
+  connected: boolean;
+  status: HealthSyncStatus | null;
+  days: HealthSyncDay[];
+  shares_readings: boolean;
+  shares_activity: boolean;
+}
+
+// POST /senior/{id}/health-sync and POST /demo/health-sync/{id}
+export interface HealthSyncResult {
+  status: HealthSyncStatus;
+  imported: Record<string, number>;
+  days: string[];
+  skipped: number;
+  rung: Rung | null;
+  message: { text: string } | null;
+}
+
+// POST /aac/{id}/programmes/import (added: Nathan, needs team OK)
+export interface ProgrammeFeed {
+  url: string;
+  pulled_at: string;
+  error: string | null;
+  count: number;
+  warnings: string[];
+}
+
+export interface TimetableImport {
+  programmes: ProgrammeIn[];
+  warnings: string[];
+  saved: boolean;
+  feed: ProgrammeFeed | null;
+}
+
+// GET /senior/{id}/medicines (added: Nathan, needs team OK). Fixed plain-language notes, not a model.
+export interface MedicineNote {
+  name: string;
+  dose_text: string;
+  when: string[];
+  for_bp: boolean;
+  known: boolean;
+  generic: string | null;
+  group: string | null;
+  what_for: string;
+  how_it_helps: string | null;
+  look_out_for: string[];
+}
+
+export interface MedicinesView {
+  medicines: MedicineNote[];
+  always: string;
+  note: string;
+}
+
+// GET /senior/{id}/prevention (added: Nathan, needs team OK). Vaccines, screenings and check-ups.
+export interface PreventionItem {
+  id: string;
+  title: string;
+  why: string;
+  where: string;
+  every_days: number | null;
+  last_done: string | null;
+  next_due: string | null;
+  status: 'due' | 'done' | 'not_recorded' | 'booked';
+  status_text: string;
+  placeholder: boolean;
+}
+
+export interface PreventionView {
+  items: PreventionItem[];
+  note: string;
 }

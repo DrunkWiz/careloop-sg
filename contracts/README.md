@@ -43,7 +43,14 @@ Owner: Vibu. Frozen Tue 13 Oct 23:00. **After the freeze, a change needs all thr
 | `GET /senior/{id}/insights?days=30&contact={id}` (patterns in their own data, `backend/reports/insights.py`; consent applied) **(added)** | Family Health tab, centre console |
 | `GET /senior/{id}/activities?contact={id}` (own AAC programmes, nearest AACs and CCs, today's suggestions) **(added)** | Family Activities tab, centre console |
 | `GET/PUT /senior/{id}/care-notes?contact={id}` (appointments, questions for the doctor, shared to-dos, emergency card; any linked contact; new store kind `carenotes`) **(added)** | Family Plan tab, centre console, GP brief |
+| `GET /senior/{id}/medicines?lang=&contact={id}` (what each medicine is for, from a fixed table; unknown ones say so) **(added)** | Senior app, family Plan tab, centre console |
+| `GET /senior/{id}/prevention?lang=&contact={id}` (vaccines, screenings and check-ups, with due status from `carenotes.prevention`) **(added)** | Senior app, family Plan tab, centre console, GP brief |
+| `POST /senior/{id}/health-sync` `{platform: health_connect \| healthkit, records}` → `{status, imported, days, skipped, rung, message}` (records from the senior's phone, `backend/healthsync`) **(added)** | CareLoop phone app (not built; simulated) |
+| `GET /senior/{id}/health-sync?days=7&contact={id}` (what's connected, last sync, last days; consent applied) **(added)** | Family Health tab, centre console |
+| `POST /aac/{aac_id}/programmes/import` `{text? \| url?, save}` → `{programmes, warnings, saved, feed}` (a centre's .ics or .csv; a saved link is pulled again daily) **(added)** | AAC view |
+| `GET/DELETE /aac/{aac_id}/programmes/feed` (the saved calendar link) **(added)** | AAC view |
 | `POST /demo/advance` `{days}`, `POST /demo/reset` | Demo only |
+| `POST /demo/health-sync/{id}` `{bp?: [sys, dia]}` (stands in for the senior's phone syncing now) **(added)** | Demo only |
 | `GET /meta` (model chain, data sources, version) | Everyone |
 
 **(added)** marks endpoints that weren't in the build-split table but the apps need. They need the team's OK.

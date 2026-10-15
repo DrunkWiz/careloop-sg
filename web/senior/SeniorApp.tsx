@@ -13,6 +13,7 @@ import { LogBP, type BPEntry } from './screens/LogBP';
 import { Confirm } from './screens/Confirm';
 import { RedFlag } from './screens/RedFlag';
 import { Knows } from './screens/Knows';
+import { MyHealth } from './screens/MyHealth';
 import { Pair } from './screens/Pair';
 import Brand from '../shared/Brand';
 import './senior.css';
@@ -23,7 +24,8 @@ type View =
   | { name: 'feel' }
   | { name: 'bp'; initial?: Partial<BPEntry> }
   | { name: 'confirm'; bp: BP }
-  | { name: 'knows' };
+  | { name: 'knows' }
+  | { name: 'meds' };
 
 // Per-device conveniences only; the senior's record lives on the server.
 const store = {
@@ -182,6 +184,8 @@ export default function SeniorApp() {
             onNo={() => setView({ name: 'bp', initial: { systolic: view.bp.systolic, diastolic: view.bp.diastolic, pulse: view.bp.pulse } })} />
         ) : view.name === 'knows' ? (
           <Knows seniorId={seniorId} onBack={() => setView({ name: 'home' })} toast={toast} />
+        ) : view.name === 'meds' ? (
+          <MyHealth seniorId={seniorId} lang={apiLang(lang)} onBack={() => setView({ name: 'home' })} toast={toast} />
         ) : today ? (
           <Home
             today={today}
@@ -204,6 +208,7 @@ export default function SeniorApp() {
               }
             }}
             onKnows={() => setView({ name: 'knows' })}
+            onMeds={() => setView({ name: 'meds' })}
           />
         ) : (
           !loadError && <p className="sa-loading" role="status" aria-busy>{t('common.loading')}</p>

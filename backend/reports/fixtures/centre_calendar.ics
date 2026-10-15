@@ -1,0 +1,65 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+X-WR-CALNAME:Senior Activity Centre programmes (synthetic sample)
+X-WR-TIMEZONE:Asia/Singapore
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260907T083000
+DTEND;TZID=Asia/Singapore:20260907T093000
+RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR
+SUMMARY:Qigong and stretching
+LOCATION:Activity hall
+UID:sample-qigong@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260908T140000
+DTEND;TZID=Asia/Singapore:20260908T160000
+RRULE:FREQ=WEEKLY;BYDAY=TU
+SUMMARY:Mahjong afternoon
+UID:sample-mahjong-tue@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260910T140000
+DTEND;TZID=Asia/Singapore:20260910T160000
+RRULE:FREQ=WEEKLY;BYDAY=TH
+SUMMARY:Mahjong afternoon
+UID:sample-mahjong-thu@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260909T020000Z
+DTEND:20260909T030000Z
+RRULE:FREQ=WEEKLY;BYDAY=WE
+SUMMARY:Karaoke sing-along
+DESCRIPTION:Bring your favourite songs\, all welcome
+UID:sample-karaoke@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260912T073000
+DTEND;TZID=Asia/Singapore:20260912T090000
+RRULE:FREQ=WEEKLY;BYDAY=SA
+SUMMARY:Brisk walk at the park connector
+UID:sample-walk@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260911T150000
+DTEND;TZID=Asia/Singapore:20260911T163000
+RRULE:FREQ=WEEKLY;BYDAY=FR
+SUMMARY:Smartphone class: WhatsApp video calls
+DESCRIPTION:$5 per term
+UID:sample-phone@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20260601T100000
+DTEND;TZID=Asia/Singapore:20260601T110000
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20260731T020000Z
+SUMMARY:Ukulele (June-July run)
+UID:sample-ukulele@careloop.test
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Asia/Singapore:20261031T090000
+DTEND;TZID=Asia/Singapore:20261031T130000
+SUMMARY:Outing to Gardens by the Bay
+UID:sample-outing@careloop.test
+END:VEVENT
+END:VCALENDAR

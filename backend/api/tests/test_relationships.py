@@ -373,12 +373,12 @@ class AacCaseload(unittest.TestCase):
     def test_matches_on_caregiver_id(self):
         """Caseload matches contacts whose caregiver_id is the worker."""
         r = self.c.get("/care/aac/cg-siti/caseload").json()
-        self.assertEqual(len(r["seniors"]), 3)
+        self.assertEqual(len(r["seniors"]), 5)  # Lee, Goh, Ng, Lim, Chandran
 
     def test_matches_on_legacy_worker_id(self):
         """Caseload also matches contacts with the old worker_id field."""
         r = self.c.get("/care/aac/aac-siti/caseload").json()
-        self.assertEqual(len(r["seniors"]), 3)
+        self.assertEqual(len(r["seniors"]), 5)  # Lee, Goh, Ng, Lim, Chandran
 
     def test_no_duplicate_rows(self):
         """A contact matching both caregiver_id and worker_id appears once, not twice."""

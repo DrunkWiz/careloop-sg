@@ -18,7 +18,7 @@ from backend.env.places import suggest
 from . import baseline as base
 from .config import T
 from .history import Day, build
-from .rules import Ctx, Outcome, evaluate
+from .rules import Ctx, Outcome, evaluate, red_flags
 
 SEVERITY = {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "R": 5}
 SGT = timezone(timedelta(hours=8))
@@ -143,11 +143,15 @@ def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, ga
     }
 
     if out.rung == "R" or (out.rung == "4" and not decision["handover_id"]):
-        ho = _handover(store, senior, out, days, day, did, recent, now)
+        # A second red flag the same day keeps today's red-flag handover as it is: rebuilding it would reopen
+        # it and wipe who claimed it, so another family member could act on it twice.
+        existing = store.get("handover", f"ho-{did}-R") if out.rung == "R" else None
+        ho = existing or _handover(store, senior, out, days, day, did, recent, now)
         decision["handover_id"] = ho["id"]
 
     contacts = contacts_for(store, senior)
     sent = {(m["to"], m["rung"]) for m in (store.get("message", mid) for mid in decision["message_ids"]) if m}
+    first_alert = out.rung == "R" and not any(r == "R" for _, r in sent)
     for to in audience:
         if (to, out.rung) in sent:
             continue
@@ -167,6 +171,24 @@ def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, ga
             if msg is not None:
                 store.put("message", msg)
                 decision["message_ids"].append(msg["id"])
+
+    if out.rung == "R":
+        # Red flags are never held back, including a new one later the same day: chest pain after a high
+        # reading alerts everyone again. A red flag they were already told about doesn't repeat.
+        alerted = list(((prev or {}).get("inputs") or {}).get("red_flags_alerted", [])) if prev and prev["rung"] == "R" else []
+        flags = red_flags(days[day])
+        if first_alert or not alerted:
+            alerted = [f.reason for f in flags] or [out.reason]
+        else:
+            for f in [f for f in flags if f.reason not in alerted]:
+                alerted.append(f.reason)
+                for to in audience:
+                    for c in ([None] if to == "senior" else contacts):
+                        msg = _message(senior, f, days[day], to, c, contacts, now, did, gateway, seq=len(alerted))
+                        if msg is not None:
+                            store.put("message", msg)
+                            decision["message_ids"].append(msg["id"])
+        decision["inputs"]["red_flags_alerted"] = alerted
     store.put("decision", decision)
     return decision
 
@@ -249,14 +271,16 @@ def _facts_for(day: Day, out: Outcome, lang) -> Facts:
     return f
 
 
-def _message(senior, out: Outcome, day: Day, to: str, contact: dict | None, contacts: list[dict], now, did, gateway) -> dict | None:
+def _message(senior, out: Outcome, day: Day, to: str, contact: dict | None, contacts: list[dict], now, did, gateway,
+             seq: int | None = None) -> dict | None:
     lang = (contact or senior).get("language") or senior.get("language", "en")
     names = [c["name"] for c in contacts]
     joiner = "和" if lang == "zh" else " and "
     primary = (", ".join(names[:-1]) + joiner + names[-1]) if len(names) > 1 else (names[0] if names else None)
     ctx = {"name": senior.get("name"), "contact": primary, "psi": day.psi}
     if to != "senior":
-        ctx["summary"] = out.reason[0].upper() + out.reason[1:] + "."
+        # The red-flag message has the summary mid-sentence ("Mr Tan reported a danger symptom: ..."); others start with it.
+        ctx["summary"] = (out.reason if out.rung == "R" else out.reason[0].upper() + out.reason[1:]) + "."
     if out.rung == "2" and out.rule_id == "2.low_day":
         ctx["place"] = (out.inputs.get("place") or None)
     if out.rung == "2" and out.rule_id == "2.refill":
@@ -266,7 +290,7 @@ def _message(senior, out: Outcome, day: Day, to: str, contact: dict | None, cont
     if not m.text:
         return None
     return {
-        "id": f"msg-{did}-{out.rung}-{to}-{(contact or {}).get('id', 'senior')}",
+        "id": f"msg-{did}-{out.rung}-{to}-{(contact or {}).get('id', 'senior')}" + (f"-{seq}" if seq else ""),
         "senior_id": senior["id"], "decision_id": did, "to": to, "contact_id": (contact or {}).get("id"),
         "rung": out.rung, "language": m.language, "text": m.text, "from_template": m.from_template,
         "guardrail": {"passed": m.guardrail.passed, "reasons": m.guardrail.reasons}, "model": m.model,

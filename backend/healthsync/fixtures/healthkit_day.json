@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. The same morning as HealthKit samples (HKQuantitySample, HKCategorySample, HKCorrelation), from Fitbit via the Google Health app and from OMRON connect. Sleep comes as one sample per stage.",
+  "platform": "healthkit",
+  "records": [
+    {"type": "HKQuantityTypeIdentifierStepCount", "uuid": "9A1E-01", "startDate": "2026-10-24T08:00:00+08:00", "endDate": "2026-10-24T09:00:00+08:00",
+     "value": 640, "unit": "count", "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}, "version": "5.05"}},
+    {"type": "HKQuantityTypeIdentifierStepCount", "uuid": "9A1E-02", "startDate": "2026-10-24T09:00:00+08:00", "endDate": "2026-10-24T10:00:00+08:00",
+     "value": 1210, "unit": "count", "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}, "version": "5.05"}},
+    {"type": "HKQuantityTypeIdentifierRestingHeartRate", "uuid": "9A1E-03", "startDate": "2026-10-24T07:15:00+08:00", "endDate": "2026-10-24T07:15:00+08:00",
+     "value": 66, "unit": "count/min", "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}},
+    {"type": "HKCategoryTypeIdentifierSleepAnalysis", "uuid": "9A1E-04", "startDate": "2026-10-23T23:20:00+08:00", "endDate": "2026-10-24T02:00:00+08:00",
+     "value": 3, "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}},
+    {"type": "HKCategoryTypeIdentifierSleepAnalysis", "uuid": "9A1E-05", "startDate": "2026-10-24T02:00:00+08:00", "endDate": "2026-10-24T02:20:00+08:00",
+     "value": 2, "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}},
+    {"type": "HKCategoryTypeIdentifierSleepAnalysis", "uuid": "9A1E-06", "startDate": "2026-10-24T02:20:00+08:00", "endDate": "2026-10-24T04:00:00+08:00",
+     "value": 4, "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}},
+    {"type": "HKCategoryTypeIdentifierSleepAnalysis", "uuid": "9A1E-07", "startDate": "2026-10-24T04:00:00+08:00", "endDate": "2026-10-24T06:40:00+08:00",
+     "value": 5, "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}},
+    {"type": "HKCorrelationTypeIdentifierBloodPressure", "uuid": "9A1E-08", "startDate": "2026-10-24T08:05:00+08:00", "endDate": "2026-10-24T08:05:00+08:00",
+     "objects": [
+       {"type": "HKQuantityTypeIdentifierBloodPressureSystolic", "value": 138, "unit": "mmHg"},
+       {"type": "HKQuantityTypeIdentifierBloodPressureDiastolic", "value": 86, "unit": "mmHg"}
+     ],
+     "sourceRevision": {"source": {"name": "OMRON connect", "bundleIdentifier": "jp.co.omron.healthcare.omronconnect"}}},
+    {"type": "HKQuantityTypeIdentifierBodyMass", "uuid": "9A1E-09", "startDate": "2026-10-24T08:10:00+08:00", "endDate": "2026-10-24T08:10:00+08:00",
+     "value": 61.2, "unit": "kg", "sourceRevision": {"source": {"name": "Fitbit", "bundleIdentifier": "com.fitbit.FitbitMobile"}}}
+  ]
+}

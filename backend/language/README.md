@@ -22,7 +22,8 @@ Shape: [facts.example.json](facts.example.json). It's proposed for `CheckIn.extr
 
 ## write(rung, facts, lang, *, to="senior", context=None) -> Message
 
-- The model drafts in the senior's language and tone, inside the rung the engine chose.
+- The model drafts in the senior's language and tone, inside the rung the engine chose. It's given the rung's fixed template and told to keep everything it says: it changes the wording, not the content.
+- **Red flags never go to the model.** Their wording is the fixed template the medical student signs off, sent at once: what to do must not be reworded each time, and an urgent message must not wait on a model call.
 - The guardrail checks every draft. If it fails, or no model answers, the fixed template for that rung goes out (English and Mandarin; Singlish speakers get English).
 - `context` fills template slots and informs the guardrail: `name`, `contact`, `place` (rung 2), `summary`, `psi` / `haze`.
 - Rung 0 returns empty text. So does rung 1, 2 or 3 to an audience that isn't messaged at that rung.
@@ -48,7 +49,9 @@ The red-flag templates are **PLACEHOLDER** until the medical student signs off (
 ## Model chain (`gateway.py`)
 
 1. Tencent Hunyuan via its OpenAI-compatible endpoint: `HUNYUAN_API_KEY` (optional `HUNYUAN_MODEL`, default `hunyuan-turbos-latest`; `HUNYUAN_BASE_URL`).
-2. Any OpenAI-compatible fallback: `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_API_KEY`, `LLM_FALLBACK_MODEL`.
+2. Any OpenAI-compatible fallback: `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_API_KEY`, `LLM_FALLBACK_MODEL` (optional `LLM_FALLBACK_NAME`). The hosted demo uses Gemini here (`gemini-3.8-flash` via Google's OpenAI-compatible endpoint) until a Hunyuan key is set.
+   When every model fails, the server logs why (the provider's error, never the key) before falling back.
+   Each model call gives up after 5 seconds (`LLM_TIMEOUT_SECONDS`), because a senior is waiting for the reply; rules and templates answer instead.
 3. No model: rules and templates. Always there, so the demo survives a dead API.
 
 `describe()` returns the chain for `GET /meta`.

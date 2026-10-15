@@ -145,3 +145,18 @@ p.sa-warn { padding: 10px 14px; border-radius: 12px; color: var(--sa-ink); }
 }
 .sa-show { opacity: 1; transform: none; }
 .sa-loading { text-align: center; font-size: 2em; }
+
+/* My medicines and check-ups (screens/MyHealth.tsx). Text 18px and up; tap targets 48px and up. */
+.sa-med { padding: 14px 0; border-top: 1px solid #dce3d5; }
+.sa-med:first-of-type { border-top: 0; }
+.sa-med h2 { margin: 0 0 4px; font-size: 22px; }
+.sa-med-for { font-size: 20px; margin: 0 0 6px; }
+.sa-med-for.is-unknown { color: #6b4500; }
+.sa-med-more { font-size: 18px; }
+.sa-med-more summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; color: var(--sa-accent); font-weight: 700; }
+.sa-med-more ul { padding-left: 22px; margin: 6px 0; }
+.sa-check-list { list-style: none; padding: 0; margin: 0; }
+.sa-check-list li { padding: 12px 0; border-top: 1px solid #dce3d5; }
+.sa-check-list li:first-child { border-top: 0; }
+.sa-status.is-due { background: #fff1cc; color: #5c3b00; }
+.sa-status.is-not_recorded { background: #eef0ee; color: #3d3d3d; }

@@ -126,9 +126,10 @@ class Api(unittest.TestCase):
         demo.seed(s)
         self.c.post("/demo/advance", json={"days": 14})
         rows = self.c.get("/care/aac/aac-siti/caseload").json()["seniors"]
-        self.assertEqual(rows[0]["senior"]["name"], "Mr Ng")
-        self.assertEqual(rows[0]["status"], "handover")
-        self.assertTrue(all(r["status"] == "quiet" for r in rows[1:]))
+        need = [r for r in rows if r["status"] == "handover"]
+        self.assertEqual({r["senior"]["name"] for r in need}, {"Mr Ng", "Mr Chandran"})  # Mr Chandran's drift: demo.py
+        self.assertEqual(rows[:len(need)], need)  # those who need a look come first
+        self.assertTrue(all(r["status"] == "quiet" for r in rows[len(need):]))
 
     def test_programmes_feed_suggestions(self):
         r = self.c.put("/aac/aac-002/programmes", json=[{"title": "Karaoke", "title_zh": "卡拉OK", "weekdays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -158,20 +159,20 @@ class Api(unittest.TestCase):
         self.assertTrue(cg_wl["seniors"][0]["primary"])
         cg_kv = self.c.get("/care/caregiver/cg-kelvin").json()
         self.assertEqual(cg_kv["caregiver"]["name"], "Kelvin")
-        # Kelvin also looks after his mother (Mrs Yeo, primary). The two-senior view should be sorted by name.
+        # Kelvin also looks after his mother (Mrs Teo, primary). The two-senior view should be sorted by name.
         self.assertEqual(len(cg_kv["seniors"]), 2)
         self.assertEqual(cg_kv["seniors"][0]["senior_name"], "Mr Tan")
         self.assertFalse(cg_kv["seniors"][0]["primary"])
-        self.assertEqual(cg_kv["seniors"][1]["senior_name"], "Mrs Yeo")
+        self.assertEqual(cg_kv["seniors"][1]["senior_name"], "Mrs Teo")
         self.assertTrue(cg_kv["seniors"][1]["primary"])
 
     def test_one_caregiver_two_seniors(self):
-        """Siti is the AAC caregiver for Lee, Goh, and Ng — three seniors."""
+        """Siti is the AAC caregiver for five seniors."""
         r = self.c.get("/care/caregiver/cg-siti").json()
         self.assertEqual(r["caregiver"]["name"], "Siti")
         self.assertEqual(r["caregiver"]["role"], "aac")
         senior_names = {s["senior_name"] for s in r["seniors"]}
-        self.assertEqual(senior_names, {"Mdm Lee", "Mr Goh", "Mr Ng"})
+        self.assertEqual(senior_names, {"Mdm Lee", "Mr Goh", "Mr Ng", "Mr Lim", "Mr Chandran"})
         # Each senior has a distinct contact_id.
         contact_ids = [s["contact_id"] for s in r["seniors"]]
         self.assertEqual(len(contact_ids), len(set(contact_ids)))

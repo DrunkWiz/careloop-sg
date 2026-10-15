@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 760" width="1240" height="760" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>CareLoop SG trust boundaries</title>
+  <desc>One check-in from words to action. The model sits behind a fence above two steps and only handles words; rules pick the rung; a person decides any next step.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4a5450"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#a8700a"/></marker>
+    <style>
+      .t { font-size: 15px; font-weight: 700; fill: #1d2b24; }
+      .n { font-size: 13px; font-weight: 700; fill: #5f6660; }
+      .s { font-size: 12.5px; fill: #3d4742; }
+      .k { font-size: 11.5px; fill: #5f6660; }
+      .h { font-size: 13px; font-weight: 700; letter-spacing: .06em; }
+      .box { fill: #ffffff; stroke: #b9c4bc; stroke-width: 1.2; }
+      .rules { fill: #e3f1ec; stroke: #24533f; stroke-width: 1.6; }
+      .ai { fill: #fff3dc; stroke: #a8700a; stroke-width: 1.6; }
+      .ln { fill: none; stroke: #4a5450; stroke-width: 1.6; }
+      .fence { fill: none; stroke: #b3261e; stroke-width: 1.8; stroke-dasharray: 8 5; }
+      .fl { font-size: 12.5px; font-weight: 700; fill: #b3261e; }
+    </style>
+  </defs>
+  <rect width="1240" height="760" fill="#fbfcfa"/>
+
+  <text x="30" y="38" style="font-size:22px;font-weight:700;fill:#1d2b24">One check-in, and where trust changes hands</text>
+  <text x="30" y="60" class="s">"I'm fine lah, BP 186/112" travels left to right. Red dashed lines are the trust boundaries.</text>
+
+  <!-- AI zone -->
+  <rect x="190" y="84" width="1040" height="128" rx="14" fill="#fffaf0" stroke="#e7cf9b"/>
+  <text x="206" y="106" class="h" fill="#8a5a00">AI ZONE · TENCENT HUNYUAN (GEMINI IN THE DEMO) · OPTIONAL: CARELOOP WORKS WITHOUT IT</text>
+  <rect x="206" y="118" width="300" height="82" rx="10" class="ai"/>
+  <text x="220" y="140" class="t">Model reads (inside understand)</text>
+  <text x="220" y="160" class="s">May add a symptom said in passing,</text>
+  <text x="220" y="176" class="s">the mood, an English gloss. Can't remove</text>
+  <text x="220" y="192" class="s">a rule finding or invent a number.</text>
+  <rect x="904" y="118" width="310" height="82" rx="10" class="ai"/>
+  <text x="918" y="140" class="t">Model writes (inside write)</text>
+  <text x="918" y="160" class="s">Rewords the fixed message in their</text>
+  <text x="918" y="176" class="s">language and tone. Never on a red flag;</text>
+  <text x="918" y="192" class="s">never picks the rung or who is told.</text>
+  <path d="M356 200 V262" stroke="#a8700a" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#b)"/>
+  <path d="M1004 200 V262" stroke="#a8700a" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#b)"/>
+
+  <!-- Model boundary -->
+  <line x1="190" y1="228" x2="1230" y2="228" class="fence"/>
+  <text x="380" y="248" class="fl">② MODEL BOUNDARY: model output is untrusted until rules and the guardrail pass it</text>
+
+  <!-- Steps -->
+  <g>
+    <rect x="30" y="266" width="148" height="196" rx="10" class="box"/>
+    <text x="42" y="288" class="n">1</text>
+    <text x="42" y="308" class="t">Input</text>
+    <text x="42" y="330" class="s">What the senior</text>
+    <text x="42" y="346" class="s">says or types; a</text>
+    <text x="42" y="362" class="s">synced cuff or</text>
+    <text x="42" y="378" class="s">watch reading; a</text>
+    <text x="42" y="394" class="s">centre's calendar</text>
+    <text x="42" y="420" class="k">All untrusted</text>
+
+    <rect x="206" y="266" width="150" height="196" rx="10" class="rules"/>
+    <text x="218" y="288" class="n">2</text>
+    <text x="218" y="308" class="t">understand()</text>
+    <text x="218" y="330" class="s">Rules pull out BP,</text>
+    <text x="218" y="346" class="s">doses, symptoms,</text>
+    <text x="218" y="362" class="s">in EN, Singlish, 中文.</text>
+    <text x="218" y="384" class="s">Red-flag symptoms</text>
+    <text x="218" y="400" class="s">by rules only.</text>
+    <text x="218" y="426" class="k">BP 186/112, conf. 1.0</text>
+
+    <rect x="380" y="266" width="150" height="196" rx="10" class="rules"/>
+    <text x="392" y="288" class="n">3</text>
+    <text x="392" y="308" class="t">Trust check</text>
+    <text x="392" y="330" class="s">Flags impossible or</text>
+    <text x="392" y="346" class="s">swapped readings;</text>
+    <text x="392" y="362" class="s">never fixes them.</text>
+    <text x="392" y="384" class="s">Unsure (&lt; 0.8): the</text>
+    <text x="392" y="400" class="s">senior confirms.</text>
+    <text x="392" y="426" class="k">Plausible: passes</text>
+
+    <rect x="554" y="266" width="150" height="196" rx="10" class="rules"/>
+    <text x="566" y="288" class="n">4</text>
+    <text x="566" y="308" class="t">Rule table</text>
+    <text x="566" y="330" class="s">Picks the rung from</text>
+    <text x="566" y="346" class="s">their own baseline</text>
+    <text x="566" y="362" class="s">and context (rain,</text>
+    <text x="566" y="378" class="s">haze, festivals).</text>
+    <text x="566" y="400" class="s">thresholds.json only.</text>
+    <text x="566" y="426" class="k">≥ 180/120: rung R</text>
+
+    <rect x="728" y="266" width="150" height="196" rx="10" class="rules"/>
+    <text x="740" y="288" class="n">5</text>
+    <text x="740" y="308" class="t">Ladder</text>
+    <text x="740" y="330" class="s">Consent, cooldowns,</text>
+    <text x="740" y="346" class="s">centre's weekly cap.</text>
+    <text x="740" y="368" class="s">Red flags skip all</text>
+    <text x="740" y="384" class="s">of it. Logs every</text>
+    <text x="740" y="400" class="s">day, quiet ones too.</text>
+    <text x="740" y="426" class="fl">③ Consent applied</text>
+
+    <rect x="904" y="266" width="150" height="196" rx="10" class="rules"/>
+    <text x="916" y="288" class="n">6</text>
+    <text x="916" y="308" class="t">write() + guardrail</text>
+    <text x="916" y="330" class="s">Every draft checked:</text>
+    <text x="916" y="346" class="s">no diagnosis, dose</text>
+    <text x="916" y="362" class="s">change, stopping,</text>
+    <text x="916" y="378" class="s">calm on a red flag,</text>
+    <text x="916" y="394" class="s">invented number.</text>
+    <text x="916" y="416" class="k">Fails, no model, or a</text>
+    <text x="916" y="430" class="k">red flag: fixed template</text>
+
+    <rect x="1078" y="266" width="152" height="196" rx="10" class="box"/>
+    <text x="1090" y="288" class="n">7</text>
+    <text x="1090" y="308" class="t">A person acts</text>
+    <text x="1090" y="330" class="s">Senior: rest, measure</text>
+    <text x="1090" y="346" class="s">again; any danger</text>
+    <text x="1090" y="362" class="s">sign, call 995.</text>
+    <text x="1090" y="384" class="s">Family: told now.</text>
+    <text x="1090" y="400" class="s">They pick the step;</text>
+    <text x="1090" y="416" class="s">CareLoop never calls</text>
+    <text x="1090" y="432" class="s">995 or a clinic itself.</text>
+  </g>
+  <path d="M178 364 H202" class="ln" marker-end="url(#a)"/>
+  <path d="M356 364 H376" class="ln" marker-end="url(#a)"/>
+  <path d="M530 364 H550" class="ln" marker-end="url(#a)"/>
+  <path d="M704 364 H724" class="ln" marker-end="url(#a)"/>
+  <path d="M878 364 H900" class="ln" marker-end="url(#a)"/>
+  <path d="M1054 364 H1074" class="ln" marker-end="url(#a)"/>
+
+  <!-- Input boundary and human boundary -->
+  <line x1="192" y1="254" x2="192" y2="530" class="fence"/>
+  <text x="196" y="528" class="fl">① INPUT</text>
+  <line x1="1066" y1="254" x2="1066" y2="530" class="fence"/>
+  <text x="1062" y="528" class="fl" text-anchor="end">④ A PERSON DECIDES</text>
+
+  <!-- Rules band -->
+  <path d="M206 478 V490 H1054 V478" fill="none" stroke="#24533f" stroke-width="1.6"/>
+  <text x="630" y="510" class="n" text-anchor="middle" fill="#24533f">Decided by rules: tested offline, logged, checked on a frozen held-out set (5 of 5 red flags, no false handovers)</text>
+
+  <!-- Boundary notes -->
+  <rect x="30" y="556" width="1200" height="168" rx="12" fill="#ffffff" stroke="#e1c7c5"/>
+  <text x="48" y="582" class="fl">① Input</text>
+  <text x="168" y="582" class="s">Words, readings and files are untrusted. Numbers are extracted, never invented or rewritten; a bad reading is flagged and the senior re-measures.</text>
+  <text x="48" y="608" class="fl">② Model</text>
+  <text x="168" y="608" class="s">The model is reached only through understand() and write(). It can add meaning, never remove a finding; its words pass the guardrail or a template goes out.</text>
+  <text x="48" y="634" class="fl">③ Consent</text>
+  <text x="168" y="634" class="s">Family sees only what the senior chose (nothing, a weekly summary, or readings; their words; activity). Red flags always get through.</text>
+  <text x="48" y="660" class="fl">④ A person</text>
+  <text x="168" y="660" class="s">CareLoop tells the family or centre, then waits for someone to pick a step (call, polyclinic, GP note, home visit). It never calls 995, a clinic or a doctor itself.</text>
+  <text x="48" y="686" class="fl">⑤ Data</text>
+  <text x="168" y="686" class="s">All people are synthetic. Not connected to any clinic system: the GP gets a one-page PDF. Medicine notes are fixed text; an unknown medicine goes to the pharmacist.</text>
+  <text x="168" y="708" class="k">Clinical thresholds, red-flag wording and medicine notes are placeholders until the medical student signs off.</text>
+</svg>

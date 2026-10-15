@@ -1,0 +1,27 @@
+{
+  "_note": "Synthetic. One morning of Health Connect records from a Fitbit and an OMRON cuff, as a phone app would send them (androidx.health.connect record fields). The 08:00 steps block appears twice, as it would in a repeat sync.",
+  "platform": "health_connect",
+  "records": [
+    {"recordType": "Steps", "startTime": "2026-10-24T00:00:00Z", "endTime": "2026-10-24T01:00:00Z", "startZoneOffset": "+08:00", "count": 640,
+     "metadata": {"id": "a1f0", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}, "lastModifiedTime": "2026-10-24T02:10:00Z"}},
+    {"recordType": "Steps", "startTime": "2026-10-24T01:00:00Z", "endTime": "2026-10-24T02:00:00Z", "startZoneOffset": "+08:00", "count": 1210,
+     "metadata": {"id": "a1f1", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}, "lastModifiedTime": "2026-10-24T02:10:00Z"}},
+    {"recordType": "Steps", "startTime": "2026-10-24T00:00:00Z", "endTime": "2026-10-24T01:00:00Z", "startZoneOffset": "+08:00", "count": 640,
+     "metadata": {"id": "a1f0", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}, "lastModifiedTime": "2026-10-24T02:10:00Z"}},
+    {"recordType": "RestingHeartRate", "time": "2026-10-23T23:15:00Z", "beatsPerMinute": 66,
+     "metadata": {"id": "b7c2", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}}},
+    {"recordType": "SleepSession", "startTime": "2026-10-23T15:20:00Z", "endTime": "2026-10-23T22:40:00Z",
+     "stages": [
+       {"startTime": "2026-10-23T15:20:00Z", "endTime": "2026-10-23T18:00:00Z", "stage": 4},
+       {"startTime": "2026-10-23T18:00:00Z", "endTime": "2026-10-23T18:20:00Z", "stage": 1},
+       {"startTime": "2026-10-23T18:20:00Z", "endTime": "2026-10-23T20:00:00Z", "stage": 5},
+       {"startTime": "2026-10-23T20:00:00Z", "endTime": "2026-10-23T22:40:00Z", "stage": 6}
+     ],
+     "metadata": {"id": "c3d9", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}}},
+    {"recordType": "BloodPressure", "time": "2026-10-24T00:05:00Z",
+     "systolic": {"inMillimetersOfMercury": 138.0}, "diastolic": {"inMillimetersOfMercury": 86.0}, "bodyPosition": 2, "measurementLocation": 3,
+     "metadata": {"id": "d4e8", "dataOrigin": {"packageName": "jp.co.omron.healthcare.omron_connect"}}},
+    {"recordType": "Weight", "time": "2026-10-24T00:10:00Z", "weight": {"inKilograms": 61.2},
+     "metadata": {"id": "e5f1", "dataOrigin": {"packageName": "com.fitbit.FitbitMobile"}}}
+  ]
+}

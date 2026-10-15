@@ -10,6 +10,12 @@ import type {
   Caseload,
   FamilyView,
   Handover,
+  HealthSyncResult,
+  HealthSyncView,
+  MedicinesView,
+  PreventionView,
+  ProgrammeFeed,
+  TimetableImport,
   LogDay,
   PairCodeIn,
   PairCodeOut,
@@ -187,4 +193,43 @@ export function hugVentPost(postId: string): Promise<VentPost> {
 
 export function reportVentPost(postId: string): Promise<{ id: string; hidden: boolean }> {
   return BASE ? http(`/vent/${postId}/report`, { method: 'POST' }) : mock.reportVentPost(postId);
+}
+
+// Added endpoints (need team OK): health apps on the senior's phone. Mocks show Mr Tan's phone, read-only.
+export function getHealthSync(seniorId: string, contactId?: string, days = 7): Promise<HealthSyncView> {
+  return BASE
+    ? http(`/senior/${seniorId}/health-sync?days=${days}${contactId ? `&contact=${encodeURIComponent(contactId)}` : ''}`)
+    : mock.getHealthSync(seniorId, days);
+}
+
+// Demo only: stands in for the senior's phone syncing now, with an optional cuff measurement.
+export function demoHealthSync(seniorId: string, bp?: [number, number]): Promise<HealthSyncResult> {
+  return http(`/demo/health-sync/${seniorId}`, { method: 'POST', body: JSON.stringify(bp ? { bp } : {}) });
+}
+
+// Added endpoints (need team OK): import a centre's own calendar (.ics) or spreadsheet (.csv).
+export function importTimetable(aacId: string, body: { text?: string; url?: string; save?: boolean }): Promise<TimetableImport> {
+  return BASE
+    ? http(`/aac/${aacId}/programmes/import`, { method: 'POST', body: JSON.stringify(body) })
+    : Promise.reject(new ApiError(501, 'Importing needs the API (npm run dev:live).'));
+}
+
+export async function getProgrammeFeed(aacId: string): Promise<ProgrammeFeed | null> {
+  return BASE ? http(`/aac/${aacId}/programmes/feed`) : null;
+}
+
+export function stopProgrammeFeed(aacId: string): Promise<null> {
+  return http(`/aac/${aacId}/programmes/feed`, { method: 'DELETE' });
+}
+
+// Added endpoints (need team OK): what each medicine is for, and vaccines and check-ups that are due.
+const q = (contactId?: string, lang?: string) =>
+  [contactId && `contact=${encodeURIComponent(contactId)}`, lang && `lang=${lang}`].filter(Boolean).join('&');
+
+export function getMedicines(seniorId: string, contactId?: string, lang = 'en'): Promise<MedicinesView> {
+  return BASE ? http(`/senior/${seniorId}/medicines?${q(contactId, lang)}`) : mock.getMedicines();
+}
+
+export function getPrevention(seniorId: string, contactId?: string, lang = 'en'): Promise<PreventionView> {
+  return BASE ? http(`/senior/${seniorId}/prevention?${q(contactId, lang)}`) : mock.getPrevention();
 }

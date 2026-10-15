@@ -1,8 +1,13 @@
 """write(rung, facts, lang) -> Message.
 
 The engine has already chosen the rung; this only chooses words. The model drafts in the senior's
-language and tone inside that rung. The guardrail checks every draft; a draft that fails, or no
-model at all, means the fixed template for the rung goes out instead.
+language and tone inside that rung, keeping everything the rung's fixed template says: it changes the
+wording, not the content. The guardrail checks every draft; a draft that fails, or no model at all,
+means the fixed template goes out instead.
+
+Red flags never go to the model. Their wording is the fixed template, the one the medical student signs
+off: what to do (rest, measure again, call 995 for danger signs) must not be reworded each time, and an
+urgent message must not wait on a model call.
 """
 from __future__ import annotations
 
@@ -45,8 +50,8 @@ def write(rung: Rung, facts: Facts, lang: Lang | None = None, *, to: Audience = 
 
     chain = as_chain(gateway)
     rejected: list[str] = []
-    if chain.rungs:
-        prompt = _prompt(rung, to, facts, lang, context)
+    if chain.rungs and rung != "R":
+        prompt = _prompt(rung, to, facts, lang, context, template)
         try:
             draft, used = chain.complete(SYSTEM, prompt)
             draft = draft.strip().strip('"').strip()
@@ -64,7 +69,7 @@ def write(rung: Rung, facts: Facts, lang: Lang | None = None, *, to: Audience = 
     return Message(to=to, rung=rung, language=lang, text=template, from_template=True, guardrail=g)
 
 
-def _prompt(rung: Rung, to: Audience, facts: Facts, lang: Lang, context: dict) -> str:
+def _prompt(rung: Rung, to: Audience, facts: Facts, lang: Lang, context: dict, template: str) -> str:
     said = {
         "symptoms": [s.words or s.code for s in facts.symptoms],
         "bp": [f"{b.systolic}/{b.diastolic}" for b in facts.bp],
@@ -79,4 +84,5 @@ def _prompt(rung: Rung, to: Audience, facts: Facts, lang: Lang, context: dict) -
         f"Language: {LANG_NAME[lang]}",
         f"Facts: {json.dumps(said, ensure_ascii=False)}",
         f"Context: {json.dumps(context, ensure_ascii=False, default=str)}",
+        f"Keep everything this message says, and add nothing to it. Change only the wording and tone: {template}",
     ])

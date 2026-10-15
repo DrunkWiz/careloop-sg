@@ -4,7 +4,7 @@ import { LangContext, dateLocale, useT } from '../../shared/i18n';
 import type { Today } from '../types';
 import { BigButton, Icon, TalkButton } from '../ui';
 
-export function Home({ today, busy, talkSupported, listening, interim, onPills, onBP, onFeel, onTalkStart, onTalkStop, onNotForMe, onKnows }: {
+export function Home({ today, busy, talkSupported, listening, interim, onPills, onBP, onFeel, onTalkStart, onTalkStop, onNotForMe, onKnows, onMeds }: {
   today: Today;
   busy: boolean;
   talkSupported: boolean;
@@ -17,6 +17,7 @@ export function Home({ today, busy, talkSupported, listening, interim, onPills, 
   onTalkStop: () => void;
   onNotForMe: (id: string) => void;
   onKnows: () => void;
+  onMeds: () => void;
 }) {
   const t = useT();
   const comma = useContext(LangContext) === 'zh' ? '，' : ', ';
@@ -82,6 +83,7 @@ export function Home({ today, busy, talkSupported, listening, interim, onPills, 
         </div>
       )}
 
+      <button className="sa-link" onClick={onMeds}><span aria-hidden>{Icon.pill}</span> {t('home.meds')}</button>
       <button className="sa-link" onClick={onKnows}><span aria-hidden>{Icon.list}</span> {t('home.knows')}</button>
       </aside></div>
     </div>

@@ -5,6 +5,7 @@ import type { Activities, CaseloadRow, Programme, ProgrammeIn, Weekday } from '.
 import { getActivities, getProgrammes, putProgrammes } from '../shared/api';
 import { BackLink } from './HandoverView';
 import { timeKey } from './ActivitiesView';
+import TimetableImport from './TimetableImport';
 
 const DAYS: { id: Weekday; label: string }[] = [
   { id: 'mon', label: 'Mon' },
@@ -24,10 +25,10 @@ const blank = { title: '', weekdays: [] as Weekday[], time: '10:00', indoor: tru
 
 // Which seniors each programme suits, from what they told CareLoop they like (the same match the
 // engine's suggestions use). Matched by title, so it works for entered and sample timetables alike.
-function useSuits(seniors: CaseloadRow[]) {
+function useSuits(seniors: CaseloadRow[], timetable: string) {
   const [acts, setActs] = useState<{ name: string; a: Activities }[]>([]);
   // Refetch when the caseload's members change, not on every 15-second refresh.
-  const key = seniors.map((r) => `${r.senior.id}:${r.contact_id}`).join(',');
+  const key = seniors.map((r) => `${r.senior.id}:${r.contact_id}`).join(',') + '|' + timetable;
   useEffect(() => {
     Promise.all(seniors.map((r) => getActivities(r.senior.id, r.contact_id).then((a) => ({ name: r.senior.name, a }), () => null))).then(
       (xs) => setActs(xs.filter((x): x is { name: string; a: Activities } => !!x)),
@@ -42,10 +43,10 @@ function useSuits(seniors: CaseloadRow[]) {
 }
 
 export default function AacProgrammes({ centre, seniors }: { centre: { id: string; name: string }; seniors: CaseloadRow[] }) {
-  const { acts, suits } = useSuits(seniors);
+  const [list, setList] = useState<Programme[] | null>(null);
+  const { acts, suits } = useSuits(seniors, (list ?? []).map((p) => p.title).join(','));
   const samples = acts.find((x) => x.a.own_aac?.id === centre.id)?.a.own_aac?.programmes.filter((p) => p.sample) ?? [];
   const ccs = acts[0]?.a.nearby_ccs ?? [];
-  const [list, setList] = useState<Programme[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(blank);
@@ -87,9 +88,10 @@ export default function AacProgrammes({ centre, seniors }: { centre: { id: strin
       <BackLink to="/care/aac" label="Caseload" />
       <h1>Weekly programmes</h1>
       <p className="care-lead">
-        Enter {centre.name}'s timetable once. CareLoop suggests these to linked seniors who'd enjoy them, indoor ones first
+        Enter {centre.name}'s timetable once, or import it. CareLoop suggests these to linked seniors who'd enjoy them, indoor ones first
         on rainy or hazy days.
       </p>
+      <TimetableImport aacId={centre.id} onSaved={() => void getProgrammes(centre.id).then(setList, (e: Error) => setError(e.message))} />
       {error && <p className="care-error">{error}</p>}
       {!list && !error && <p className="care-muted">Loading…</p>}
       {list?.some((p) => p.sample) && <p className="care-notice">These are sample programmes for the demo. Replace them with your centre's.</p>}

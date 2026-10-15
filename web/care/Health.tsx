@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Insights } from '../shared/contract';
 import { ApiError, getInsights, usingMocks } from '../shared/api';
 import Findings from './Findings';
+import HealthApps from './HealthApps';
 import { useRefreshTick } from './live';
 import { BpTrend, PillCalendar, StepsBars } from './charts';
 
@@ -119,6 +120,10 @@ export default function Health({ seniorId, contactId, name }: { seniorId: string
           <StepsBars steps={activity.steps} baseline={activity.steps_baseline} />
         </section>
       )}
+
+      <div className="health-apps">
+        <HealthApps seniorId={seniorId} contactId={contactId} name={name} />
+      </div>
 
       <section className="care-card health-checkins">
         <h2>Check-ins</h2>
