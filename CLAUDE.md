@@ -45,7 +45,7 @@ web/                React + Vite, one build, two front doors
   senior/           /senior: big buttons, hold-to-talk, check-in, red flag, pairing           (Mingyu)
   care/             /care chooser, /care/family app, /care/aac centre console; ?demo clock   (Nathan)
   shared/           tokens.css (Nathan), i18n.ts (Mingyu), api.ts + contract.ts (Nathan)
-docs/               evaluation.md (blind, generated), evaluation-notes.md, build-log.md, tencent-tools.md
+docs/               architecture.md (+ diagrams), evaluation.md (blind, generated), evaluation-notes.md, build-log.md, tencent-tools.md
 ```
 
 Each `backend/*/README.md` documents its own module.

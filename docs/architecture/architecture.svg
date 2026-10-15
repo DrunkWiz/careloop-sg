@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 800" width="1240" height="800" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>CareLoop SG architecture</title>
+  <desc>People and devices on the left, one web service in the middle, outside services on the right. Rules decide; the model only reads and writes words.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4a5450"/></marker>
+    <style>
+      .t { font-size: 15px; font-weight: 700; fill: #1d2b24; }
+      .s { font-size: 12.5px; fill: #3d4742; }
+      .k { font-size: 11.5px; fill: #5f6660; }
+      .h { font-size: 13px; font-weight: 700; fill: #5f6660; letter-spacing: .06em; }
+      .box { fill: #ffffff; stroke: #b9c4bc; stroke-width: 1.2; }
+      .rules { fill: #e3f1ec; stroke: #24533f; stroke-width: 1.6; }
+      .ai { fill: #fff3dc; stroke: #a8700a; stroke-width: 1.6; }
+      .sim { fill: #ffffff; stroke: #7a837d; stroke-width: 1.4; stroke-dasharray: 6 4; }
+      .ln { fill: none; stroke: #4a5450; stroke-width: 1.4; }
+      .lnd { fill: none; stroke: #a8700a; stroke-width: 1.6; }
+    </style>
+  </defs>
+  <rect width="1240" height="800" fill="#fbfcfa"/>
+
+  <text x="30" y="38" style="font-size:22px;font-weight:700;fill:#1d2b24">CareLoop SG: architecture</text>
+  <text x="30" y="60" class="s">One web build, one API, one database. Rules decide what happens; the model (Tencent Hunyuan) only reads and writes words.</text>
+
+  <!-- People and devices -->
+  <text x="30" y="96" class="h">PEOPLE AND DEVICES</text>
+  <rect x="30" y="108" width="220" height="80" rx="10" class="box"/>
+  <text x="44" y="132" class="t">Senior</text>
+  <text x="44" y="152" class="s">Senior app on their phone. Big</text>
+  <text x="44" y="168" class="s">buttons, hold-to-talk (speech-to-</text>
+  <text x="44" y="184" class="s">text in browser). EN, Singlish, 中文</text>
+
+  <rect x="30" y="200" width="220" height="64" rx="10" class="box"/>
+  <text x="44" y="224" class="t">Family</text>
+  <text x="44" y="244" class="s">Family app: Today, Health,</text>
+  <text x="44" y="259" class="s">Plan, Activities. Claims handovers.</text>
+
+  <rect x="30" y="276" width="220" height="64" rx="10" class="box"/>
+  <text x="44" y="300" class="t">Centre staff (AAC)</text>
+  <text x="44" y="320" class="s">Centre console for seniors with no</text>
+  <text x="44" y="335" class="s">family: caseload and reports.</text>
+
+  <rect x="30" y="402" width="220" height="64" rx="10" class="box"/>
+  <text x="44" y="426" class="t">GP</text>
+  <text x="44" y="446" class="s">Reads the one-page GP brief</text>
+  <text x="44" y="461" class="s">(PDF the family prints or sends).</text>
+
+  <rect x="30" y="516" width="220" height="64" rx="10" class="box"/>
+  <text x="44" y="540" class="t">Fitbit, OMRON BP cuff</text>
+  <text x="44" y="560" class="s">Sync to Apple Health (iPhone)</text>
+  <text x="44" y="575" class="s">or Health Connect (Android).</text>
+
+  <rect x="30" y="610" width="220" height="70" rx="10" class="sim"/>
+  <text x="44" y="634" class="t">CareLoop phone app</text>
+  <text x="44" y="654" class="s">Reads the day's records and sends</text>
+  <text x="44" y="670" class="s">them in. Not built: simulated.</text>
+  <path d="M140 580 V606" class="ln" marker-end="url(#a)"/>
+
+  <!-- Service -->
+  <rect x="282" y="80" width="656" height="660" rx="16" fill="#f3f6f2" stroke="#24533f" stroke-width="1.6"/>
+  <text x="300" y="104" class="h">ONE WEB SERVICE · RENDER, SINGAPORE · HTTPS</text>
+
+  <rect x="310" y="116" width="290" height="56" rx="10" class="box"/>
+  <text x="324" y="139" class="t">Web app (React PWA)</text>
+  <text x="324" y="158" class="s">Three apps, one build; installs on a phone</text>
+
+  <rect x="630" y="116" width="280" height="56" rx="10" class="box"/>
+  <text x="644" y="139" class="t">API (FastAPI) at /api</text>
+  <text x="644" y="158" class="s">Consent filter on every family read</text>
+  <path d="M600 144 H626" class="ln" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <rect x="310" y="192" width="290" height="262" rx="10" class="rules"/>
+  <text x="324" y="216" class="t">Decision engine (rules)</text>
+  <text x="324" y="240" class="s">1. Trust check: flags a bad reading,</text>
+  <text x="340" y="256" class="s">never fixes it</text>
+  <text x="324" y="278" class="s">2. Their own baseline (not "&gt; 140")</text>
+  <text x="324" y="300" class="s">3. Context: rain, haze, festivals</text>
+  <text x="324" y="322" class="s">4. Rule table picks the rung: 0 quiet,</text>
+  <text x="340" y="338" class="s">1 ask, 2 nudge, 3 note, 4 hand over, R</text>
+  <text x="324" y="360" class="s">5. Ladder: consent, cooldowns, centre's</text>
+  <text x="340" y="376" class="s">weekly cap. Red flags skip all of it.</text>
+  <text x="324" y="398" class="s">6. Decision log: every day, quiet ones too</text>
+  <text x="324" y="426" class="k">Numbers only in thresholds.json (placeholders</text>
+  <text x="324" y="441" class="k">until clinical sign-off). Held-out evaluation.</text>
+
+  <rect x="630" y="192" width="280" height="168" rx="10" class="ai"/>
+  <text x="644" y="216" class="t">Language layer</text>
+  <text x="644" y="240" class="s">understand(): rules extract BP, doses,</text>
+  <text x="644" y="256" class="s">symptoms; the model may add meaning</text>
+  <text x="644" y="278" class="s">write(): the model drafts words in their</text>
+  <text x="644" y="294" class="s">language; guardrail checks every draft,</text>
+  <text x="644" y="310" class="s">or a fixed template goes out</text>
+  <text x="644" y="334" class="k">The only door to a model. Works with no</text>
+  <text x="644" y="349" class="k">model at all (rules + templates).</text>
+  <path d="M600 276 H626" class="ln" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <rect x="630" y="380" width="280" height="74" rx="10" class="box"/>
+  <text x="644" y="404" class="t">Context data</text>
+  <text x="644" y="424" class="s">PSI, rainfall, AAC and CC places;</text>
+  <text x="644" y="440" class="s">offline fixtures in tests</text>
+  <path d="M630 417 H604" class="ln" marker-end="url(#a)"/>
+
+  <rect x="310" y="474" width="290" height="76" rx="10" class="box"/>
+  <text x="324" y="498" class="t">Health sync</text>
+  <text x="324" y="518" class="s">Apple Health and Health Connect records</text>
+  <text x="324" y="534" class="s">→ readings; no double counting</text>
+  <path d="M455 474 V458" class="ln" marker-end="url(#a)"/>
+
+  <rect x="630" y="474" width="280" height="168" rx="10" class="box"/>
+  <text x="644" y="498" class="t">Reports (rules and statistics)</text>
+  <text x="644" y="520" class="s">Patterns in their own data</text>
+  <text x="644" y="538" class="s">Activities nearby, timetable import</text>
+  <text x="644" y="556" class="s">Medicines explained (fixed notes;</text>
+  <text x="644" y="572" class="s">unknown → "ask your pharmacist")</text>
+  <text x="644" y="590" class="s">Staying well: vaccines, screenings</text>
+  <text x="644" y="608" class="s">GP brief PDF (one page)</text>
+  <text x="644" y="630" class="k">No model: every line traces to the log</text>
+
+  <rect x="310" y="570" width="290" height="72" rx="10" class="box"/>
+  <text x="324" y="594" class="t">Demo clock and seed</text>
+  <text x="324" y="614" class="s">12 synthetic seniors, scripted fortnight;</text>
+  <text x="324" y="630" class="s">a simulated phone per connected senior</text>
+
+  <rect x="310" y="662" width="600" height="58" rx="10" fill="#ffffff" stroke="#24533f" stroke-width="1.4"/>
+  <text x="324" y="686" class="t">Store: SQLite (demo) or Postgres</text>
+  <text x="324" y="706" class="s">Seniors, contacts, readings, check-ins, decisions, messages, handovers, care plans</text>
+
+  <!-- People into the web app -->
+  <path d="M250 148 H296 V140 H306" class="ln" marker-end="url(#a)"/>
+  <path d="M250 232 H296 V148" class="ln"/>
+  <path d="M250 308 H296 V232" class="ln"/>
+  <!-- GP brief out to the GP -->
+  <path d="M630 610 H616 V464 H292 V434 H254" class="ln" marker-end="url(#a)"/>
+  <!-- Phone app into health sync -->
+  <path d="M250 645 H288 V512 H306" class="ln" marker-end="url(#a)"/>
+
+  <!-- Outside services -->
+  <text x="970" y="96" class="h">OUTSIDE SERVICES</text>
+  <rect x="970" y="192" width="240" height="112" rx="10" class="ai"/>
+  <text x="984" y="216" class="t">Tencent Hunyuan (LLM)</text>
+  <text x="984" y="238" class="s">Called only by understand()</text>
+  <text x="984" y="254" class="s">and write(). Fallback: another</text>
+  <text x="984" y="270" class="s">OpenAI-compatible model, then</text>
+  <text x="984" y="286" class="s">rules and templates.</text>
+  <path d="M910 248 H966" class="lnd" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <rect x="970" y="318" width="240" height="64" rx="10" class="sim"/>
+  <text x="984" y="342" class="t">Tencent Cloud ASR</text>
+  <text x="984" y="362" class="s">Audio uploads (optional; not yet</text>
+  <text x="984" y="376" class="s">run against a live account)</text>
+  <path d="M966 340 H930 V320 H914" class="ln" marker-end="url(#a)"/>
+
+  <rect x="970" y="398" width="240" height="64" rx="10" class="box"/>
+  <text x="984" y="422" class="t">data.gov.sg</text>
+  <text x="984" y="442" class="s">PSI (haze), rainfall, AAC and</text>
+  <text x="984" y="457" class="s">community club locations</text>
+  <path d="M966 424 H914" class="ln" marker-end="url(#a)"/>
+
+  <rect x="970" y="520" width="240" height="64" rx="10" class="box"/>
+  <text x="984" y="544" class="t">Centre calendars</text>
+  <text x="984" y="564" class="s">.ics links and spreadsheets;</text>
+  <text x="984" y="579" class="s">a link is pulled again daily</text>
+  <path d="M966 548 H914" class="ln" marker-end="url(#a)"/>
+
+  <!-- Legend -->
+  <rect x="970" y="640" width="18" height="14" rx="3" class="rules"/>
+  <text x="996" y="652" class="s">Rules decide (tested offline, logged)</text>
+  <rect x="970" y="664" width="18" height="14" rx="3" class="ai"/>
+  <text x="996" y="676" class="s">AI: words only, behind the guardrail</text>
+  <rect x="970" y="688" width="18" height="14" rx="3" class="sim"/>
+  <text x="996" y="700" class="s">Simulated or not yet run live</text>
+  <text x="970" y="728" class="k">All people are synthetic. Not connected</text>
+  <text x="970" y="743" class="k">to any clinic system.</text>
+
+  <text x="30" y="776" class="k">CareLoop SG · Tencent Cloud Hackathon SG 2026 · Healthcare track, NTU LKCMedicine Challenge 2 (AI Healthier Every Day)</text>
+</svg>

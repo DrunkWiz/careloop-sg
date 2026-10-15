@@ -17,6 +17,8 @@ Tencent Cloud Hackathon SG 2026, Healthcare track, NTU LKCMedicine Challenge 2.
 The first visit after a quiet spell can take about a minute: the free service sleeps when nobody uses it,
 and when it wakes the demo starts again from 24 Oct.
 
+**How it's built:** [architecture, trust boundaries and design trade-offs](docs/architecture.md).
+
 ## The interfaces
 
 One web build, three apps, one backend. A check-in on the senior app shows up in the family app and the centre console.

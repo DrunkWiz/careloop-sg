@@ -2,6 +2,10 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: architecture and trust-boundary diagrams
+
+- `docs/architecture.md` (Nathan), for the challenge's "architecture diagram, trust-boundary diagram, key design trade-offs": the system diagram, one check-in step by step with five trust boundaries (input, model, consent, a person decides, data), how the prompts drive the model, the trade-offs table, and what's real, simulated or not yet. SVGs in `docs/architecture/` (GitHub shows them), with PNG copies for the deck.
+
 ## 15 Oct 2026: medicines explained, staying well
 
 - **Medicine explainer** (`backend/reports/medicines.py`, Nathan). What each medicine is for, how it helps and what to look out for, English and Mandarin, for 17 common BP, diabetes, cholesterol and aspirin medicines (generic names and brands). Fixed text, not a model; dose and timing only from the senior's label. Unknown names are never matched loosely: "CareLoop isn't able to identify this medicine. Please check with your pharmacist." A test runs every note through the guardrail's diagnosis, dose-change and stop-medicine patterns (it caught 剂量 in the aspirin note).
