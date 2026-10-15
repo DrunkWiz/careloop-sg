@@ -96,7 +96,7 @@ const leeRedFlag: Handover = {
   decision_id: 'dec-lee-2026-10-24',
   opened_at: '2026-10-24T09:18:00+08:00',
   kind: 'red_flag',
-  evidence: { summary: 'danger symptom reported: chest pain', bp_series: [], baseline: null, dates: [TODAY], tried: [] },
+  evidence: { summary: 'a danger symptom: chest pain', bp_series: [], baseline: null, dates: [TODAY], tried: [] },
   options: [
     { id: 'call_now', label: 'Call them now' },
     { id: '995', label: 'Call 995 for them' },
@@ -117,7 +117,7 @@ export function getCaseload(_workerId: string): Promise<Caseload> {
   const red = new URLSearchParams(window.location.search).get('scenario') === 'redflag';
   const rows = [
     red
-      ? row(S.lee, 'red_flag', 'R', 'danger symptom reported: chest pain', '2026-10-24T09:18:00+08:00', leeRedFlag)
+      ? row(S.lee, 'red_flag', 'R', 'a danger symptom: chest pain', '2026-10-24T09:18:00+08:00', leeRedFlag)
       : row(S.lee, 'quiet', '0', 'no action, because BP 132/87 within range for them (baseline 134); movement normal for them', '2026-10-24T09:30:00+08:00', null),
     row(S.ong, 'handover', '4', ongHandover.evidence.summary, '2026-10-24T08:55:00+08:00', ongHandover),
     row(S.aminah, 'handover', '4', aminahHandover.evidence.summary, '2026-10-21T09:30:00+08:00', aminahHandover),
@@ -180,7 +180,7 @@ export function getLog(seniorId: string, n = 7): Promise<LogDay[] | null> {
   return delay(
     days.map(([rung, rule_id, reason, said, time], i): LogDay => {
       if (red && i === 0) {
-        [rung, rule_id, reason, said, time] = ['R', 'R.symptom', 'danger symptom reported: chest pain', 'chest pain since morning', '09:18'];
+        [rung, rule_id, reason, said, time] = ['R', 'R.symptom', 'a danger symptom: chest pain', 'chest pain since morning', '09:18'];
       }
       const bp = reason.match(/BP (\d+)\/(\d+)/);
       return {

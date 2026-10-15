@@ -73,6 +73,26 @@ def _rain_excused(ctx: Ctx, d: Day) -> bool:
     return any(x is not None and x.rain_mm is not None and x.rain_mm >= ACT["rain_mm"] for x in (d, prev))
 
 
+def red_flags(d: Day) -> list[Outcome]:
+    """Every red flag in the day, one each, in the order evaluate() checks them. The ladder uses this to tell a
+    new danger (chest pain after a high reading) from one the family was already told about."""
+    out: list[Outcome] = []
+    for s, di in d.bp_red_pairs:
+        if s >= RF["systolic_at_or_above"] or di >= RF["diastolic_at_or_above"]:
+            out.append(Outcome("R", "R.bp_floor", f"BP {s}/{di} at or above the red-flag floor "
+                               f"({RF['systolic_at_or_above']}/{RF['diastolic_at_or_above']})",
+                               {"systolic": s, "diastolic": di}, "red_flag"))
+    low_sym = d.symptoms & set(RF["low_systolic_needs_symptom"])
+    for s, di in d.bp_red_pairs:
+        if s < RF["low_systolic_below"] and low_sym:
+            out.append(Outcome("R", "R.bp_low_symptom", f"BP {s}/{di} with {', '.join(sorted(low_sym))}",
+                               {"systolic": s, "diastolic": di, "symptoms": sorted(low_sym)}, "red_flag"))
+    for w in d.red_symptoms:
+        out.append(Outcome("R", "R.symptom", f"a danger symptom: {w}", {"words": [w]}, "red_flag"))
+    seen: set[str] = set()
+    return [o for o in out if not (o.reason in seen or seen.add(o.reason))]
+
+
 def evaluate(ctx: Ctx, suppress: frozenset[str] = frozenset()) -> Outcome:
     """`suppress`: handover kinds already handed over and cooling down. They are skipped, so the
     table goes on to find any OTHER problem (a new problem must not hide behind an old one)."""
@@ -90,7 +110,7 @@ def evaluate(ctx: Ctx, suppress: frozenset[str] = frozenset()) -> Outcome:
             return Outcome("R", "R.bp_low_symptom", f"BP {s}/{di} with {', '.join(sorted(low_sym))}",
                            {"systolic": s, "diastolic": di, "symptoms": sorted(low_sym)}, "red_flag")
     if d.red_symptoms:
-        return Outcome("R", "R.symptom", f"danger symptom reported: {'; '.join(d.red_symptoms)}",
+        return Outcome("R", "R.symptom", f"a danger symptom: {'; '.join(d.red_symptoms)}",
                        {"words": d.red_symptoms}, "red_flag")
 
     # An open handover: CareLoop stops nudging until someone picks a next step ---------------

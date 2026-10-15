@@ -278,6 +278,25 @@ class Scenarios(unittest.TestCase):
         self.assertEqual((ho["status"], ho["claimed_by"], ho["choice"]), ("claimed", "c1", "call_now"))
         self.assertEqual(len([h for h in w.store.list("handover", senior_id=w.sid) if h["kind"] == "red_flag"]), 1)
 
+    def test_a_new_red_flag_later_the_same_day_alerts_again(self):
+        w = World()
+        w.day(TODAY, text="I'm fine lah, BP 186/112 this morning")
+        d1 = w.run(TODAY)
+        first = [m for m in w.messages(d1) if m["to"] == "family"]
+        self.assertEqual(len(first), 1)
+
+        # The same reading again: nothing new to tell.
+        self.assertEqual(len(w.run(TODAY)["message_ids"]), len(d1["message_ids"]))
+
+        # Chest pain later: a new danger, so the senior and the family hear again.
+        w.day(TODAY, text="Now got chest pain", bp=None)
+        d2 = w.run(TODAY)
+        family = [m for m in w.messages(d2) if m["to"] == "family"]
+        self.assertEqual(len(family), 2)
+        self.assertIn("a danger symptom: chest pain", family[1]["text"])
+        self.assertEqual(len([m for m in w.messages(d2) if m["to"] == "senior"]), 2)
+        self.assertEqual(len(d2["inputs"]["red_flags_alerted"]), 2)
+
     def test_every_day_is_logged_with_a_reason_rung_0_too(self):
         w = World()
         logged = w.store.list("decision", senior_id=w.sid)
