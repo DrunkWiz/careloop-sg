@@ -115,7 +115,7 @@ export const mock = {
     await wait(500);
     if (!/^\d{6}$/.test(code)) throw new Error('bad code');
     state.lang = lang;
-    return { senior_id: 'demo-senior', contact_name: state.contact };
+    return { senior_id: 'demo-senior', contact_name: state.contact, contact_id: 'demo-contact' };
   },
 
   setLang(lang: Lang) {

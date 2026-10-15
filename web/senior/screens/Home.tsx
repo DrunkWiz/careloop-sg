@@ -1,6 +1,6 @@
 // Home: the three daily buttons, the hold-to-talk mic, the morning check-in, haze line and suggestions.
 import { useContext } from 'react';
-import { LangContext, useT } from '../../shared/i18n';
+import { LangContext, dateLocale, useT } from '../../shared/i18n';
 import type { Today } from '../types';
 import { BigButton, Icon, TalkButton } from '../ui';
 
@@ -24,7 +24,7 @@ export function Home({ today, busy, talkSupported, listening, interim, onPills, 
   const greeting = t(hour < 12 ? 'home.greeting.morning' : hour < 18 ? 'home.greeting.afternoon' : 'home.greeting.evening');
   const lang = useContext(LangContext);
   const complete = [today.pills_taken, today.bp_logged, today.feel_logged].filter(Boolean).length;
-  const date = new Date(today.date ? `${today.date}T12:00:00` : Date.now()).toLocaleDateString(lang === 'zh' ? 'zh-SG' : 'en-SG', { weekday: 'long', day: 'numeric', month: 'long' });
+  const date = new Date(today.date ? `${today.date}T12:00:00` : Date.now()).toLocaleDateString(dateLocale(lang), { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
     <div className="sa-home">

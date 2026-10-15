@@ -270,6 +270,83 @@ class Scenarios(unittest.TestCase):
         self.assertTrue(quiet)
         self.assertTrue(all(d["reason"].startswith("no action, because") for d in quiet))
 
+    def test_red_flag_reaches_all_linked_caregivers(self):
+        """A red flag goes to every linked caregiver, not just the primary one."""
+        w = World()
+        # Add a second caregiver + contact (non-primary) for the same senior.
+        w.store.put("caregiver", {"id": "cg-2", "name": "Kelvin", "language": "en", "role": "family", "worker_id": None})
+        w.store.put("contact", {"id": "c2", "caregiver_id": "cg-2", "senior_id": w.sid, "role": "family", "primary": False,
+                                "name": "Kelvin", "language": "en", "worker_id": None,
+                                "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}})
+        # Trigger a red flag: BP 190/125 above the 180/120 floor.
+        w.day(TODAY, bp=(190, 125), text="Ok lah")
+        d = w.run(TODAY)
+        self.assertEqual(d["rung"], "R")
+        msgs = w.messages(d)
+        # Messages go to both the senior and every linked caregiver.
+        family_msgs = [m for m in msgs if m["to"] == "family"]
+        self.assertEqual(len(family_msgs), 2)
+        contact_ids = {m["contact_id"] for m in family_msgs}
+        self.assertEqual(contact_ids, {"c1", "c2"})
+
+    def test_rung4_handover_goes_to_primary_only(self):
+        """A rung-4 handover message goes to the primary caregiver, not to all."""
+        w = World()
+        w.store.put("caregiver", {"id": "cg-2", "name": "Kelvin", "language": "en", "role": "family", "worker_id": None})
+        w.store.put("contact", {"id": "c2", "caregiver_id": "cg-2", "senior_id": w.sid, "role": "family", "primary": False,
+                                "name": "Kelvin", "language": "en", "worker_id": None,
+                                "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}})
+        # Trigger a rung-4 handover (double dose).
+        w.day(TODAY, bp=(124, 78), text="Aiyo I took my morning pill twice")
+        d = w.run(TODAY)
+        self.assertEqual(d["rung"], "4")
+        msgs = w.messages(d)
+        family_msgs = [m for m in msgs if m["to"] == "family"]
+        self.assertEqual(len(family_msgs), 1)
+        self.assertEqual(family_msgs[0]["contact_id"], "c1")  # primary only
+
+    def test_rung4_after_promoting_kelvin_goes_to_kelvin_only(self):
+        """After promoting the non-primary caregiver to primary, rung-4 messages go to them."""
+        w = World()
+        w.store.put("caregiver", {"id": "cg-2", "name": "Kelvin", "language": "en", "role": "family", "worker_id": None})
+        w.store.put("contact", {"id": "c2", "caregiver_id": "cg-2", "senior_id": w.sid, "role": "family", "primary": False,
+                                "name": "Kelvin", "language": "en", "worker_id": None,
+                                "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}})
+        # Demote c1, promote c2.
+        c1 = w.store.get("contact", "c1")
+        c1["primary"] = False
+        w.store.put("contact", c1)
+        c2 = w.store.get("contact", "c2")
+        c2["primary"] = True
+        w.store.put("contact", c2)
+        # Trigger rung-4 (double dose).
+        w.day(TODAY, bp=(124, 78), text="Aiyo I took my morning pill twice")
+        d = w.run(TODAY)
+        self.assertEqual(d["rung"], "4")
+        msgs = w.messages(d)
+        family_msgs = [m for m in msgs if m["to"] == "family"]
+        self.assertEqual(len(family_msgs), 1)
+        self.assertEqual(family_msgs[0]["contact_id"], "c2")  # Kelvin is now primary
+
+    def test_rung4_after_no_primary_goes_to_all(self):
+        """When there's no primary, rung-4 falls back to all contacts (ladder.py line 120)."""
+        w = World()
+        w.store.put("caregiver", {"id": "cg-2", "name": "Kelvin", "language": "en", "role": "family", "worker_id": None})
+        w.store.put("contact", {"id": "c2", "caregiver_id": "cg-2", "senior_id": w.sid, "role": "family", "primary": False,
+                                "name": "Kelvin", "language": "en", "worker_id": None,
+                                "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}})
+        # Remove the primary contact entirely (simulating DELETE).
+        w.store.delete("contact", "c1")
+        # Trigger rung-4 (double dose).
+        w.day(TODAY, bp=(124, 78), text="Aiyo I took my morning pill twice")
+        d = w.run(TODAY)
+        self.assertEqual(d["rung"], "4")
+        msgs = w.messages(d)
+        family_msgs = [m for m in msgs if m["to"] == "family"]
+        # Falls back to all remaining contacts — just c2 (Kelvin).
+        self.assertEqual(len(family_msgs), 1)
+        self.assertEqual(family_msgs[0]["contact_id"], "c2")
+
 
 def _world_at(start):
     """A World whose 40-day calm history starts at `start`."""

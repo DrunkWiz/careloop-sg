@@ -1,11 +1,11 @@
 // In-browser mock of GET /care/family/{contact}, in the contract's shapes. Synthetic data, mirroring the
 // API's demo seed (Mr Tan; Wei Ling and Kelvin). Scenarios: ?scenario=quiet | handover (default) | redflag
 // Claims persist in localStorage so a second tab as another family member sees who claimed.
-import type { CareNotes, Contact, FamilyView, Handover, LogDay, Message, PairCodeIn, PairCodeOut, Rung } from '../shared/contract';
+import type { CaregiverView, CareNotes, Contact, FamilyView, Handover, LogDay, Message, PairCodeIn, PairCodeOut, PairIn, PairOut, RotaView, Rung, VentPost } from '../shared/contract';
 
 const family: Contact[] = [
-  { id: 'tan-weiling', senior_id: 'tan', role: 'family', primary: true, name: 'Wei Ling', language: 'en', worker_id: null },
-  { id: 'tan-kelvin', senior_id: 'tan', role: 'family', primary: true, name: 'Kelvin', language: 'en', worker_id: null },
+  { id: 'tan-weiling', caregiver_id: 'cg-weiling', senior_id: 'tan', role: 'family', primary: true, name: 'Wei Ling', language: 'en', worker_id: null },
+  { id: 'tan-kelvin', caregiver_id: 'cg-kelvin', senior_id: 'tan', role: 'family', primary: false, name: 'Kelvin', language: 'en', worker_id: null },
 ];
 
 // 14 days of synthetic BP ending 24 Oct: settled, one odd reading on 15 Oct, then a drift from 21 Oct.
@@ -160,6 +160,8 @@ export function getFamilyView(contactId: string): Promise<FamilyView> {
     family_sees: 'readings',
     today: s === 'redflag' ? '2026-10-25' : s === 'handover' ? '2026-10-24' : '2026-10-13',
     status: s === 'quiet' ? 'quiet' : s === 'handover' ? 'handover' : 'red_flag',
+    on_duty: contactId === 'tan-kelvin', // Kelvin is on duty in this mock week
+    on_duty_name: 'Kelvin',
     digest:
       s === 'quiet'
         ? {
@@ -179,9 +181,34 @@ export function getFamilyView(contactId: string): Promise<FamilyView> {
   });
 }
 
+export function getCaregiverView(caregiverId: string): Promise<CaregiverView> {
+  const contacts = family.filter((c) => c.caregiver_id === caregiverId);
+  const seniors = contacts.map((c) => ({
+    contact_id: c.id, senior_id: c.senior_id, senior_name: 'Mr Tan', primary: c.primary, status: 'handover' as const,
+    on_duty: c.id === 'tan-kelvin',
+  }));
+  return delay({
+    caregiver: { id: caregiverId, name: contacts[0]?.name ?? 'Unknown', language: 'en' as const, role: 'family' as const, worker_id: null },
+    seniors,
+  });
+}
+
+export function setPrimary(contactId: string): Promise<Contact> {
+  for (const c of family) {
+    c.primary = c.id === contactId;
+  }
+  const c = family.find((x) => x.id === contactId) ?? family[0];
+  return delay({ ...c });
+}
+
+export function pair(body: PairIn): Promise<PairOut> {
+  const n = Math.floor(Math.random() * 1e6);
+  return delay({ senior_id: body.senior_id ?? `sen-${n}`, contact_name: 'New Contact', contact_id: `con-${n}` });
+}
+
 export function createPairCode(_body: PairCodeIn): Promise<PairCodeOut> {
   const n = Math.floor(Math.random() * 1e6);
-  return delay({ code: String(n).padStart(6, '0'), senior_id: `sen-${n}`, contact_id: `con-${n}` });
+  return delay({ code: String(n).padStart(6, '0'), caregiver_id: _body.caregiver_id ?? `cg-${n}`, senior_id: `sen-${n}`, contact_id: `con-${n}` });
 }
 
 // --- decision log (GET /senior/tan/log) ----------------------------------------------------
@@ -263,4 +290,107 @@ export function putCareNotes(seniorId: string, notes: CareNotes): Promise<CareNo
     /* storage unavailable: kept for this page only */
   }
   return delay(out);
+}
+
+// --- vent space (Nathan): anonymous caregiver rant room, kept in this browser ----------------
+
+const VENT_KEY = 'careloop-mock-vent';
+
+function ventSeed(): VentPost[] {
+  const now = Date.now();
+  const ago = (h: number) => new Date(now - h * 3600000).toISOString();
+  return [
+    { id: 'vp-demo-042', nickname: 'Caregiver 042', text: "Third time this week Pa refused to take his pill, I'm so tired", time: ago(2), hugs: 3, hidden: false },
+    { id: 'vp-demo-128', nickname: 'Caregiver 128', text: 'Anyone else feel guilty for needing a break?', time: ago(5), hugs: 7, hidden: false },
+    { id: 'vp-demo-077', nickname: 'Caregiver 077', text: "Mum said I don't care about her. I do everything for her. That hurt.", time: ago(27), hugs: 5, hidden: false },
+    { id: 'vp-demo-214', nickname: 'Caregiver 214', text: 'Finally got 6 hours of sleep last night. Small wins.', time: ago(53), hugs: 12, hidden: false },
+    { id: 'vp-demo-091', nickname: 'Caregiver 091', text: "The doctor said her BP is improving. I was so relieved I cried.", time: ago(74), hugs: 8, hidden: false },
+    { id: 'vp-demo-156', nickname: 'Caregiver 156', text: "Sometimes I wonder if I'm doing enough for him.", time: ago(126), hugs: 4, hidden: false },
+  ];
+}
+
+function loadVent(): VentPost[] {
+  try {
+    const s = localStorage.getItem(VENT_KEY);
+    if (s) return JSON.parse(s);
+  } catch { /* fall through */ }
+  const seed = ventSeed();
+  try { localStorage.setItem(VENT_KEY, JSON.stringify(seed)); } catch { /* ignore */ }
+  return seed;
+}
+
+function saveVent(posts: VentPost[]) {
+  try { localStorage.setItem(VENT_KEY, JSON.stringify(posts)); } catch { /* ignore */ }
+}
+
+export function getVentFeed(): Promise<VentPost[]> {
+  const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
+  return delay(
+    loadVent()
+      .filter((p) => !p.hidden && p.time >= cutoff)
+      .sort((a, b) => b.time.localeCompare(a.time))
+      .slice(0, 100),
+  );
+}
+
+export function postVent(nickname: string, text: string): Promise<VentPost> {
+  const posts = loadVent();
+  const post: VentPost = {
+    id: `vp-${Date.now()}`,
+    nickname: nickname.trim(),
+    text: text.trim(),
+    time: new Date().toISOString(),
+    hugs: 0,
+    hidden: false,
+  };
+  posts.unshift(post);
+  saveVent(posts);
+  return delay(post);
+}
+
+export function hugVentPost(postId: string): Promise<VentPost> {
+  const posts = loadVent();
+  const p = posts.find((x) => x.id === postId);
+  if (!p) return Promise.reject(new Error('post not found'));
+  p.hugs++;
+  saveVent(posts);
+  return delay({ ...p });
+}
+
+export function reportVentPost(postId: string): Promise<{ id: string; hidden: boolean }> {
+  const posts = loadVent();
+  const p = posts.find((x) => x.id === postId);
+  if (!p) return Promise.reject(new Error('post not found'));
+  p.hidden = true;
+  saveVent(posts);
+  return delay({ id: postId, hidden: true });
+}
+
+// --- rota (GET/PUT/POST/DELETE /senior/{sid}/rota) -----------------------------------------
+
+const mockRota: RotaView = {
+  rota: { id: 'rota-tan', senior_id: 'tan', mode: 'weekly', start_date: '2026-09-03', order: ['tan-weiling', 'tan-kelvin'], swaps: [] },
+  on_duty: { id: 'tan-kelvin', name: 'Kelvin' },
+};
+
+export function getRota(_seniorId: string): Promise<RotaView> {
+  return delay(structuredClone(mockRota));
+}
+
+export function putRota(seniorId: string, mode: 'weekly' | 'daily', startDate: string, order: string[]): Promise<RotaView> {
+  mockRota.rota = { id: `rota-${seniorId}`, senior_id: seniorId, mode, start_date: startDate, order, swaps: [] };
+  return delay(structuredClone(mockRota));
+}
+
+export function swapRota(seniorId: string, date: string, contactId: string): Promise<RotaView> {
+  const swaps = (mockRota.rota?.swaps ?? []).filter((s) => s.date !== date);
+  swaps.push({ date, contact_id: contactId });
+  if (mockRota.rota) mockRota.rota.swaps = swaps;
+  return delay(structuredClone(mockRota));
+}
+
+export function deleteRota(_seniorId: string): Promise<RotaView> {
+  mockRota.rota = null;
+  mockRota.on_duty = null;
+  return delay(structuredClone(mockRota));
 }

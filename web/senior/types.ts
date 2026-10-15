@@ -99,4 +99,5 @@ export interface Consent {
 export interface PairResult {
   senior_id: string;
   contact_name: string;
+  contact_id: string;
 }

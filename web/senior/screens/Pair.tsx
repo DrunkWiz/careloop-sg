@@ -1,18 +1,14 @@
 // Pairing: a family member (or the AAC worker if there is no family) sets the app up with a
 // code from the caregiver app, and chooses with the senior what is shared.
 import { useState } from 'react';
-import { useT, type Lang } from '../../shared/i18n';
+import { LANG_CHOICES, apiLang, useT, type AppLang } from '../../shared/i18n';
 import { api } from '../api';
 import type { Consent, PairResult } from '../types';
 import { BigButton, Screen } from '../ui';
 
-const LANGS: { lang: Lang; label: string }[] = [
-  { lang: 'en', label: 'English' },
-  { lang: 'en-SG', label: 'Singlish' },
-  { lang: 'zh', label: '中文' },
-];
+const LANGS = LANG_CHOICES;
 
-export function Pair({ lang, setLang, onPaired }: { lang: Lang; setLang: (l: Lang) => void; onPaired: (r: PairResult) => void }) {
+export function Pair({ lang, setLang, onPaired, seniorId }: { lang: AppLang; setLang: (l: AppLang) => void; onPaired: (r: PairResult) => void; seniorId?: string | null }) {
   const t = useT();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,7 +19,7 @@ export function Pair({ lang, setLang, onPaired }: { lang: Lang; setLang: (l: Lan
     setBusy(true);
     setBad(false);
     try {
-      onPaired(await api.pair(code, lang, consent));
+      onPaired(await api.pair(code, apiLang(lang), consent, seniorId));
     } catch {
       setBad(true);
     } finally {

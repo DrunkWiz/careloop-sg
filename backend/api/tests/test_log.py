@@ -17,9 +17,10 @@ class DecisionLog(unittest.TestCase):
         self.c.post("/demo/advance", json={"days": 11})
 
     def set_consent(self, sid, **kw):
-        s = self.store.get("senior", sid)
-        s["consent"] = {**s["consent"], **kw}
-        self.store.put("senior", s)
+        """Per-link consent: set on the contact, not the senior."""
+        c = self.store.get("contact", f"{sid}-weiling")
+        c["consent"] = {**(c.get("consent") or {}), **kw}
+        self.store.put("contact", c)
 
     def test_every_day_has_a_decision_newest_first(self):
         log = self.c.get("/senior/tan/log?days=14").json()

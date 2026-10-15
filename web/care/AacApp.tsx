@@ -11,6 +11,7 @@ import { TimelineStrip } from './Timeline';
 import { plainSummary, ruleText } from './plain';
 import AacProgrammes from './AacProgrammes';
 import CentreReport from './CentreReport';
+import VentSpace from './VentSpace';
 import { initials } from './FamilyHome';
 import { markRedFlagSeen, seenRedFlags, useAlert, useLive, useRoute } from './live';
 import { navigate } from './nav';
@@ -20,6 +21,7 @@ type Route =
   | { name: 'senior'; id: string }
   | { name: 'handover'; id: string }
   | { name: 'programmes' }
+  | { name: 'vent' }
   | { name: 'report' };
 
 function parseRoute(): Route {
@@ -27,6 +29,7 @@ function parseRoute(): Route {
   if (parts[0] === 'senior' && parts[1]) return { name: 'senior', id: parts[1] };
   if (parts[0] === 'handover' && parts[1]) return { name: 'handover', id: parts[1] };
   if (parts[0] === 'programmes') return { name: 'programmes' };
+  if (parts[0] === 'vent') return { name: 'vent' };
   if (parts[0] === 'report') return { name: 'report' };
   return { name: 'caseload' };
 }
@@ -149,6 +152,8 @@ export default function AacApp({ workerId }: { workerId: string }) {
     body = <CentreReport data={data} extras={extras} centre={centre?.name ?? 'Your centre'} />;
   } else if (route.name === 'programmes') {
     body = centre ? <AacProgrammes centre={centre} seniors={data.seniors} /> : <p className="care-muted">Finding your centre…</p>;
+  } else if (route.name === 'vent') {
+    body = <div className="console-narrow"><VentSpace compact /></div>;
   } else {
     body = <CaseloadView data={data} extras={extras} />;
   }
@@ -164,7 +169,7 @@ export default function AacApp({ workerId }: { workerId: string }) {
           </div>
         </div>
         <nav className="console-nav" aria-label="Centre console">
-          <button className={route.name === 'programmes' || route.name === 'report' ? '' : 'is-active'} onClick={() => navigate('/care/aac')}>
+          <button className={route.name === 'caseload' ? 'is-active' : ''} onClick={() => navigate('/care/aac')}>
             Caseload
           </button>
           <button className={route.name === 'report' ? 'is-active' : ''} onClick={() => navigate('/care/aac/report')}>
@@ -172,6 +177,9 @@ export default function AacApp({ workerId }: { workerId: string }) {
           </button>
           <button className={route.name === 'programmes' ? 'is-active' : ''} onClick={() => navigate('/care/aac/programmes')} disabled={!centre}>
             Programmes
+          </button>
+          <button className={route.name === 'vent' ? 'is-active' : ''} onClick={() => navigate('/care/aac/vent')}>
+            Vent space
           </button>
         </nav>
         <span className="console-user">{workerId === 'aac-siti' ? 'Siti' : workerId}</span>

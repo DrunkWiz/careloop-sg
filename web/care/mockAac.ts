@@ -28,7 +28,7 @@ const S: Record<string, SeniorRef> = {
 };
 
 const contacts: Contact[] = Object.values(S).map((s) => ({
-  id: `${WORKER}:${s.id}`, senior_id: s.id, role: 'aac', primary: true, name: 'Siti (AAC)', language: 'en', worker_id: WORKER,
+  id: `${WORKER}:${s.id}`, caregiver_id: 'cg-siti', senior_id: s.id, role: 'aac', primary: true, name: 'Siti (AAC)', language: 'en', worker_id: WORKER,
 }));
 
 const day = (offset: number) => new Date(Date.UTC(2026, 9, 24 - offset)).toISOString().slice(0, 10);

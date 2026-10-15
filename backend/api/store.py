@@ -14,8 +14,8 @@ import sqlite3
 import threading
 from typing import Iterable
 
-KINDS = ("senior", "contact", "reading", "checkin", "envday", "decision", "message", "handover",
-         "suggestion", "knows", "paircode", "programme", "carenotes")  # carenotes: added by Nathan, needs team OK
+KINDS = ("senior", "contact", "caregiver", "reading", "checkin", "envday", "decision", "message", "handover",
+         "suggestion", "knows", "paircode", "programme", "carenotes", "ventpost", "rota")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS docs (

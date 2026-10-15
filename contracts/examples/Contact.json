@@ -1,9 +1,15 @@
 {
   "id": "tan-weiling",
+  "caregiver_id": "cg-weiling",
   "senior_id": "tan",
   "role": "family",
   "primary": true,
   "name": "Wei Ling",
   "language": "en",
-  "worker_id": null
+  "worker_id": null,
+  "consent": {
+    "family_sees": "readings",
+    "share_words": true,
+    "share_activity": true
+  }
 }

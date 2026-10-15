@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Rota.schema.json",
+  "title": "Rota",
+  "type": "object",
+  "description": "A sibling rota for one senior. The on-duty contact gets most notifications; red flags still go to all.",
+  "properties": {
+    "id": { "type": "string", "pattern": "^rota-" },
+    "senior_id": { "type": "string" },
+    "mode": { "type": "string", "enum": ["weekly", "daily"], "description": "weekly: each contact gets 7 days; daily: rotates every day" },
+    "start_date": { "type": "string", "format": "date", "description": "First day of the rota (SGT). Days before this return no on-duty contact." },
+    "order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Contact ids in rotation order. An empty array means no rota (same as no rota at all)."
+    },
+    "swaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "contact_id": { "type": "string" }
+        },
+        "required": ["date", "contact_id"],
+        "additionalProperties": false
+      },
+      "description": "One-off overrides: a swap for an exact date wins over the rotation for that date only."
+    }
+  },
+  "required": ["id", "senior_id", "mode", "start_date", "order", "swaps"],
+  "additionalProperties": false
+}

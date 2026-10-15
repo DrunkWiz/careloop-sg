@@ -25,8 +25,11 @@ class World:
             "consent": {"family_sees": family_sees, "share_words": True, "share_activity": True}, "hidden_suggestions": [], **senior,
         }
         self.store.put("senior", self.senior)
-        self.store.put("contact", {"id": "c1", "senior_id": self.sid, "role": path, "primary": True,
-                                   "name": "AAC befriender" if path == "aac" else "Wei Ling", "language": "en"})
+        self.store.put("caregiver", {"id": "cg-1", "name": "Wei Ling" if path != "aac" else "AAC befriender",
+                                     "language": "en", "role": path, "worker_id": "aac-000" if path == "aac" else None})
+        self.store.put("contact", {"id": "c1", "caregiver_id": "cg-1", "senior_id": self.sid, "role": path, "primary": True,
+                                   "name": "AAC befriender" if path == "aac" else "Wei Ling", "language": "en",
+                                   "worker_id": "aac-000" if path == "aac" else None})
         self.n = 0
         for i in range(40):
             d = START + timedelta(i)

@@ -1,13 +1,28 @@
-// UI strings, English and Chinese, from day one. No hard-coded text in components. Owner: Mingyu.
+// UI strings: English and Chinese from day one; Malay and Tamil for the senior app's screens. No hard-coded text in components. Owner: Mingyu.
 // Singlish speakers see English. Care-app strings go under `care.*` (Nathan).
 import { createContext, useContext } from 'react';
 
 export type Lang = 'en' | 'en-SG' | 'zh';
-export type UiLang = 'en' | 'zh';
+/** What the senior app can show. Malay and Tamil are screen text only: the server (and the contract) stay en / en-SG / zh. */
+export type AppLang = Lang | 'ms' | 'ta';
+export type UiLang = 'en' | 'zh' | 'ms' | 'ta';
 
-export const uiLang = (lang: Lang): UiLang => (lang === 'zh' ? 'zh' : 'en');
-/** BCP-47 tag for the Web Speech API. */
-export const speechLang = (lang: Lang): string => (lang === 'zh' ? 'zh-CN' : 'en-SG');
+export const uiLang = (lang: AppLang): UiLang => (lang === 'en-SG' ? 'en' : lang);
+/** The language sent to the API. Malay and Tamil go as English, since the server only works in en / en-SG / zh. */
+export const apiLang = (lang: AppLang): Lang => (lang === 'ms' || lang === 'ta' ? 'en' : lang);
+/** BCP-47 tag for the Web Speech API. Malay and Tamil listen in English, to match what the server understands. */
+export const speechLang = (lang: AppLang): string => (lang === 'zh' ? 'zh-CN' : 'en-SG');
+/** <html lang> and date formatting. */
+export const htmlLang = (lang: AppLang): string => ({ zh: 'zh-Hans', ms: 'ms', ta: 'ta' } as Record<string, string>)[lang] ?? 'en-SG';
+export const dateLocale = (lang: AppLang): string => ({ zh: 'zh-SG', ms: 'ms-SG', ta: 'ta-SG' } as Record<string, string>)[lang] ?? 'en-SG';
+/** The language picker, each in its own script. */
+export const LANG_CHOICES: { lang: AppLang; label: string }[] = [
+  { lang: 'en', label: 'English' },
+  { lang: 'en-SG', label: 'Singlish' },
+  { lang: 'zh', label: '中文' },
+  { lang: 'ms', label: 'Melayu' },
+  { lang: 'ta', label: 'தமிழ்' },
+];
 
 const en = {
   'app.name': 'CareLoop',
@@ -109,6 +124,40 @@ const en = {
   'pair.done': 'Linked to {contact}.',
 
   'demo.banner': 'Demo data: not a real person.',
+
+  // --- vent space (Nathan): anonymous caregiver rant room --------------------
+  'vent.title': 'Vent space',
+  'vent.note': "A place to let it out. Anonymous. Please don't share names, addresses or medicine advice.",
+  'vent.placeholder': "What's on your mind?",
+  'vent.post': 'Post',
+  'vent.meToo': 'Me too',
+  'vent.report': 'Report',
+  'vent.reported': 'Reported. Thank you.',
+  'vent.newNick': 'New name',
+  'vent.empty': 'No posts yet. Be the first to let it out.',
+  'vent.crisis.title': "That sounds really heavy. You don't have to carry it alone.",
+  'vent.crisis.body': "If you're feeling overwhelmed, please reach out:",
+  'vent.crisis.samaritans': 'Samaritans of Singapore (24 hours): 1767',
+  'vent.crisis.aic': 'AIC Caregiver Support',
+  'vent.crisis.aicUrl': 'https://www.aic.sg/caregivers',
+
+  // --- rota (sibling on-duty) ------------------------------------------------
+  'rota.onDuty': 'You are on duty today',
+  'rota.offDuty': '{name} is on duty today',
+  'rota.title': 'Who is on duty',
+  'rota.mode': 'Rotation',
+  'rota.mode.weekly': 'Weekly (7 days each)',
+  'rota.mode.daily': 'Daily',
+  'rota.startDate': 'Start date',
+  'rota.order': 'Order',
+  'rota.save': 'Save rota',
+  'rota.swap': 'Swap a day',
+  'rota.swapDate': 'Date',
+  'rota.swapContact': 'Who covers this day',
+  'rota.swapBtn': 'Add swap',
+  'rota.delete': 'Remove rota',
+  'rota.deleted': 'Rota removed. Handovers go to the primary caregiver.',
+  'rota.empty': 'No rota set. Handovers go to the primary caregiver.',
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -212,17 +261,226 @@ const zh: Record<StringKey, string> = {
   'pair.done': '已连接到{contact}。',
 
   'demo.banner': '演示数据：不是真人。',
+
+  // --- vent space (Nathan): anonymous caregiver rant room --------------------
+  'vent.title': '倾诉空间',
+  'vent.note': '一个可以发泄的地方。匿名。请不要分享姓名、地址或药物建议。',
+  'vent.placeholder': '有什么想说的？',
+  'vent.post': '发布',
+  'vent.meToo': '我也是',
+  'vent.report': '举报',
+  'vent.reported': '已举报，谢谢。',
+  'vent.newNick': '换一个',
+  'vent.empty': '还没有帖子。来当第一个倾诉的人吧。',
+  'vent.crisis.title': '这听起来很沉重。你不需要一个人承受。',
+  'vent.crisis.body': '如果你感到难以承受，请寻求帮助：',
+  'vent.crisis.samaritans': '新加坡乐龄关怀热线（24小时）：1767',
+  'vent.crisis.aic': '护联中心照顾者支援',
+  'vent.crisis.aicUrl': 'https://www.aic.sg/caregivers',
+
+  // --- rota (sibling on-duty) ------------------------------------------------
+  'rota.onDuty': '今天轮到您值班',
+  'rota.offDuty': '今天{name}值班',
+  'rota.title': '谁在值班',
+  'rota.mode': '轮换方式',
+  'rota.mode.weekly': '每周（每人7天）',
+  'rota.mode.daily': '每天',
+  'rota.startDate': '开始日期',
+  'rota.order': '顺序',
+  'rota.save': '保存排班',
+  'rota.swap': '换班',
+  'rota.swapDate': '日期',
+  'rota.swapContact': '这天谁值班',
+  'rota.swapBtn': '添加换班',
+  'rota.delete': '取消排班',
+  'rota.deleted': '已取消排班。通知会发给主要照顾者。',
+  'rota.empty': '未设置排班。通知会发给主要照顾者。',
 };
 
-export const strings: Record<UiLang, Record<StringKey, string>> = { en, zh };
+// Malay and Tamil: screen text for the senior app only. CareLoop's server still understands and writes in
+// English for these two, so the canned check-in texts (checkin.text.*) stay English on purpose (they fall back).
+// First-pass translations: get a native speaker to check them before real use.
+const ms: Partial<Record<StringKey, string>> = {
+  'app.name': 'CareLoop',
+  'common.back': 'Kembali',
+  'common.yes': 'Ya',
+  'common.no': 'Tidak',
+  'common.save': 'Simpan',
+  'common.send': 'Hantar',
+  'common.cancel': 'Batal',
+  'common.saved': 'Sudah disimpan. Terima kasih.',
+  'common.offline': 'CareLoop tidak dapat dihubungi sekarang. Sila cuba lagi.',
+  'common.retry': 'Cuba lagi',
+  'common.loading': 'Sedang menyediakan hari anda…',
+  'common.saving': 'Sedang menyimpan…',
+  'home.subtitle': 'Sapaan ringkas, ikut kelajuan anda.',
+  'home.today': 'Hari anda, selangkah demi selangkah',
+  'home.progress': '{count} daripada 3 selesai',
+  'home.type': 'Saya lebih suka menaip',
+  'home.greeting.morning': 'Selamat pagi',
+  'home.greeting.afternoon': 'Selamat petang',
+  'home.greeting.evening': 'Selamat malam',
+  'home.pills': 'Sudah makan ubat',
+  'home.pills.done': 'Ubat sudah dimakan hari ini',
+  'home.bp': 'Catat tekanan darah',
+  'home.bp.done': 'Tekanan darah sudah dicatat hari ini',
+  'home.feel': 'Perasaan saya',
+  'home.talk': 'Tekan dan bercakap',
+  'home.knows': 'Apa yang CareLoop tahu tentang saya',
+  'checkin.title': 'Sapaan pagi',
+  'checkin.default': 'Apa khabar hari ini?',
+  'checkin.hold': 'Tekan butang dan bercakap',
+  'checkin.listening': 'Sedang mendengar…',
+  'checkin.release': 'Lepaskan bila sudah habis',
+  'checkin.heard': 'Saya dengar:',
+  'checkin.type': 'Atau taip di sini',
+  'checkin.placeholder': 'cth. Rasa baik, pergi ke pasar',
+  'checkin.thanks': 'Terima kasih kerana memberitahu saya.',
+  'checkin.noSpeech': 'Suara tidak boleh digunakan pada telefon ini. Sila taip.',
+  'checkin.micDenied': 'Mikrofon disekat. Sila benarkan, atau taip.',
+  'checkin.quick.good': 'Saya rasa sihat',
+  'checkin.quick.ok': 'Biasa saja',
+  'checkin.quick.unwell': 'Rasa tidak sihat',
+  'bp.title': 'Catat tekanan darah',
+  'bp.top': 'Nombor atas',
+  'bp.bottom': 'Nombor bawah',
+  'bp.pulse': 'Nadi (jika ada)',
+  'bp.hint': 'Salin nombor dari mesin tekanan darah anda.',
+  'bp.check': 'Sila semak nombor ini',
+  'bp.checkBody': 'Nombor atas biasanya lebih besar daripada nombor bawah. Betulkah nombor ini?',
+  'bp.missing': 'Sila isi nombor atas dan nombor bawah.',
+  'confirm.title': 'Betulkah apa yang saya dengar?',
+  'confirm.bp': 'Nombor atas {sys}, nombor bawah {dia}',
+  'confirm.pulse': 'Nadi {pulse}',
+  'confirm.yes': 'Ya, betul',
+  'confirm.no': 'Tidak, biar saya taip',
+  'haze.title': 'Jerebu hari ini',
+  'suggest.title': 'Mungkin anda suka',
+  'suggest.indoor': 'Dalam bangunan',
+  'suggest.free': 'Percuma',
+  'suggest.notForMe': 'Bukan untuk saya',
+  'suggest.removed': 'Baik, saya akan ingat.',
+  'redflag.title': 'Sila dapatkan bantuan sekarang',
+  'redflag.call': 'Telefon 995',
+  'knows.title': 'Apa yang CareLoop tahu tentang saya',
+  'knows.intro': 'Ini semua yang CareLoop ingat tentang anda. Tekan Padam untuk membuang apa-apa.',
+  'knows.erase': 'Padam',
+  'knows.erased': 'Sudah dipadam.',
+  'knows.empty': 'CareLoop belum tahu apa-apa tentang anda.',
+  'pair.title': 'Sediakan CareLoop',
+  'pair.intro': 'Ahli keluarga atau Pusat Penuaan Aktif anda akan membantu menyediakannya.',
+  'pair.code': 'Kod daripada aplikasi penjaga',
+  'pair.codePlaceholder': 'Kod 6 digit',
+  'pair.language': 'Bahasa',
+  'pair.consent': 'Apa yang boleh CareLoop kongsi dengan penjaga?',
+  'pair.consent.nothing': 'Tiada',
+  'pair.consent.digest': 'Ringkasan mingguan',
+  'pair.consent.readings': 'Ringkasan mingguan dan bacaan saya',
+  'pair.consent.redflags': 'Jika sesuatu kelihatan berbahaya, penjaga anda akan sentiasa diberitahu.',
+  'pair.consent.words': 'Apa yang saya katakan semasa sapaan',
+  'pair.consent.activity': 'Langkah dan aktiviti',
+  'pair.consent.note': 'Anda boleh menukar ini bila-bila masa. Hanya penjaga yang anda pautkan di sini akan diberitahu apabila sesuatu perlu diberi perhatian.',
+  'pair.submit': 'Pautkan kepada penjaga',
+  'pair.badCode': 'Kod itu tidak berjaya. Sila semak dengan penjaga anda.',
+  'pair.done': 'Sudah dipautkan kepada {contact}.',
+  'demo.banner': 'Data demo: bukan orang sebenar.',
+};
 
-export function translate(lang: Lang, key: StringKey, vars?: Record<string, string | number>): string {
+const ta: Partial<Record<StringKey, string>> = {
+  'app.name': 'CareLoop',
+  'common.back': 'பின்செல்',
+  'common.yes': 'ஆம்',
+  'common.no': 'இல்லை',
+  'common.save': 'சேமி',
+  'common.send': 'அனுப்பு',
+  'common.cancel': 'ரத்து செய்',
+  'common.saved': 'சேமிக்கப்பட்டது. நன்றி.',
+  'common.offline': 'இப்போது CareLoop-ஐ அணுக முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+  'common.retry': 'மீண்டும் முயற்சி',
+  'common.loading': 'உங்கள் நாளைத் தயார் செய்கிறோம்…',
+  'common.saving': 'சேமிக்கிறோம்…',
+  'home.subtitle': 'உங்கள் வேகத்தில், ஒரு சிறிய நலம் விசாரிப்பு.',
+  'home.today': 'உங்கள் நாள், ஒவ்வொரு படியாக',
+  'home.progress': '3-இல் {count} முடிந்தது',
+  'home.type': 'நான் தட்டச்சு செய்ய விரும்புகிறேன்',
+  'home.greeting.morning': 'காலை வணக்கம்',
+  'home.greeting.afternoon': 'மதிய வணக்கம்',
+  'home.greeting.evening': 'மாலை வணக்கம்',
+  'home.pills': 'மாத்திரை சாப்பிட்டேன்',
+  'home.pills.done': 'இன்று மாத்திரை சாப்பிட்டாயிற்று',
+  'home.bp': 'இரத்த அழுத்தத்தைப் பதிவு செய்',
+  'home.bp.done': 'இன்று இரத்த அழுத்தம் பதிவானது',
+  'home.feel': 'நான் எப்படி உணர்கிறேன்',
+  'home.talk': 'அழுத்திப் பேசவும்',
+  'home.knows': 'CareLoop என்னைப் பற்றி அறிந்தவை',
+  'checkin.title': 'காலை நலம் விசாரிப்பு',
+  'checkin.default': 'இன்று நீங்கள் எப்படி இருக்கிறீர்கள்?',
+  'checkin.hold': 'பொத்தானை அழுத்திப் பேசவும்',
+  'checkin.listening': 'கேட்கிறது…',
+  'checkin.release': 'முடிந்ததும் விடவும்',
+  'checkin.heard': 'நான் கேட்டது:',
+  'checkin.type': 'அல்லது இங்கே தட்டச்சு செய்யவும்',
+  'checkin.placeholder': 'எ.கா. நன்றாக இருக்கிறேன், சந்தைக்குப் போனேன்',
+  'checkin.thanks': 'என்னிடம் சொன்னதற்கு நன்றி.',
+  'checkin.noSpeech': 'இந்தத் தொலைபேசியில் குரல் வசதி இல்லை. தட்டச்சு செய்யவும்.',
+  'checkin.micDenied': 'மைக்ரோஃபோன் தடுக்கப்பட்டுள்ளது. அனுமதிக்கவும், அல்லது தட்டச்சு செய்யவும்.',
+  'checkin.quick.good': 'நன்றாக இருக்கிறேன்',
+  'checkin.quick.ok': 'பரவாயில்லை',
+  'checkin.quick.unwell': 'உடல்நிலை சரியில்லை',
+  'bp.title': 'இரத்த அழுத்தத்தைப் பதிவு செய்',
+  'bp.top': 'மேல் எண்',
+  'bp.bottom': 'கீழ் எண்',
+  'bp.pulse': 'நாடித் துடிப்பு (காட்டினால்)',
+  'bp.hint': 'உங்கள் இரத்த அழுத்த இயந்திரத்தில் உள்ள எண்களை எழுதவும்.',
+  'bp.check': 'எண்களைச் சரிபார்க்கவும்',
+  'bp.checkBody': 'மேல் எண் பொதுவாகக் கீழ் எண்ணை விடப் பெரியதாக இருக்கும். இவை சரியா?',
+  'bp.missing': 'மேல் மற்றும் கீழ் எண்களை நிரப்பவும்.',
+  'confirm.title': 'நான் சரியாகக் கேட்டேனா?',
+  'confirm.bp': 'மேல் எண் {sys}, கீழ் எண் {dia}',
+  'confirm.pulse': 'நாடித் துடிப்பு {pulse}',
+  'confirm.yes': 'ஆம், சரி',
+  'confirm.no': 'இல்லை, நான் தட்டச்சு செய்கிறேன்',
+  'haze.title': 'இன்றைய புகைமூட்டம்',
+  'suggest.title': 'உங்களுக்குப் பிடிக்கக்கூடியவை',
+  'suggest.indoor': 'உள்ளரங்கம்',
+  'suggest.free': 'இலவசம்',
+  'suggest.notForMe': 'எனக்கு வேண்டாம்',
+  'suggest.removed': 'சரி, நினைவில் வைத்துக்கொள்கிறேன்.',
+  'redflag.title': 'உடனே உதவி பெறுங்கள்',
+  'redflag.call': '995-ஐ அழைக்கவும்',
+  'knows.title': 'CareLoop என்னைப் பற்றி அறிந்தவை',
+  'knows.intro': 'CareLoop உங்களைப் பற்றி நினைவில் வைத்திருப்பவை இவை அனைத்தும். எதையும் நீக்க "அழி" என்பதைத் தட்டவும்.',
+  'knows.erase': 'அழி',
+  'knows.erased': 'அழிக்கப்பட்டது.',
+  'knows.empty': 'CareLoop-க்கு உங்களைப் பற்றி இன்னும் எதுவும் தெரியாது.',
+  'pair.title': 'CareLoop-ஐ அமைக்கவும்',
+  'pair.intro': 'குடும்ப உறுப்பினர் அல்லது உங்கள் முதுமை நல நிலையம் (AAC) இதை அமைக்க உதவுவார்.',
+  'pair.code': 'பராமரிப்பாளர் செயலியில் உள்ள குறியீடு',
+  'pair.codePlaceholder': '6 இலக்கக் குறியீடு',
+  'pair.language': 'மொழி',
+  'pair.consent': 'பராமரிப்பாளருடன் CareLoop எதைப் பகிரலாம்?',
+  'pair.consent.nothing': 'எதுவுமில்லை',
+  'pair.consent.digest': 'வாராந்திரச் சுருக்கம்',
+  'pair.consent.readings': 'வாராந்திரச் சுருக்கமும் என் அளவீடுகளும்',
+  'pair.consent.redflags': 'ஏதாவது ஆபத்தாகத் தோன்றினால், உங்கள் பராமரிப்பாளருக்கு எப்போதும் தெரிவிக்கப்படும்.',
+  'pair.consent.words': 'நலம் விசாரிப்பில் நான் சொல்வது',
+  'pair.consent.activity': 'நடை எண்ணிக்கையும் செயல்பாடும்',
+  'pair.consent.note': 'இதை எப்போது வேண்டுமானாலும் மாற்றலாம். கவனம் தேவைப்படும்போது, இங்கே இணைக்கும் பராமரிப்பாளருக்கு மட்டுமே தெரிவிக்கப்படும்.',
+  'pair.submit': 'பராமரிப்பாளருடன் இணை',
+  'pair.badCode': 'அந்தக் குறியீடு வேலை செய்யவில்லை. உங்கள் பராமரிப்பாளரிடம் சரிபார்க்கவும்.',
+  'pair.done': '{contact} உடன் இணைக்கப்பட்டது.',
+  'demo.banner': 'டெமோ தரவு: உண்மையான நபர் அல்ல.',
+};
+
+export const strings: Record<UiLang, Partial<Record<StringKey, string>>> = { en, zh, ms, ta };
+
+export function translate(lang: AppLang, key: StringKey, vars?: Record<string, string | number>): string {
   let s = strings[uiLang(lang)][key] ?? strings.en[key] ?? key;
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v));
   return s;
 }
 
-export const LangContext = createContext<Lang>('en');
+export const LangContext = createContext<AppLang>('en');
 
 /** const t = useT(); t('home.pills') */
 export function useT() {

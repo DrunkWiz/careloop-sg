@@ -7,6 +7,10 @@
     "id": {
       "type": "string"
     },
+    "caregiver_id": {
+      "type": "string",
+      "description": "the caregiver this link belongs to"
+    },
     "senior_id": {
       "type": "string"
     },
@@ -21,7 +25,8 @@
       "type": "boolean"
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "denormalized from the caregiver for convenience"
     },
     "language": {
       "type": "string",
@@ -41,10 +46,36 @@
           "type": "null"
         }
       ]
+    },
+    "consent": {
+      "type": "object",
+      "properties": {
+        "family_sees": {
+          "type": "string",
+          "enum": [
+            "nothing",
+            "digest",
+            "readings"
+          ]
+        },
+        "share_words": {
+          "type": "boolean"
+        },
+        "share_activity": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "family_sees",
+        "share_words",
+        "share_activity"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
     "id",
+    "caregiver_id",
     "senior_id",
     "role",
     "primary",

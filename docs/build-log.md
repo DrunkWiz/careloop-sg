@@ -2,6 +2,16 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: sibling rota, pairing UX, relationship tests
+
+- **Sibling rota.** When a senior has several family caregivers (siblings), they take turns being "on duty". The on-duty sibling gets most notifications (rungs 1-4); red flags (rung R) still go to EVERY linked caregiver. AAC-path seniors ignore the rota. New store kind `rota` (`contracts/schemas/Rota.schema.json`, one per senior: `mode`/`start_date`/`order`/`swaps`). `on_duty()` in `ladder.py` computes the right contact (weekly/daily, swap override, skip invalid, SGT dates). `run_day()` targets the on-duty contact for non-red-flag rungs; falls back to primary → all when no rota. API: `GET/PUT/DELETE /senior/{sid}/rota`, `POST /senior/{sid}/rota/swap` with validation (400 for invalid/duplicate/AAC contacts, 404 for unknown senior). `on_duty` + `on_duty_name` added to `/care/family/{id}` and `/care/caregiver/{id}`. Demo: Mr Tan gets a weekly rota [Wei Ling, Kelvin]. Web: "Who's on duty" badge in the family view, rota API + mocks, i18n (en + zh).
+- **Contract change (needs team OK):** new `Rota.schema.json`, `Rota` example, `"rota"` added to `KINDS`. `PairCodeIn` gained optional `senior_id` (backward-compatible). Contract test count: 12 → 13.
+- **Pairing UX.** Two clear cards: "Add a caregiver to [senior]" (new caregiver, existing senior) and "Set up CareLoop for someone new" (existing caregiver, new senior). Senior dropdown when the caregiver has several.
+- **Relationship tests** (32 new): per-link consent, pairing edge cases (404 on unknown caregiver, deleted caregiver, first vs second primary, consent overwrite bug fix, role mismatch, used code), primary management (404, one-primary invariant, rung-4 fallback to all when no primary), caregiver_view (404, status, skip gone, sorted), AAC caseload (caregiver_id + worker_id, no dup), handover claim (non-primary can claim, other-senior gets 403), schema integrity (no orphans after seed + advance), legacy data (no crash on missing caregiver_id). 16 engine rota tests + 9 API rota tests.
+- **Bug fixed:** `app.py:280` — second caregiver pairing silently overwrote `senior.consent`. Now gated on `is_primary` (only the first/primary link sets the senior's default consent).
+- Kelvin now looks after Mrs Yeo (primary) and Mr Tan (secondary).
+- Validation: 4/5 suites pass (language 54, engine 46, API 83, synth 4 = 187 total). Reports suite has pre-existing `ImportError: gp_brief_pdf`. TypeScript compiles, `npm run build` succeeds.
+
 ## 14 Oct 2026: app design and interaction fixes
 
 - Added a shared home page at `/`, with separate senior, family and centre entry points and clearly labelled synthetic demos.

@@ -1,9 +1,9 @@
 // /care: which CareLoop are you? Family and centre staff get different apps, built for different jobs.
 // Until login exists, the demo people are listed here (all synthetic).
 const FAMILY = [
-  { contact: 'tan-weiling', name: 'Wei Ling', about: "Mr Tan's daughter" },
-  { contact: 'tan-kelvin', name: 'Kelvin', about: "Mr Tan's son" },
-  { contact: 'wong-mei', name: 'Mei', about: "Mdm Wong's daughter" },
+  { caregiver: 'cg-weiling', name: 'Wei Ling', about: "Mr Tan's daughter" },
+  { caregiver: 'cg-kelvin', name: 'Kelvin', about: "Mr Tan's son" },
+  { caregiver: 'cg-mei', name: 'Mei', about: "Mdm Wong's daughter" },
 ];
 
 function go(path: string, extra: Record<string, string>) {
@@ -33,7 +33,7 @@ export default function RoleChooser() {
         </div>
         <div className="chooser-people">
           {FAMILY.map((f) => (
-            <button key={f.contact} className="chooser-person" onClick={() => go('/care/family', { contact: f.contact })}>
+            <button key={f.caregiver} className="chooser-person" onClick={() => go('/care/family', { caregiver: f.caregiver })}>
               <strong>{f.name}</strong>
               <span>{f.about}</span>
             </button>

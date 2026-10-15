@@ -25,18 +25,31 @@ SENIORS = [
     # Postal codes are made up (sector only matters, for the PSI region); AAC ids are real centres from places.json.
     ("tan", "Mr Tan", "en-SG", "560999", "central", "family", "aac-100", ["mahjong", "kopi"], (128, 80), 5200),
     ("wong", "Mdm Wong", "zh", "640999", "west", "family", "aac-002", ["karaoke", "singing"], (132, 82), 3800),
+    ("yeo", "Mrs Yeo", "en", "730999", "west", "family", "aac-100", ["gardening", "kopi"], (130, 81), 4400),  # Kelvin's mother
     ("lee", "Mdm Lee", "en", "520999", "east", "aac", "aac-105", ["crafts", "chatting"], (135, 84), 3000),
     ("goh", "Mr Goh", "zh", "521999", "east", "aac", "aac-105", ["exercise", "walking"], (126, 78), 6100),
     ("ng", "Mr Ng", "en-SG", "529999", "east", "aac", "aac-105", ["kopi", "chatting"], (138, 86), 2600),
 ]
-CONTACTS = {
-    "tan": [("tan-weiling", "Wei Ling", "family", "en"), ("tan-kelvin", "Kelvin", "family", "en")],
-    "wong": [("wong-mei", "Mei", "family", "zh")],
-    "lee": [("aac-siti:lee", "Siti (AAC)", "aac", "en")],
-    "goh": [("aac-siti:goh", "Siti (AAC)", "aac", "en")],
-    "ng": [("aac-siti:ng", "Siti (AAC)", "aac", "en")],
+# Caregivers: the person, independent of any senior. One caregiver can look after several seniors.
+CAREGIVERS = [
+    # id, name, language, role, worker_id
+    ("cg-weiling", "Wei Ling", "en", "family", None),
+    ("cg-kelvin", "Kelvin", "en", "family", None),
+    ("cg-jane", "Jane", "en", "family", None),  # Kelvin's sister
+    ("cg-mei", "Mei", "zh", "family", None),
+    ("cg-siti", "Siti", "en", "aac", "aac-siti"),
+]
+# Links: senior → [(contact_id, caregiver_id, primary)]
+LINKS = {
+    "tan": [("tan-weiling", "cg-weiling", True), ("tan-kelvin", "cg-kelvin", False)],
+    "wong": [("wong-mei", "cg-mei", True)],
+    # Kelvin looks after his mother Mrs Yeo (primary) and helps with Mr Tan (secondary).
+    # Jane (Kelvin's sister) also helps with Mrs Yeo (secondary).
+    "yeo": [("yeo-kelvin", "cg-kelvin", True), ("yeo-jane", "cg-jane", False)],
+    "lee": [("aac-siti:lee", "cg-siti", True)],
+    "goh": [("aac-siti:goh", "cg-siti", True)],
+    "ng": [("aac-siti:ng", "cg-siti", True)],
 }
-AAC_WORKER = "aac-siti"
 
 TEXT = {
     "en": {"ok": "Feeling ok today.", "took": "Took my pills.", "social": "Went to the centre with friends.", "home": "Stayed home today."},
@@ -75,23 +88,66 @@ def seed(store, *, days: int = 40) -> None:
     store.clear()
     store.set_setting("demo_today", DEMO_TODAY.isoformat())
     start = DEMO_TODAY - timedelta(days=days)
+    consent = {"family_sees": "readings", "share_words": True, "share_activity": True}
+    cg_map = {}
+    for cg_id, name, lang, role, worker_id in CAREGIVERS:
+        store.put("caregiver", {"id": cg_id, "name": name, "language": lang, "role": role, "worker_id": worker_id})
+        cg_map[cg_id] = (name, lang, role, worker_id)
     for sid, name, lang, postal, region, path, aac, likes, base, steps in SENIORS:
         store.put("senior", {
             "id": sid, "name": name, "language": lang, "home_postal": postal, "region": region, "path": path, "aac_id": aac,
             "conditions": ["hypertension"],
             "medicines": [{"name": "amlodipine", "dose_text": "5 mg once a day", "schedule": ["morning"], "started": "2024-03-01", "for_bp": True}],
             "likes": likes, "usual_checkin_time": "08:00",
-            "consent": {"family_sees": "readings", "share_words": True, "share_activity": True}, "hidden_suggestions": [],
+            "consent": consent, "hidden_suggestions": [],
         })
-        for cid, cname, role, clang in CONTACTS[sid]:
-            store.put("contact", {"id": cid, "senior_id": sid, "role": role, "primary": True, "name": cname, "language": clang,
-                                  "worker_id": AAC_WORKER if role == "aac" else None})
+        for cid, cg_id, primary in LINKS[sid]:
+            cg_name, cg_lang, cg_role, cg_worker = cg_map[cg_id]
+            store.put("contact", {"id": cid, "caregiver_id": cg_id, "senior_id": sid, "role": cg_role, "primary": primary,
+                                  "name": cg_name, "language": cg_lang, "worker_id": cg_worker, "consent": consent})
+
+    # Mr Tan's weekly sibling rota: Wei Ling and Kelvin take turns.
+    store.put("rota", {"id": "rota-tan", "senior_id": "tan", "mode": "weekly", "start_date": start.isoformat(),
+                       "order": ["tan-weiling", "tan-kelvin"], "swaps": []})
+
+    for sid, name, lang, postal, region, path, aac, likes, base, steps in SENIORS:
         for i in range(days):
             d = start + timedelta(i)
             _day_data(store, sid, d, lang=lang, base=base, steps=steps, region=region)
             run_day(store, sid, d, gateway=NO_MODEL)
         # Today's haze is real: the newest data.gov.sg fixture (PSI 115-165 on 13 Oct 2026).
         store.put("envday", fetch_envday(DEMO_TODAY, region))
+
+    # Vent space: seed a few sample posts so the screen isn't empty.
+    _seed_vent(store, DEMO_TODAY)
+
+
+def _seed_vent(store, today: date) -> None:
+    """5–6 anonymous vent posts, all within the last 7 days of the demo today."""
+    now = datetime.combine(today, datetime.min.time(), SGT)
+    posts = [
+        ("Caregiver 042", "Third time this week Pa refused to take his pill, I'm so tired",
+         now - timedelta(hours=2), 3),
+        ("Caregiver 128", "Anyone else feel guilty for needing a break?",
+         now - timedelta(hours=5), 7),
+        ("Caregiver 077", "Mum said I don't care about her. I do everything for her. That hurt.",
+         now - timedelta(days=1, hours=3), 5),
+        ("Caregiver 214", "Finally got 6 hours of sleep last night. Small wins.",
+         now - timedelta(days=2, hours=5), 12),
+        ("Caregiver 091", "The doctor said her BP is improving. I was so relieved I cried.",
+         now - timedelta(days=3, hours=2), 8),
+        ("Caregiver 156", "Sometimes I wonder if I'm doing enough for him.",
+         now - timedelta(days=5, hours=6), 4),
+    ]
+    for nick, text, when, hugs in posts:
+        store.put("ventpost", {
+            "id": f"vp-demo-{nick.split()[1]}",
+            "nickname": nick,
+            "text": text,
+            "time": when.isoformat(),
+            "hugs": hugs,
+            "hidden": False,
+        })
 
 
 def _script(sid: str, n: int) -> dict:

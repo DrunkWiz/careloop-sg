@@ -18,8 +18,9 @@ async function http<T>(method: string, path: string, body?: unknown): Promise<T>
 }
 
 export const api = {
-  today: (seniorId: string): Promise<Today> =>
-    usingMock ? mock.today(seniorId) : http('GET', `/senior/${seniorId}/today`),
+  /** lang: what the app is showing now, so the prompt and haze text come back in that language. */
+  today: (seniorId: string, lang?: Lang): Promise<Today> =>
+    usingMock ? mock.today(seniorId) : http('GET', `/senior/${seniorId}/today${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`),
 
   /** Every check-in goes here as text: speech is transcribed in the browser; the big buttons send canned text. */
   checkin: (seniorId: string, text: string, lang: Lang, source: 'voice' | 'typed' | 'button'): Promise<CheckInResult> =>
@@ -50,6 +51,8 @@ export const api = {
       ? mock.notForMe(seniorId, suggestionId)
       : http('POST', `/senior/${seniorId}/suggestions/${encodeURIComponent(suggestionId)}/response`, { response: 'not_for_me' }),
 
-  pair: (code: string, lang: Lang, consent: Consent): Promise<PairResult> =>
-    usingMock ? mock.pair(code, lang, consent) : http('POST', '/pair', { code, language: lang, consent }),
+  pair: (code: string, lang: Lang, consent: Consent, seniorId?: string | null): Promise<PairResult> =>
+    usingMock
+      ? mock.pair(code, lang, consent)
+      : http('POST', '/pair', { code, language: lang, consent, ...(seniorId ? { senior_id: seniorId } : {}) }),
 };

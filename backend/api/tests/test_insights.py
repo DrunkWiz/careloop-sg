@@ -17,9 +17,10 @@ class Insights(unittest.TestCase):
         self.c.post("/demo/advance", json={"days": 11})
 
     def consent(self, sid, **kw):
-        s = self.store.get("senior", sid)
-        s["consent"] = {**s["consent"], **kw}
-        self.store.put("senior", s)
+        """Per-link consent: set on the contact, not the senior."""
+        c = self.store.get("contact", f"{sid}-weiling")
+        c["consent"] = {**(c.get("consent") or {}), **kw}
+        self.store.put("contact", c)
 
     def test_the_drift_is_found_as_a_trend(self):
         d = self.c.get("/senior/tan/insights?contact=tan-weiling").json()

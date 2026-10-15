@@ -29,6 +29,7 @@ def build() -> dict[str, dict]:
     drift = next(d for d in s.list("decision", senior_id="tan") if d["rung"] == "4")
     return {
         "Senior": s.get("senior", "tan"),
+        "Caregiver": s.get("caregiver", "cg-weiling"),
         "Contact": s.get("contact", "tan-weiling"),
         "Reading": next(r for r in s.list("reading", senior_id="tan") if r["kind"] == "bp"),
         "CheckIn": s.list("checkin", senior_id="tan", day_from=today)[-1],
@@ -38,6 +39,8 @@ def build() -> dict[str, dict]:
         "Handover": s.get("handover", drift["handover_id"]),
         "Suggestion": s.list("suggestion", senior_id="tan")[0],
         "Facts": s.list("checkin", senior_id="tan", day_from=today)[-1]["facts"],
+        "VentPost": s.list("ventpost")[0],
+        "Rota": s.get("rota", "rota-tan"),
     }
 
 

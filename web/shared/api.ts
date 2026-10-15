@@ -3,7 +3,9 @@
 import type {
   Activities,
   BriefData,
+  CaregiverView,
   CareNotes,
+  Contact,
   Insights,
   Caseload,
   FamilyView,
@@ -11,8 +13,12 @@ import type {
   LogDay,
   PairCodeIn,
   PairCodeOut,
+  PairIn,
+  PairOut,
   Programme,
   ProgrammeIn,
+  RotaView,
+  VentPost,
 } from './contract';
 import * as mock from '../care/mock';
 import * as mockAac from '../care/mockAac';
@@ -47,6 +53,40 @@ export const usingMocks = !BASE;
 
 export function getFamilyView(contactId: string): Promise<FamilyView> {
   return BASE ? http(`/care/family/${contactId}`) : mock.getFamilyView(contactId);
+}
+
+// GET /care/caregiver/{caregiver_id}: one caregiver's linked seniors (the switcher).
+export function getCaregiverView(caregiverId: string): Promise<CaregiverView> {
+  return BASE ? http(`/care/caregiver/${caregiverId}`) : mock.getCaregiverView(caregiverId);
+}
+
+// POST /care/contact/{contact_id}/primary: promote this contact to primary.
+export function setPrimary(contactId: string): Promise<Contact> {
+  return BASE ? http(`/care/contact/${contactId}/primary`, { method: 'POST' }) : mock.setPrimary(contactId);
+}
+
+// GET /senior/{sid}/rota
+export function getRota(seniorId: string): Promise<RotaView> {
+  return BASE ? http(`/senior/${seniorId}/rota`) : mock.getRota(seniorId);
+}
+
+// PUT /senior/{sid}/rota
+export function putRota(seniorId: string, mode: 'weekly' | 'daily', startDate: string, order: string[]): Promise<RotaView> {
+  return BASE
+    ? http(`/senior/${seniorId}/rota`, { method: 'PUT', body: JSON.stringify({ mode, start_date: startDate, order }) })
+    : mock.putRota(seniorId, mode, startDate, order);
+}
+
+// POST /senior/{sid}/rota/swap
+export function swapRota(seniorId: string, date: string, contactId: string): Promise<RotaView> {
+  return BASE
+    ? http(`/senior/${seniorId}/rota/swap`, { method: 'POST', body: JSON.stringify({ date, contact_id: contactId }) })
+    : mock.swapRota(seniorId, date, contactId);
+}
+
+// DELETE /senior/{sid}/rota
+export function deleteRota(seniorId: string): Promise<RotaView> {
+  return BASE ? http(`/senior/${seniorId}/rota`, { method: 'DELETE' }) : mock.deleteRota(seniorId);
 }
 
 export function getCaseload(workerId: string): Promise<Caseload> {
@@ -118,6 +158,10 @@ export function createPairCode(body: PairCodeIn): Promise<PairCodeOut> {
   return BASE ? http('/care/pair-code', { method: 'POST', body: JSON.stringify(body) }) : mock.createPairCode(body);
 }
 
+export function pair(body: PairIn): Promise<PairOut> {
+  return BASE ? http('/pair', { method: 'POST', body: JSON.stringify(body) }) : mock.pair(body);
+}
+
 // Demo only: move the demo clock, or reseed.
 export function demoAdvance(days: number): Promise<{ today: string }> {
   return BASE ? http('/demo/advance', { method: 'POST', body: JSON.stringify({ days }) }) : Promise.reject(new Error('Demo controls need the API'));
@@ -125,4 +169,22 @@ export function demoAdvance(days: number): Promise<{ today: string }> {
 
 export function demoReset(): Promise<{ today: string }> {
   return BASE ? http('/demo/reset', { method: 'POST' }) : Promise.reject(new Error('Demo controls need the API'));
+}
+
+// --- vent space: anonymous caregiver rant room (no caregiver_id or senior_id saved) ----------
+
+export function getVentFeed(): Promise<VentPost[]> {
+  return BASE ? http('/vent') : mock.getVentFeed();
+}
+
+export function postVent(nickname: string, text: string): Promise<VentPost> {
+  return BASE ? http('/vent', { method: 'POST', body: JSON.stringify({ nickname, text }) }) : mock.postVent(nickname, text);
+}
+
+export function hugVentPost(postId: string): Promise<VentPost> {
+  return BASE ? http(`/vent/${postId}/hug`, { method: 'POST' }) : mock.hugVentPost(postId);
+}
+
+export function reportVentPost(postId: string): Promise<{ id: string; hidden: boolean }> {
+  return BASE ? http(`/vent/${postId}/report`, { method: 'POST' }) : mock.reportVentPost(postId);
 }

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "VentPost.schema.json",
+  "title": "VentPost",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "nickname": { "type": "string", "description": "Anonymous per-device name, e.g. Caregiver 214" },
+    "text": { "type": "string", "description": "What the caregiver posted. Sensitive numbers are stripped server-side." },
+    "time": { "type": "string", "format": "date-time", "description": "ISO datetime when the post was created" },
+    "hugs": { "type": "integer", "minimum": 0, "description": "How many people said 'me too'" },
+    "hidden": { "type": "boolean", "description": "True when reported/removed" }
+  },
+  "required": ["id", "nickname", "text", "time", "hugs", "hidden"],
+  "additionalProperties": false
+}

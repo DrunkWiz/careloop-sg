@@ -1,0 +1,11 @@
+{
+  "id": "rota-tan",
+  "senior_id": "tan",
+  "mode": "weekly",
+  "start_date": "2026-09-03",
+  "order": [
+    "tan-weiling",
+    "tan-kelvin"
+  ],
+  "swaps": []
+}

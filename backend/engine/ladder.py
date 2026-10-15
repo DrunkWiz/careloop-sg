@@ -54,9 +54,48 @@ def decision_id(senior_id: str, day: date) -> str:
 
 
 def contacts_for(store, senior: dict) -> list[dict]:
+    """All contacts (caregiver links) for this senior, filtered by the senior's care path."""
     role = "aac" if senior.get("path") == "aac" else "family"
-    cs = [c for c in store.list("contact", senior_id=senior["id"]) if c["role"] == role]
-    return [c for c in cs if c.get("primary")] or cs
+    return [c for c in store.list("contact", senior_id=senior["id"]) if c["role"] == role]
+
+
+def on_duty(store, senior: dict, day: date) -> dict | None:
+    """The contact on duty for this senior on this day, or None.
+
+    Weekly rotates every 7 days, daily every day. A swap for the exact date wins.
+    Contacts that no longer exist or aren't linked to this senior are skipped.
+    AAC-path seniors ignore the rota (family only).
+    """
+    if senior.get("path") == "aac":
+        return None
+    rota = store.get("rota", f"rota-{senior['id']}")
+    if not rota or not rota.get("order"):
+        return None
+    start = date.fromisoformat(rota["start_date"])
+    if day < start:
+        return None
+    # A swap for this exact date wins over the rotation.
+    for sw in rota.get("swaps", []):
+        if sw["date"] == day.isoformat():
+            c = store.get("contact", sw["contact_id"])
+            if c and c.get("senior_id") == senior["id"] and c.get("role") == "family":
+                return c
+            return None  # swap points to a bad contact: nobody on duty
+    # Filter the order to valid family contacts linked to this senior.
+    valid = []
+    for cid in rota["order"]:
+        c = store.get("contact", cid)
+        if c and c.get("senior_id") == senior["id"] and c.get("role") == "family":
+            if c not in valid:  # dedupe
+                valid.append(c)
+    if not valid:
+        return None
+    days_since = (day - start).days
+    if rota["mode"] == "weekly":
+        idx = (days_since // 7) % len(valid)
+    else:  # daily
+        idx = days_since % len(valid)
+    return valid[idx]
 
 
 def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, gateway=None) -> dict:
@@ -112,7 +151,17 @@ def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, ga
     for to in audience:
         if (to, out.rung) in sent:
             continue
-        targets = [None] if to == "senior" else contacts
+        if to == "senior":
+            targets = [None]
+        elif out.rung == "R":
+            targets = contacts  # red flags go to every linked caregiver
+        else:
+            # Rota: the on-duty contact gets most messages (family only).
+            duty = on_duty(store, senior, day)
+            if duty:
+                targets = [duty]
+            else:
+                targets = [c for c in contacts if c.get("primary")] or contacts
         for c in targets:
             msg = _message(senior, out, days[day], to, c, contacts, now, did, gateway)
             if msg is not None:
@@ -276,4 +325,4 @@ def _jsonable(v):
     return v
 
 
-__all__ = ["run_day", "claim", "decision_id", "Chain"]
+__all__ = ["run_day", "claim", "decision_id", "on_duty", "contacts_for", "Chain"]

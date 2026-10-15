@@ -32,7 +32,7 @@ Owner: Vibu. Frozen Tue 13 Oct 23:00. **After the freeze, a change needs all thr
 | `GET /senior/{id}/knows`, `DELETE /senior/{id}/knows/{fact}` | Senior app |
 | `POST /senior/{id}/suggestions/{sid}/response` `{response: not_for_me \| going}` **(added)** | Senior app |
 | `POST /pair` `{code, language, consent}` **(added)** | Senior app |
-| `POST /care/pair-code` `{contact_name, role, senior_name, home_postal}` → `{code}` **(added)** | Both care views |
+| `POST /care/pair-code` `{contact_name, role, senior_name, home_postal, aac_id?}` → `{code}` **(added)**; AAC path: the new senior joins `aac_id`, or the worker's usual centre if omitted | Both care views |
 | `GET /care/family/{contact}` (digest numbers, handovers, status) | Family view |
 | `GET /care/aac/{worker_id}/caseload` | AAC view |
 | `GET/PUT /aac/{aac_id}/programmes` (weekly timetable, entered once) **(added)** | AAC view |

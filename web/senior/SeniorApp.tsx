@@ -1,7 +1,7 @@
 // The /senior app. Owner: Mingyu.
 // Big buttons for the daily things, voice for everything else. It asks; it doesn't report numbers.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LangContext, translate, type Lang, type StringKey } from '../shared/i18n';
+import { LANG_CHOICES, LangContext, apiLang, htmlLang, translate, type AppLang, type StringKey } from '../shared/i18n';
 import { api, usingMock } from './api';
 import { mock } from './mock';
 import type { BP, Message, Today } from './types';
@@ -35,6 +35,7 @@ const store = {
 export default function SeniorApp() {
   const params = new URLSearchParams(location.search);
   const forcePair = params.has('pair');
+  // The stored senior id is kept even in pairing mode, so a second caregiver can link to the existing senior.
   // ?senior=tan opens the app as a seeded demo senior (for the video), skipping pairing.
   const [seniorId, setSeniorId] = useState<string | null>(() => {
     const demo = params.get('senior');
@@ -44,7 +45,8 @@ export default function SeniorApp() {
     }
     return forcePair ? null : demo || store.get('seniorId');
   });
-  const [lang, setLangState] = useState<Lang>((store.get('lang') as Lang) || 'en');
+  const storedSeniorId = store.get('seniorId');
+  const [lang, setLangState] = useState<AppLang>((store.get('lang') as AppLang) || 'en');
   const [today, setToday] = useState<Today | null>(null);
   const [view, setView] = useState<View>({ name: 'home' });
   const [redFlag, setRedFlag] = useState<Message | null>(null);
@@ -62,18 +64,18 @@ export default function SeniorApp() {
     toastTimer.current = window.setTimeout(() => setToastText(null), 3500);
   }, []);
 
-  const setLang = (l: Lang) => {
+  const setLang = (l: AppLang) => {
     setLangState(l);
     store.set('lang', l);
   };
 
   // The mock writes its canned text in the senior's language; keep it in step before fetching.
-  useEffect(() => { if (usingMock) mock.setLang(lang); }, [lang]);
+  useEffect(() => { if (usingMock) mock.setLang(apiLang(lang)); }, [lang]);
 
   const refresh = useCallback(async () => {
     if (!seniorId) return;
     try {
-      const t = await api.today(seniorId);
+      const t = await api.today(seniorId, apiLang(lang));
       setToday(t);
       setLoadError(false);
       // Until the senior picks a language on this phone, use the one set up for them.
@@ -85,14 +87,14 @@ export default function SeniorApp() {
   }, [seniorId, lang, toast]);
 
   useEffect(() => { refresh(); }, [refresh]);
-  useEffect(() => { document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en-SG'; }, [lang]);
+  useEffect(() => { document.documentElement.lang = htmlLang(lang); }, [lang]);
 
   const checkin = async (text: string, source: 'voice' | 'typed' | 'button', thanks: StringKey = 'checkin.thanks') => {
     if (!seniorId || submitting.current) return;
     submitting.current = true;
     setBusy(true);
     try {
-      const res = await api.checkin(seniorId, text, lang, source);
+      const res = await api.checkin(seniorId, text, apiLang(lang), source);
       if (res.message?.rung === 'R') {
         setRedFlag(res.message);
       } else {
@@ -134,14 +136,14 @@ export default function SeniorApp() {
     }
   };
 
-  const talk = useHoldToTalk(lang, (text) => checkin(text, 'voice'));
+  const talk = useHoldToTalk(apiLang(lang), (text) => checkin(text, 'voice'));
 
   if (!seniorId) {
     return (
       <LangContext.Provider value={lang}>
         <div className="sa-app">
           <header className="sa-top"><Brand href={null} /></header>
-          <Pair lang={lang} setLang={setLang} onPaired={(r) => {
+          <Pair lang={lang} setLang={setLang} seniorId={storedSeniorId} onPaired={(r) => {
             store.set('seniorId', r.senior_id);
             setSeniorId(r.senior_id);
             if (forcePair) history.replaceState(null, '', location.pathname);
@@ -160,7 +162,9 @@ export default function SeniorApp() {
       <div className="sa-app">
         <header className="sa-top">
           <Brand href={null} />
-          <button className="sa-lang" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>{t('lang.switch')}</button>
+          <select className="sa-lang" aria-label={t('pair.language')} value={lang} onChange={(e) => setLang(e.target.value as AppLang)}>
+            {LANG_CHOICES.map((l) => <option key={l.lang} value={l.lang}>{l.label}</option>)}
+          </select>
         </header>
         <p className="sa-demo">{t('demo.banner')}</p>
         {loadError && <div className="sa-card sa-warn" role="alert"><p>{t('common.offline')}</p><button type="button" className="sa-chip" onClick={refresh}>{t('common.retry')}</button></div>}

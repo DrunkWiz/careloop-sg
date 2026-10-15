@@ -36,14 +36,24 @@ export interface SeniorRef {
   language: Lang;
 }
 
+export interface Caregiver {
+  id: string;
+  name: string;
+  language: Lang;
+  role: 'family' | 'aac';
+  worker_id: string | null; // AAC staff member, shared across their caseload
+}
+
 export interface Contact {
   id: string;
+  caregiver_id: string; // the caregiver this link belongs to
   senior_id: string;
   role: 'family' | 'aac';
   primary: boolean;
-  name: string;
+  name: string; // denormalized from the caregiver
   language: Lang;
-  worker_id: string | null; // groups an AAC caseload
+  worker_id: string | null; // denormalized from the caregiver
+  consent?: { family_sees: FamilySees; share_words: boolean; share_activity: boolean };
 }
 
 export interface Message {
@@ -119,6 +129,8 @@ export interface FamilyView {
   family_sees: FamilySees;
   today: string;
   status: 'quiet' | 'handover' | 'red_flag';
+  on_duty: boolean;
+  on_duty_name: string | null;
   digest: Digest | null; // null when family_sees is "nothing"
   handovers: Handover[];
   red_flags: Message[]; // rung R messages to family in the last 2 days
@@ -185,11 +197,43 @@ export interface LogDay {
   festival: string | null;
 }
 
+// GET /care/caregiver/{caregiver_id}: a caregiver's linked seniors (one caregiver, many seniors).
+export interface CaregiverSenior {
+  contact_id: string;
+  senior_id: string;
+  senior_name: string;
+  primary: boolean;
+  status: 'quiet' | 'handover' | 'red_flag';
+  on_duty: boolean;
+}
+
+export interface CaregiverView {
+  caregiver: Caregiver;
+  seniors: CaregiverSenior[];
+}
+
+// GET/PUT /senior/{sid}/rota
+export interface Rota {
+  id: string;
+  senior_id: string;
+  mode: 'weekly' | 'daily';
+  start_date: string; // YYYY-MM-DD
+  order: string[]; // contact ids
+  swaps: { date: string; contact_id: string }[];
+}
+
+export interface RotaView {
+  rota: Rota | null;
+  on_duty: { id: string; name: string } | null;
+}
+
 // POST /care/pair-code
 export interface PairCodeIn {
+  caregiver_id?: string | null; // existing caregiver; omit to create a new one
   contact_name: string;
   role: 'family' | 'aac';
   language?: Lang;
+  senior_id?: string | null; // existing senior to link to; omit to create a new one
   senior_name: string;
   home_postal: string;
   worker_id?: string | null;
@@ -197,7 +241,22 @@ export interface PairCodeIn {
 
 export interface PairCodeOut {
   code: string;
+  caregiver_id: string;
   senior_id: string;
+  contact_id: string;
+}
+
+// POST /pair
+export interface PairIn {
+  code: string;
+  language?: Lang;
+  consent?: { family_sees: FamilySees; share_words: boolean; share_activity: boolean };
+  senior_id?: string | null; // if the device already has a senior, link to it
+}
+
+export interface PairOut {
+  senior_id: string;
+  contact_name: string;
   contact_id: string;
 }
 
@@ -316,4 +375,14 @@ export interface CareNotes {
   emergency: { allergies: string; gp_name: string; gp_phone: string; home_address: string; notes: string };
   updated_by?: string | null;
   updated_at?: string | null;
+}
+
+// GET /vent (latest 100 visible, newest first), POST /vent
+export interface VentPost {
+  id: string;
+  nickname: string;
+  text: string;
+  time: string; // ISO datetime
+  hugs: number;
+  hidden: boolean;
 }

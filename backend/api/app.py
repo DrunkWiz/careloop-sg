@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import os
 import random
+import re
 from datetime import date, datetime, timedelta
 from statistics import mean
 from typing import Literal, Optional
@@ -19,8 +20,9 @@ from backend.engine import claim, run_day, todays_suggestions, trust_check
 from backend.engine.baseline import bp as bp_baseline
 from backend.engine.config import haze_band
 from backend.engine.history import build
-from backend.engine.ladder import SEVERITY, SGT, contacts_for
+from backend.engine.ladder import SEVERITY, SGT, contacts_for, on_duty
 from backend.env.data import region_for_postal
+from backend.env.places import place
 from backend.language import describe as model_chain
 from backend.language import understand, write
 from backend.language.facts import Facts
@@ -95,18 +97,22 @@ class Consent(BaseModel):
 
 
 class PairCodeIn(BaseModel):
+    caregiver_id: Optional[str] = None  # existing caregiver; omit to create a new one
     contact_name: str
     role: Literal["family", "aac"] = "family"
     language: Lang = "en"
+    senior_id: Optional[str] = None  # existing senior to link to; omit to create a new one
     senior_name: str = ""
     home_postal: str = Field(default="560000", pattern=r"^\d{6}$")
     worker_id: Optional[str] = None
+    aac_id: Optional[str] = None  # AAC path: the centre (places.json id); omit to use the worker's usual centre
 
 
 class PairIn(BaseModel):
     code: str = Field(pattern=r"^\d{6}$")
     language: Lang = "en"
     consent: Consent = Consent()
+    senior_id: Optional[str] = None  # if the device already has a senior, link to it
 
 
 class ResponseIn(BaseModel):
@@ -168,8 +174,10 @@ def post_reading(body: ReadingIn):
 
 
 @app.get("/senior/{sid}/today")
-def senior_today(sid: str):
+def senior_today(sid: str, lang: Optional[Lang] = None):
+    """lang: the language the senior app is showing right now (defaults to the senior's saved language)."""
     senior = senior_or_404(sid)
+    lang = lang or senior["language"]
     t = today()
     d = build(store, senior, t, days=2)[t]
     checkins = store.list("checkin", senior_id=sid, day_from=t.isoformat(), day_to=t.isoformat())
@@ -179,11 +187,11 @@ def senior_today(sid: str):
     due = not feel_logged and now().hour * 60 + now().minute >= hh * 60 + mm - 30
     prompt = None
     if due:
-        m = write("1", Facts(lang=senior["language"]), senior["language"], to="senior", context={"name": senior["name"]})
+        m = write("1", Facts(lang=lang), lang, to="senior", context={"name": senior["name"]})
         prompt = {"to": "senior", "rung": "1", "language": m.language, "text": m.text, "from_template": m.from_template,
                   "guardrail": {"passed": m.guardrail.passed, "reasons": m.guardrail.reasons}, "model": m.model}
     band, en, zh = haze_band(d.psi)
-    haze = {"psi": d.psi, "band": band, "text": zh if senior["language"] == "zh" else en} if en else None
+    haze = {"psi": d.psi, "band": band, "text": zh if lang == "zh" else en} if en else None
     return {
         "senior": {"id": sid, "name": senior["name"], "language": senior["language"]},
         "date": t.isoformat(),
@@ -206,8 +214,11 @@ def knows(sid: str):
     out.append({"id": "routine:checkin", "kind": "routine",
                 "text": (f"通常在{s['usual_checkin_time']}左右问候" if zh else f"Usually checks in around {s['usual_checkin_time']}")})
     for c in store.list("contact", senior_id=sid):
+        role_label = "primary caregiver" if c.get("primary") else "caregiver"
+        if zh:
+            role_label = "主要看护人" if c.get("primary") else "看护人"
         out.append({"id": f"contact:{c['id']}", "kind": "contact",
-                    "text": (f"{c['name']}是联系人" if zh else f"{c['name']} is a contact")})
+                    "text": (f"{c['name']}是{role_label}" if zh else f"{c['name']} is {role_label}")})
     for k in store.list("knows", senior_id=sid):
         out.append({"id": f"learned:{k['id']}", "kind": "other", "text": k["text"]})
     return out
@@ -256,37 +267,210 @@ def pair(body: PairIn):
     pc = store.get("paircode", body.code)
     if pc is None or pc.get("used"):
         raise HTTPException(404, "unknown or used code")
-    sid = pc["senior_id"]
-    region = region_for_postal(pc["home_postal"])
-    store.put("senior", {
-        "id": sid, "name": pc["senior_name"] or "", "language": body.language, "home_postal": pc["home_postal"], "region": region,
-        "path": pc["role"], "aac_id": None, "conditions": ["hypertension"], "medicines": [], "likes": [],
-        "usual_checkin_time": "08:00", "consent": body.consent.model_dump(), "hidden_suggestions": [],
-    })
-    store.put("contact", {"id": pc["contact_id"], "senior_id": sid, "role": pc["role"], "primary": True,
-                          "name": pc["contact_name"], "language": pc["language"], "worker_id": pc.get("worker_id")})
+    cg = store.get("caregiver", pc["caregiver_id"])
+    if cg is None:
+        raise HTTPException(404, "caregiver not found")
+    consent = body.consent.model_dump()
+    # If the device already has a senior, link to it; otherwise create the senior.
+    sid = body.senior_id or pc["senior_id"]
+    if store.get("senior", sid) is None:
+        region = region_for_postal(pc["home_postal"])
+        store.put("senior", {
+            "id": sid, "name": pc["senior_name"] or "", "language": body.language, "home_postal": pc["home_postal"],
+            "region": region, "path": pc["role"], "aac_id": pc.get("aac_id"), "conditions": ["hypertension"], "medicines": [], "likes": [],
+            "usual_checkin_time": "08:00", "consent": consent, "hidden_suggestions": [],
+        })
+    elif pc.get("aac_id"):
+        # An existing senior with no centre yet picks up the AAC worker's centre.
+        s = store.get("senior", sid)
+        if not s.get("aac_id"):
+            s["aac_id"] = pc["aac_id"]
+            store.put("senior", s)
+    # Don't create a duplicate link: if this caregiver is already linked to this senior, reuse it.
+    existing = next((c for c in store.list("contact", senior_id=sid) if c.get("caregiver_id") == cg["id"]), None)
+    if existing:
+        cid = existing["id"]
+    else:
+        cid = pc["contact_id"]
+        is_primary = not any(c.get("primary") for c in store.list("contact", senior_id=sid))
+        if is_primary:
+            # Only the primary (first) link updates the senior's default consent.
+            s = store.get("senior", sid)
+            s["consent"] = consent
+            store.put("senior", s)
+        store.put("contact", {"id": cid, "caregiver_id": cg["id"], "senior_id": sid, "role": pc["role"], "primary": is_primary,
+                              "name": cg["name"], "language": cg["language"], "worker_id": cg.get("worker_id"), "consent": consent})
     store.put("paircode", {**pc, "used": True})
-    return {"senior_id": sid, "contact_name": pc["contact_name"], "contact_id": pc["contact_id"]}
+    return {"senior_id": sid, "contact_name": cg["name"], "contact_id": cid}
 
 
 # --- caregiver app -------------------------------------------------------------------------
 
+@app.get("/care/caregiver/{caregiver_id}")
+def caregiver_view(caregiver_id: str):
+    """A caregiver's linked seniors. Used by the switcher when one caregiver looks after several seniors."""
+    cg = store.get("caregiver", caregiver_id)
+    if cg is None:
+        raise HTTPException(404, f"no caregiver {caregiver_id}")
+    seniors = []
+    for c in store.list("contact"):
+        if c.get("caregiver_id") != caregiver_id:
+            continue
+        s = store.get("senior", c["senior_id"])
+        if s is None:
+            continue
+        t = today()
+        duty = on_duty(store, s, t)
+        seniors.append({
+            "contact_id": c["id"], "senior_id": s["id"], "senior_name": s["name"],
+            "primary": c.get("primary", False), "status": _status(s["id"], t),
+            "on_duty": duty is not None and duty.get("id") == c["id"],
+        })
+    seniors.sort(key=lambda r: r["senior_name"])
+    return {"caregiver": {"id": cg["id"], "name": cg["name"], "language": cg["language"], "role": cg["role"]},
+            "seniors": seniors}
+
+
+@app.post("/care/contact/{contact_id}/primary")
+def set_primary(contact_id: str):
+    """Set this contact as the primary for its senior. Any other primary is cleared."""
+    c = store.get("contact", contact_id)
+    if c is None:
+        raise HTTPException(404, contact_id)
+    for other in store.list("contact", senior_id=c["senior_id"]):
+        other["primary"] = (other["id"] == contact_id)
+        store.put("contact", other)
+    return store.get("contact", contact_id)
+
+
+class RotaIn(BaseModel):
+    mode: Literal["weekly", "daily"] = "weekly"
+    start_date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    order: list[str] = []
+
+
+class SwapIn(BaseModel):
+    date: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    contact_id: str
+
+
+def _validate_rota_order(order: list[str], senior: dict) -> None:
+    """Every contact in the order must be a family contact linked to this senior; no duplicates."""
+    valid_ids = {c["id"] for c in store.list("contact", senior_id=senior["id"]) if c.get("role") == "family"}
+    seen = set()
+    for cid in order:
+        if cid not in valid_ids:
+            raise HTTPException(400, f"contact {cid} is not a family contact linked to this senior")
+        if cid in seen:
+            raise HTTPException(400, f"contact {cid} appears more than once in the rota order")
+        seen.add(cid)
+
+
+@app.get("/senior/{sid}/rota")
+def get_rota(sid: str):
+    senior = senior_or_404(sid)
+    t = today()
+    duty = on_duty(store, senior, t)
+    rota = store.get("rota", f"rota-{sid}")
+    return {"rota": rota, "on_duty": ({"id": duty["id"], "name": duty["name"]} if duty else None)}
+
+
+@app.put("/senior/{sid}/rota")
+def put_rota(sid: str, body: RotaIn):
+    senior = senior_or_404(sid)
+    _validate_rota_order(body.order, senior)
+    rota = {
+        "id": f"rota-{sid}", "senior_id": sid, "mode": body.mode,
+        "start_date": body.start_date, "order": body.order, "swaps": [],
+    }
+    store.put("rota", rota)
+    t = today()
+    duty = on_duty(store, senior, t)
+    return {"rota": rota, "on_duty": ({"id": duty["id"], "name": duty["name"]} if duty else None)}
+
+
+@app.post("/senior/{sid}/rota/swap")
+def swap_rota(sid: str, body: SwapIn):
+    senior = senior_or_404(sid)
+    rota = store.get("rota", f"rota-{sid}")
+    if rota is None:
+        raise HTTPException(404, "no rota for this senior")
+    _validate_rota_order([body.contact_id], senior)
+    swaps = [s for s in rota.get("swaps", []) if s["date"] != body.date]
+    swaps.append({"date": body.date, "contact_id": body.contact_id})
+    rota["swaps"] = swaps
+    store.put("rota", rota)
+    return rota
+
+
+@app.delete("/senior/{sid}/rota")
+def delete_rota(sid: str):
+    senior = senior_or_404(sid)
+    store.delete("rota", f"rota-{sid}")
+    return {"rota": None, "on_duty": None}
+
+
 @app.post("/care/pair-code")
 def pair_code(body: PairCodeIn):
-    """The caregiver app makes a code; the senior app redeems it at POST /pair."""
+    """The caregiver app makes a code; the senior app redeems it at POST /pair.
+    The code is tied to a caregiver. If caregiver_id is given, reuse it; else create a new caregiver.
+    The code is tied to a senior. If senior_id is given, link to that existing senior; else the senior
+    is created from senior_name + home_postal when the senior app redeems the code."""
+    if body.caregiver_id:
+        cg = store.get("caregiver", body.caregiver_id)
+        if cg is None:
+            raise HTTPException(404, f"no caregiver {body.caregiver_id}")
+    else:
+        n = random.randrange(10**6)
+        cg_id = f"cg-{n:06d}"
+        cg = {"id": cg_id, "name": body.contact_name, "language": body.language, "role": body.role,
+              "worker_id": body.worker_id}
+        store.put("caregiver", cg)
     for _ in range(20):
         code = f"{random.randrange(10**6):06d}"
         if store.get("paircode", code) is None:
             break
     n = random.randrange(10**6)
-    pc = {"id": code, "senior_id": f"sen-{n:06d}", "contact_id": f"con-{n:06d}", "contact_name": body.contact_name,
-          "role": body.role, "language": body.language, "senior_name": body.senior_name, "home_postal": body.home_postal,
-          "worker_id": body.worker_id, "used": False}
+    # If linking to an existing senior, reuse its id (the senior's postal/region/etc. are already on file);
+    # otherwise mint a fresh placeholder id that /pair will turn into a real senior on redemption.
+    if body.senior_id:
+        if store.get("senior", body.senior_id) is None:
+            raise HTTPException(404, f"no senior {body.senior_id}")
+        sid = body.senior_id
+        home_postal = store.get("senior", sid)["home_postal"]
+        senior_name = store.get("senior", sid)["name"]
+    else:
+        sid = f"sen-{n:06d}"
+        home_postal = body.home_postal
+        senior_name = body.senior_name
+    cid = f"con-{n:06d}"
+    aac_id = _centre_for(cg, body.aac_id) if body.role == "aac" else None
+    pc = {"id": code, "caregiver_id": cg["id"], "senior_id": sid, "contact_id": cid,
+          "contact_name": cg["name"], "role": body.role, "language": cg["language"],
+          "senior_name": senior_name, "home_postal": home_postal,
+          "worker_id": cg.get("worker_id"), "aac_id": aac_id, "used": False}
     store.put("paircode", pc)
-    return {"code": code, "senior_id": pc["senior_id"], "contact_id": pc["contact_id"]}
+    return {"code": code, "caregiver_id": cg["id"], "senior_id": sid, "contact_id": cid}
 
 
-def _week(sid: str, senior: dict, end: date) -> dict:
+def _centre_for(cg: dict, aac_id: Optional[str]) -> Optional[str]:
+    """The AAC a new senior belongs to. An explicit aac_id must be a real place.
+    Otherwise use the centre most of this worker's seniors already belong to (None if they have none)."""
+    if aac_id:
+        if place(aac_id) is None:
+            raise HTTPException(400, f"unknown AAC {aac_id}")
+        return aac_id
+    counts: dict[str, int] = {}
+    for c in store.list("contact"):
+        if c.get("role") != "aac" or c.get("caregiver_id") != cg["id"]:
+            continue
+        a = (store.get("senior", c["senior_id"]) or {}).get("aac_id")
+        if a:
+            counts[a] = counts.get(a, 0) + 1
+    return max(sorted(counts), key=counts.get) if counts else None
+
+
+def _week(sid: str, senior: dict, end: date, sees: str = "digest") -> dict:
     """The numbers behind the weekly digest. The words are written by write() from these."""
     start = end - timedelta(6)
     days = build(store, senior, end, days=60)
@@ -295,7 +479,6 @@ def _week(sid: str, senior: dict, end: date) -> dict:
     dia = [x.dia for x in week if x.dia is not None]
     decisions = store.list("decision", senior_id=sid, day_from=start.isoformat(), day_to=end.isoformat())
     worst = max((d["rung"] for d in decisions), key=SEVERITY.get, default="0")
-    sees = (senior.get("consent") or {}).get("family_sees", "digest")
     bpb = bp_baseline(days, end)
     return {
         "week_start": start.isoformat(), "week_end": end.isoformat(),
@@ -326,17 +509,21 @@ def family_view(contact_id: str):
     if c is None or c["role"] != "family":
         raise HTTPException(404, contact_id)
     senior = senior_or_404(c["senior_id"])
-    sees = (senior.get("consent") or {}).get("family_sees", "digest")
+    consent = c.get("consent") or senior.get("consent") or {}
+    sees = consent.get("family_sees", "digest")
     t = today()
     handovers = [h for h in store.list("handover", senior_id=senior["id"])
                  if h["status"] == "open" or (t - date.fromisoformat(h["opened_at"][:10])).days <= 14]
     red = [m for m in store.list("message", senior_id=senior["id"], day_from=(t - timedelta(2)).isoformat())
            if m["rung"] == "R" and m["to"] == "family"]
     others = [o for o in contacts_for(store, senior) if o["id"] != contact_id]
+    duty = on_duty(store, senior, t)
     return {
         "contact": c, "senior": {"id": senior["id"], "name": senior["name"], "language": senior["language"]},
         "family_sees": sees, "today": t.isoformat(), "status": _status(senior["id"], t),
-        "digest": _week(senior["id"], senior, t) if sees != "nothing" else None,
+        "on_duty": duty is not None and duty.get("id") == contact_id,
+        "on_duty_name": (duty or {}).get("name"),
+        "digest": _week(senior["id"], senior, t, sees) if sees != "nothing" else None,
         "handovers": [{**h, "claimed_by_name": (store.get("contact", h["claimed_by"]) or {}).get("name") if h["claimed_by"] else None}
                       for h in reversed(handovers)],
         "red_flags": red, "other_contacts": [{"id": o["id"], "name": o["name"]} for o in others],
@@ -345,11 +532,14 @@ def family_view(contact_id: str):
 
 @app.get("/care/aac/{worker_id}/caseload")
 def caseload(worker_id: str):
-    """Every enrolled senior, sorted by who needs a look today. Quiet rows for quiet seniors."""
+    """Every enrolled senior, sorted by who needs a look today. Quiet rows for quiet seniors.
+    worker_id may be a caregiver_id (new) or the legacy worker_id (denormalized on the contact)."""
     t = today()
     rows = []
     for c in store.list("contact"):
-        if c.get("role") != "aac" or c.get("worker_id") != worker_id:
+        if c.get("role") != "aac":
+            continue
+        if c.get("caregiver_id") != worker_id and c.get("worker_id") != worker_id:
             continue
         s = store.get("senior", c["senior_id"])
         if s is None:
@@ -450,12 +640,13 @@ def decision_log(sid: str, days: int = 14, contact: Optional[str] = None):
     senior = senior_or_404(sid)
     days = max(1, min(days, 60))
     family = False
+    consent = senior.get("consent") or {}
     if contact is not None:
         c = store.get("contact", contact)
         if c is None or c["senior_id"] != sid:
             raise HTTPException(403, "not a contact for this senior")
         family = c["role"] == "family"
-    consent = senior.get("consent") or {}
+        consent = c.get("consent") or consent
     sees = consent.get("family_sees", "digest") if family else "readings"
     words_ok = consent.get("share_words", False) if family else True
     activity_ok = consent.get("share_activity", True) if family else True
@@ -498,12 +689,13 @@ def _viewer(sid: str, contact: Optional[str]) -> tuple[dict, bool, dict]:
     """The senior, whether a family member is asking, and what they may see (consent applies to family only)."""
     senior = senior_or_404(sid)
     family = False
+    consent = senior.get("consent") or {}
     if contact is not None:
         c = store.get("contact", contact)
         if c is None or c["senior_id"] != sid:
             raise HTTPException(403, "not a contact for this senior")
         family = c["role"] == "family"
-    consent = senior.get("consent") or {}
+        consent = c.get("consent") or consent
     return senior, family, {
         "sees": consent.get("family_sees", "digest") if family else "readings",
         "activity": consent.get("share_activity", True) if family else True,
@@ -627,3 +819,70 @@ def demo_advance(days: int = Body(1, embed=True, ge=1, le=60)):
 def demo_reset():
     demo.seed(store)
     return {"today": today().isoformat()}
+
+
+# --- vent space: anonymous room for caregivers to let off steam ----------------------------
+# No caregiver id or senior id is ever saved with a post. Sensitive numbers are stripped.
+
+_PATTERNS = [
+    re.compile(r"(?:\+65[\s-]?)?[89]\d{3}[\s-]?\d{4}"),   # SG phone: 8 or 9 + 7 digits
+    re.compile(r"\b[STFGstfg]\d{7}[A-Za-z]\b"),            # NRIC / FIN
+    re.compile(r"\b\d{6}\b"),                                # 6-digit postal code
+]
+
+
+def _strip_sensitive(text: str) -> str:
+    """Strip phone numbers, NRIC-style numbers and 6-digit postal codes."""
+    for pat in _PATTERNS:
+        text = pat.sub("[removed]", text)
+    return text
+
+
+class VentIn(BaseModel):
+    nickname: str = Field(min_length=1, max_length=40)
+    text: str = Field(min_length=1, max_length=1000)
+
+
+@app.get("/vent")
+def vent_feed():
+    """Latest 100 visible posts, newest first. Posts older than 7 days are not returned."""
+    cutoff = (now() - timedelta(days=7)).isoformat()
+    posts = [p for p in store.list("ventpost") if not p.get("hidden") and p["time"] >= cutoff]
+    posts.sort(key=lambda p: p["time"], reverse=True)
+    return posts[:100]
+
+
+@app.post("/vent")
+def vent_post(body: VentIn):
+    """Post anonymously. Phone numbers, NRIC and postal codes are stripped."""
+    pid = f"vp-{random.randrange(10**10):010d}"
+    post = {
+        "id": pid,
+        "nickname": body.nickname.strip(),
+        "text": _strip_sensitive(body.text.strip()),
+        "time": now().isoformat(),
+        "hugs": 0,
+        "hidden": False,
+    }
+    store.put("ventpost", post)
+    return post
+
+
+@app.post("/vent/{post_id}/hug")
+def vent_hug(post_id: str):
+    p = store.get("ventpost", post_id)
+    if p is None:
+        raise HTTPException(404, "post not found")
+    p["hugs"] = p.get("hugs", 0) + 1
+    store.put("ventpost", p)
+    return p
+
+
+@app.post("/vent/{post_id}/report")
+def vent_report(post_id: str):
+    p = store.get("ventpost", post_id)
+    if p is None:
+        raise HTTPException(404, "post not found")
+    p["hidden"] = True
+    store.put("ventpost", p)
+    return {"id": post_id, "hidden": True}
