@@ -19,6 +19,13 @@ and when it wakes the demo starts again from 24 Oct.
 
 **How it's built:** [architecture, trust boundaries and design trade-offs](docs/architecture.md).
 
+### How CareLoop uses AI
+
+- **Reading check-ins.** Rules read every check-in first, in English, Singlish and Mandarin (BP, doses, symptoms, red flags). Tencent Hunyuan then adds what rules miss: a symptom said in a roundabout way, the mood, an English gloss. It can add meaning but never remove a finding or invent a number.
+- **Writing messages.** Hunyuan drafts each message in the senior's language and tone, inside the step the rules already chose. Every draft passes a guardrail (no diagnosis, no dose change, no stopping a medicine, no calm words on a red flag), or a fixed template goes out.
+- **Never deciding.** Rules decide when to step in and who to tell, from the senior's own baseline, so every decision is explainable and tested. Without a model key CareLoop still works, on rules and templates.
+- Patterns, the GP brief, medicine notes and the staying-well checklist are rules and statistics, so every line traces back to the data.
+
 ## The interfaces
 
 One web build, three apps, one backend. A check-in on the senior app shows up in the family app and the centre console.
@@ -45,7 +52,7 @@ A web page can't read either store, so this needs a small CareLoop phone app tha
 
 ### Medicines and staying well
 
-- **What each medicine is for**, in plain English or Mandarin: what it does, how it helps, what to look out for. From a fixed, reviewed table, not a model, and never advice: it never says to change, skip or stop a dose. A medicine CareLoop doesn't know (Mr Chandran's Zanidip in the demo) is never guessed at: it says so and points to the pharmacist.
+- **What each medicine is for**, in plain English or Mandarin: what it does, how it helps, what to look out for. From a fixed table, not a model, and never advice: it never says to change, skip or stop a dose. A medicine CareLoop doesn't know (Mr Chandran's Zanidip in the demo) is never guessed at: it says so and points to the pharmacist.
 - **Vaccines, screenings and check-ups** that apply to them (flu, pneumococcal, COVID-19, Screen for Life, BP and kidney checks, diabetes eye and foot checks when they have diabetes), with what's due. The family ticks them off; due ones print on the GP brief.
 - In the senior app ("My medicines and check-ups"), the family Plan tab and the centre console. Wording is a PLACEHOLDER until the medical student or a pharmacist checks it.
 
@@ -121,14 +128,16 @@ backend/
   engine/      trust check, baseline, context, rules, ladder, decision log   (Vibu)
   env/         data.gov.sg PSI + rainfall, with offline fixtures            (Vibu)
   synth/       persona generator, tuning set, frozen held-out set          (Vibu)
-  language/    transcription, extraction, writer, guardrail                 (Mingyu)
-  reports/     GP brief PDF, insights (patterns), activities nearby         (Nathan)
-  api/         HTTP endpoints                                               (Vibu)
+  language/    transcription, extraction, writer, guardrail, model chain    (Mingyu)
+  reports/     GP brief PDF, patterns, activities, timetable import,
+               medicines explained, staying well                            (Nathan)
+  healthsync/  Apple Health / Health Connect records -> readings; phone simulator (Nathan)
+  api/         HTTP endpoints, demo seed; serve.py for the deploy            (Vibu; serve.py Nathan)
 web/           React + Vite, one build: / home, /senior, /care
   shared/      design tokens, API client, i18n strings   (Nathan tokens, Mingyu i18n)
   senior/      the /senior app                           (Mingyu)
   care/        /care chooser, family app, centre console (Nathan)
-docs/          evaluation, build log, user research, Tencent tools log, screenshots
+docs/          architecture, evaluation, build log, user research, Tencent tools log, screenshots
 ```
 
 ## Run it
@@ -183,10 +192,10 @@ cd web && npx vite build --mode live && npm run preview -- --port 4173     # the
 Offline, with no keys and no network.
 
 ```
-for s in language engine api synth reports; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
+for s in language engine api synth reports healthsync; do .venv/Scripts/python -m unittest discover -s backend/$s/tests -t .; done
 python -m backend.synth.evaluate --heldout     # docs/evaluation.md; read docs/evaluation-notes.md too
 ```
 
 ## Real vs synthetic
 
-All senior data in this repo is synthetic. Clinical thresholds are placeholders until a clinician signs off.
+All senior data in this repo is synthetic. Clinical thresholds, the red-flag wording, the medicine notes and the check-up intervals are placeholders until a clinician signs off.
