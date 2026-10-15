@@ -2,6 +2,16 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: medicines explained, staying well
+
+- **Medicine explainer** (`backend/reports/medicines.py`, Nathan). What each medicine is for, how it helps and what to look out for, English and Mandarin, for 17 common BP, diabetes, cholesterol and aspirin medicines (generic names and brands). Fixed text, not a model; dose and timing only from the senior's label. Unknown names are never matched loosely: "CareLoop isn't able to identify this medicine. Please check with your pharmacist." A test runs every note through the guardrail's diagnosis, dose-change and stop-medicine patterns (it caught 剂量 in the aspirin note).
+- **Staying well** (`backend/reports/prevention.py`). Vaccines (MOH NAIS 1 Apr 2026; COVID-19 2025/26 advice), Screen for Life screenings, and check-ups (BP review, kidney, medicine review, diabetes eye and foot) by conditions and medicines, with due, done, booked or not recorded. Dates live in `carenotes.prevention` (new optional field; PUT checks known ids and past dates). Due items print on the GP brief. Age and sex aren't stored, so items are for adults 65+ and sex-specific screenings are left out.
+- **Endpoints** (need the team's OK): `GET /senior/{id}/medicines`, `GET /senior/{id}/prevention`.
+- **Web:** senior app "My medicines and check-ups" screen (Mingyu's slice; strings added to `i18n.ts` in English and Chinese); medicine notes and a "Staying well" checklist in the family Plan tab and centre console.
+- **Demo:** medicines vary now (telmisartan and atorvastatin, metformin, losartan and aspirin, bisoprolol and a water pill), and Mr Chandran's "Zanidip" shows the unknown-medicine message. Mr Tan's flu vaccine is due.
+- **Fix:** the demo's "Sync now" re-split a partial step total across the day, so a second sync at midday changed the total (a test caught it only after 7am). Each demo day now keeps one planned total; `test_demo_phone_through_the_day` uses fixed times.
+- **Needs sign-off:** every medicine note and the check-up intervals (marked PLACEHOLDER), by the medical student or a pharmacist.
+
 ## 15 Oct 2026: hosted at https://careloop-sg.onrender.com
 
 - One Render web service (Singapore, free plan, auto-deploys `main`) runs `backend/api/serve.py` (new; Nathan): the API under `/api`, `web/dist` everywhere else. One HTTPS origin for phones, so installing the app and hold-to-talk can work there. The API moved under `/api` because page paths like `/care/family/health` look like API paths like `/care/family/{contact}`. Tests: `backend/api/tests/test_serve.py`.
@@ -68,6 +78,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - WorkBuddy for the weekly digest and GP brief if it fits.
    - Miora for design.
 3. **Clinical sign-off** by the medical student (by Thu):
+   - The medicine notes (`backend/reports/medicines.py`) and the check-up intervals in `backend/reports/prevention.py`.
    - The red-flag floors in `thresholds.json`.
    - The red-flag message wording in `backend/language/templates.py`.
    - The double-dose rule.

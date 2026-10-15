@@ -78,6 +78,18 @@ DEVICES = {
     "chandran": ("health_connect", ("fitbit", "omron"), 74),
 }
 
+# Medicines and conditions. Everyone else takes amlodipine only. Mr Chandran's Zanidip is a brand CareLoop's
+# medicine notes don't list, to show it saying so instead of guessing.
+_AMLO = ("amlodipine", "5 mg once a day", ["morning"], True)
+MEDS = {
+    "kaur": [("telmisartan", "40 mg once a day", ["morning"], True), ("atorvastatin", "20 mg once a day", ["night"], False)],
+    "rahman": [("amlodipine", "10 mg once a day", ["morning"], True), ("metformin", "500 mg twice a day, with meals", ["morning", "evening"], False)],
+    "chua": [("losartan", "50 mg once a day", ["morning"], True), ("aspirin (low dose)", "100 mg once a day, after food", ["morning"], False)],
+    "lim": [("bisoprolol", "2.5 mg once a day", ["morning"], True), ("hydrochlorothiazide", "12.5 mg once a day", ["morning"], True)],
+    "chandran": [_AMLO, ("Zanidip", "10 mg once a day", ["morning"], True)],
+}
+CONDITIONS = {"kaur": ["hypertension", "high cholesterol"], "rahman": ["hypertension", "type 2 diabetes"]}
+
 TEXT = {
     "en": {"ok": "Feeling ok today.", "took": "Took my pills.", "social": "Went to the centre with friends.", "home": "Stayed home today.",
            "missed": "Didn't take my medicine today, forgot."},
@@ -101,12 +113,22 @@ def _phone(store, sid: str, d: date, *, steps: int | None, bp: list[tuple[str, i
     return ingest(store, sid, platform, records, now=upto or datetime.combine(d, time(22, 30), SGT))
 
 
+def _steps_plan(store, sid: str, d: date, steps: int | None = None) -> int:
+    """The day's whole step total in the demo. Every sync of that day replays the same hourly blocks from it,
+    so a second sync sends the same records, and the total only grows as the hours pass."""
+    key = f"demo-steps-plan:{sid}:{d}"
+    if steps is None:
+        v = store.setting(key)
+        steps = int(v) if v else next(s[9] for s in SENIORS if s[0] == sid)
+    store.set_setting(key, str(steps))
+    return steps
+
+
 def phone_sync(store, sid: str, now: datetime, bp: tuple[int, int] | None = None) -> dict | None:
     """For the demo's "sync now": what the phone has for today so far, plus a cuff measurement if given."""
     if sid not in DEVICES:
         return None
-    done = store.get("reading", f"hs-{sid}-steps-{now.date()}")
-    steps = done["values"]["count"] if done else next(s[9] for s in SENIORS if s[0] == sid)
+    steps = _steps_plan(store, sid, now.date())
     cuff = [(now.strftime("%H:%M"), bp[0], bp[1])] if bp else []
     return _phone(store, sid, now.date(), steps=steps, bp=cuff, upto=now)
 
@@ -130,6 +152,8 @@ def _day_data(store, sid: str, d: date, *, lang: str, base: tuple[int, int], ste
              "values": {"systolic": bp[0], "diastolic": bp[1], "pulse": bp[2]}}
         store.put("reading", {**r, "trust": trust_check(r)})
     if device:
+        if not no_steps:
+            _steps_plan(store, sid, d, count)
         _phone(store, sid, d, steps=None if no_steps else count, bp=[("08:05", bp[0], bp[1])] if bp and cuff else [])
     elif not no_steps:
         r = {"id": f"{sid}-steps-{d}", "senior_id": sid, "time": t("21:00"), "kind": "steps", "source": "synthetic", "confidence": 1,
@@ -161,8 +185,9 @@ def seed(store, *, days: int = 40) -> None:
     for sid, name, lang, postal, region, path, aac, likes, base, steps in SENIORS:
         store.put("senior", {
             "id": sid, "name": name, "language": lang, "home_postal": postal, "region": region, "path": path, "aac_id": aac,
-            "conditions": ["hypertension"],
-            "medicines": [{"name": "amlodipine", "dose_text": "5 mg once a day", "schedule": ["morning"], "started": "2024-03-01", "for_bp": True}],
+            "conditions": CONDITIONS.get(sid, ["hypertension"]),
+            "medicines": [{"name": n, "dose_text": dose, "schedule": when, "started": "2024-03-01", "for_bp": bp}
+                          for n, dose, when, bp in MEDS.get(sid, [_AMLO])],
             "likes": likes, "usual_checkin_time": "08:00",
             "consent": CONSENT.get(sid, {"family_sees": "readings", "share_words": True, "share_activity": True}), "hidden_suggestions": [],
         })
@@ -207,6 +232,9 @@ def _seed_plans(store) -> None:
             {"id": "t-2", "title": "Buy new AA batteries for the BP monitor", "due": _day(12), "owner": "Wei Ling", "done": False, "done_by": None},
             {"id": "t-3", "title": "Put the emergency card on the fridge", "due": None, "owner": None, "done": True, "done_by": "Wei Ling"},
         ],
+        # Staying well: last done. The flu vaccine was a year ago, so it shows as due in the video.
+        "prevention": {"flu": "2025-10-04", "pneumococcal": "2024-11-12", "covid": "2025-11-20", "kidney": "2026-04-02",
+                       "healthier_sg": "2024-02-15"},
         "emergency": {"allergies": "Penicillin (rash)", "gp_name": "Dr Lim, Ang Mo Kio Family Clinic (demo)", "gp_phone": "6000 0000",
                       "home_address": "Blk 999 Ang Mo Kio Ave 9, #05-123 (demo address)",
                       "notes": "Lives alone on weekdays. Spare key with the neighbour at #05-125."},

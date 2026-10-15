@@ -287,3 +287,19 @@
 .tti-tags { display: block; font-size: 13px; color: var(--cl-accent); }
 .tti-warnings li { color: #8a5a00; font-size: 14px; }
 .tti-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Medicines explained and Staying well (CarePlan.tsx) */
+.med-for { display: block; margin-top: 4px; }
+.med-for.is-unknown { color: #8a5a00; }
+.med-more { margin-top: 4px; font-size: 14px; }
+.med-more summary { cursor: pointer; color: var(--cl-accent); }
+.med-more p, .med-more ul { margin: 6px 0; }
+.med-more ul { padding-left: 18px; }
+.plan-small { font-size: 12px; }
+.sw-status { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--cl-surface); color: var(--cl-muted); }
+.sw-status.is-due { background: #fdf0d8; color: #8a5a00; }
+.sw-status.is-done { background: #e6f2ea; color: #2f6b52; }
+.sw-status.is-booked { background: var(--cl-accent-soft); color: var(--cl-accent); }
+.sw-why, .sw-where { display: block; }
+.sw-where { font-size: 13px; }
+.sw-mark { width: auto; white-space: nowrap; padding-left: 14px; padding-right: 14px; }

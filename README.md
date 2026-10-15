@@ -41,6 +41,12 @@ A web page can't read either store, so this needs a small CareLoop phone app tha
 
 <img src="docs/screenshots/family-health-apps.png" alt="Health apps card: Fitbit and OMRON through Health Connect, last 7 days" width="300">
 
+### Medicines and staying well
+
+- **What each medicine is for**, in plain English or Mandarin: what it does, how it helps, what to look out for. From a fixed, reviewed table, not a model, and never advice: it never says to change, skip or stop a dose. A medicine CareLoop doesn't know (Mr Chandran's Zanidip in the demo) is never guessed at: it says so and points to the pharmacist.
+- **Vaccines, screenings and check-ups** that apply to them (flu, pneumococcal, COVID-19, Screen for Life, BP and kidney checks, diabetes eye and foot checks when they have diabetes), with what's due. The family ticks them off; due ones print on the GP brief.
+- In the senior app ("My medicines and check-ups"), the family Plan tab and the centre console. Wording is a PLACEHOLDER until the medical student or a pharmacist checks it.
+
 ### Activities
 
 - **Suggested automatically, every day.** The senior app shows up to three options each day: programmes at their own centre that match what they like, then the nearest community club. On rainy or hazy days only indoor ones. On a low day (moving less, seeing no one) CareLoop also nudges with the best one. "Not for me" is remembered.

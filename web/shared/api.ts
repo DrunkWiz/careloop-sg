@@ -10,6 +10,8 @@ import type {
   Handover,
   HealthSyncResult,
   HealthSyncView,
+  MedicinesView,
+  PreventionView,
   ProgrammeFeed,
   TimetableImport,
   LogDay,
@@ -156,4 +158,16 @@ export async function getProgrammeFeed(aacId: string): Promise<ProgrammeFeed | n
 
 export function stopProgrammeFeed(aacId: string): Promise<null> {
   return http(`/aac/${aacId}/programmes/feed`, { method: 'DELETE' });
+}
+
+// Added endpoints (need team OK): what each medicine is for, and vaccines and check-ups that are due.
+const q = (contactId?: string, lang?: string) =>
+  [contactId && `contact=${encodeURIComponent(contactId)}`, lang && `lang=${lang}`].filter(Boolean).join('&');
+
+export function getMedicines(seniorId: string, contactId?: string, lang = 'en'): Promise<MedicinesView> {
+  return BASE ? http(`/senior/${seniorId}/medicines?${q(contactId, lang)}`) : mock.getMedicines();
+}
+
+export function getPrevention(seniorId: string, contactId?: string, lang = 'en'): Promise<PreventionView> {
+  return BASE ? http(`/senior/${seniorId}/prevention?${q(contactId, lang)}`) : mock.getPrevention();
 }

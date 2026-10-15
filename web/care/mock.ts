@@ -281,3 +281,27 @@ export function getHealthSync(seniorId: string, days = 7): Promise<import('../sh
     days: rows, shares_readings: true, shares_activity: true,
   });
 }
+
+// Mr Tan's medicine notes and staying-well list, as the API gives them (synthetic; offline mocks only).
+export function getMedicines(): Promise<import('../shared/contract').MedicinesView> {
+  return delay({
+    medicines: [{ name: 'amlodipine', dose_text: '5 mg once a day', when: ['in the morning'], for_bp: true, known: true, generic: 'amlodipine', group: 'BP',
+      what_for: 'Lowers blood pressure.', how_it_helps: 'It relaxes the blood vessels so blood flows more easily.',
+      look_out_for: ['Swollen ankles can happen. Tell your doctor if they bother you.', 'Some people feel flushed or get a headache at first.'] }],
+    always: 'Take it as on your label, even on days you feel well. If anything on this page worries you, ask your pharmacist or doctor.',
+    note: 'Plain-language notes for the demo, from standard patient-leaflet wording. PLACEHOLDER until a pharmacist or the medical student checks them.',
+  });
+}
+
+export function getPrevention(): Promise<import('../shared/contract').PreventionView> {
+  const item = (id: string, title: string, why: string, where: string, status: 'due' | 'done' | 'not_recorded' | 'booked', status_text: string, last_done: string | null, next_due: string | null) =>
+    ({ id, title, why, where, every_days: 365, last_done, next_due, status, status_text, placeholder: false });
+  return delay({
+    items: [
+      item('flu', 'Flu vaccine', "Flu is more serious for older adults. The vaccine changes each year, so it's once a year.", 'Polyclinic, a CHAS or Healthier SG clinic, or some pharmacies', 'due', 'Due', '2025-10-04', '2026-10-04'),
+      item('fit', 'Bowel cancer screening (FIT kit)', 'A simple stool test done at home, once a year from 50.', 'Collect a kit at a Healthier SG clinic', 'not_recorded', 'Not recorded yet', null, null),
+      item('pneumococcal', 'Pneumococcal vaccine', 'Protects against a common cause of pneumonia. Recommended once from 65.', 'Polyclinic or a CHAS or Healthier SG clinic', 'done', 'Done', '2024-11-12', null),
+    ],
+    note: 'For adults 65 and over with high blood pressure. Vaccines from MOH\'s adult immunisation schedule; screenings from Screen for Life.',
+  });
+}

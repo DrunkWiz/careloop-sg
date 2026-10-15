@@ -482,6 +482,14 @@ def stop_programme_feed(aac_id: str):
     return None
 
 
+def _prevention_due(senior: dict, t: date) -> list[str]:
+    """Vaccines and check-ups that are due or not recorded, for the GP brief (English: it's for the doctor)."""
+    from backend.reports.prevention import checklist
+
+    items = checklist(senior, t, store.get("carenotes", f"notes-{senior['id']}"), "en")["items"]
+    return [f"{i['title']} ({i['status_text'].lower()})" for i in items if i["status"] in ("due", "not_recorded")]
+
+
 @app.get("/senior/{sid}/brief.json")
 def brief_data(sid: str, days: int = 90):
     """Everything the one-page GP brief needs. Every line traces to the decision log."""
@@ -517,6 +525,7 @@ def brief_data(sid: str, days: int = 90):
         "family_questions": [q["text"] for q in (store.get("carenotes", f"notes-{sid}") or {}).get("questions", []) if not q.get("asked")],
         "next_appointment": next((a for a in sorted((store.get("carenotes", f"notes-{sid}") or {}).get("appointments", []), key=lambda a: a["date"])
                                   if a["date"] >= t.isoformat()), None),
+        "prevention_due": _prevention_due(senior, t),
         "note": "Generated from the CareLoop decision log. Not connected to any clinic system. Synthetic data in the demo.",
     }
 
@@ -663,6 +672,8 @@ class CareNotes(BaseModel):
     questions: list[Question] = Field(default_factory=list, max_length=50)
     tasks: list[Task] = Field(default_factory=list, max_length=100)
     emergency: Emergency = Field(default_factory=Emergency)
+    # Staying well: when each vaccine, screening or check-up was last done (backend/reports/prevention.py ids).
+    prevention: dict[str, str] = Field(default_factory=dict, max_length=30)
 
 
 def _linked_contact(sid: str, contact: Optional[str]) -> dict:
@@ -684,11 +695,45 @@ def get_care_notes(sid: str, contact: Optional[str] = None):
 
 @app.put("/senior/{sid}/care-notes")
 def put_care_notes(sid: str, body: CareNotes, contact: Optional[str] = None):
+    from backend.reports.prevention import ITEMS
+
     senior_or_404(sid)
     c = _linked_contact(sid, contact)
+    known = {i[0] for i in ITEMS}
+    for k, v in body.prevention.items():
+        try:
+            ok = k in known and date.fromisoformat(v) <= today()
+        except ValueError:
+            ok = False
+        if not ok:
+            raise HTTPException(400, f"prevention: {k} needs a known item and a past date")
     doc = {"id": f"notes-{sid}", "senior_id": sid, **body.model_dump(), "updated_by": c["name"], "updated_at": now().isoformat()}
     store.put("carenotes", doc)
     return doc
+
+
+# --- Medicines explained, and staying well (added: Nathan, needs team OK) ------------------------
+# Fixed, plain-language text (backend/reports/medicines.py, prevention.py), not a model. A medicine CareLoop
+# doesn't know is never guessed at: it says so and points to the pharmacist.
+
+@app.get("/senior/{sid}/medicines")
+def senior_medicines(sid: str, lang: Optional[Lang] = None, contact: Optional[str] = None):
+    from backend.reports.medicines import explain_all
+
+    senior, family, see = _viewer(sid, contact)
+    if see["sees"] == "nothing":
+        raise HTTPException(403, "the senior shares only red flags")
+    return explain_all(senior, lang)
+
+
+@app.get("/senior/{sid}/prevention")
+def senior_prevention(sid: str, lang: Optional[Lang] = None, contact: Optional[str] = None):
+    from backend.reports.prevention import checklist
+
+    senior, family, see = _viewer(sid, contact)
+    if see["sees"] == "nothing":
+        raise HTTPException(403, "the senior shares only red flags")
+    return checklist(senior, today(), store.get("carenotes", f"notes-{sid}"), lang)
 
 
 @app.get("/senior/{sid}/brief.pdf")

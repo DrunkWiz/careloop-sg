@@ -1,9 +1,10 @@
 // Care plan: what the family (or centre) keeps together for one senior. Shared with every linked contact.
 // Appointments, questions for the doctor (they go onto the GP brief), to-dos with an owner each, the senior's
-// medicines and refill reports, and an emergency card. None of it changes what CareLoop's rules decide.
+// medicines (what each is for) and refill reports, vaccines and check-ups due, and an emergency card.
+// None of it changes what CareLoop's rules decide.
 import { useCallback, useEffect, useState } from 'react';
-import type { Appointment, CareNotes, Task } from '../shared/contract';
-import { briefPdfUrl, getCareNotes, putCareNotes } from '../shared/api';
+import type { Appointment, CareNotes, MedicinesView, PreventionView, Task } from '../shared/contract';
+import { briefPdfUrl, getCareNotes, getMedicines, getPrevention, putCareNotes } from '../shared/api';
 import { useInsights } from './Health';
 import { useRefreshTick } from './live';
 
@@ -60,7 +61,8 @@ export default function CarePlan({ seniorId, contactId, me, name, today }: Props
       <Appointments notes={notes} set={set} today={today} me={me} />
       <Questions notes={notes} set={set} me={me} seniorId={seniorId} />
       <Tasks notes={notes} set={set} me={me} today={today} />
-      <Medicines insights={insights ?? null} />
+      <StayingWell seniorId={seniorId} contactId={contactId} notes={notes} set={set} today={today} name={name} />
+      <Medicines seniorId={seniorId} contactId={contactId} insights={insights ?? null} />
       <EmergencyCard notes={notes} set={set} name={name} />
     </>
   );
@@ -269,35 +271,105 @@ function Tasks({ notes, set, me, today }: { notes: CareNotes; set: SetFn; me: st
   );
 }
 
-function Medicines({ insights }: { insights: ReturnType<typeof useInsights>['data'] | null }) {
-  if (!insights) return null;
-  const low = insights.running_low[insights.running_low.length - 1];
+function Medicines({ seniorId, contactId, insights }: { seniorId: string; contactId: string; insights: ReturnType<typeof useInsights>['data'] | null }) {
+  const [v, setV] = useState<MedicinesView | null>(null);
+  useEffect(() => {
+    getMedicines(seniorId, contactId).then(setV, () => setV(null));
+  }, [seniorId, contactId]);
+  const low = insights?.running_low[insights.running_low.length - 1];
   return (
     <section className="care-card">
       <h2>Medicines</h2>
-      {insights.medicines.length === 0 ? (
+      {!v ? (
+        <p className="care-muted">Loading…</p>
+      ) : v.medicines.length === 0 ? (
         <p className="care-muted">No medicines recorded yet. They're set up with the senior app.</p>
       ) : (
-        <ul className="plan-list">
-          {insights.medicines.map((m) => (
-            <li key={m.name}>
+        <ul className="plan-list med-list">
+          {v.medicines.map((m) => (
+            <li key={m.name} className="med-item">
               <span className="plan-q">
                 <strong>{m.name.charAt(0).toUpperCase() + m.name.slice(1)}</strong> · {m.dose_text}
-                <span className="care-muted"> · {m.schedule.join(', ')} · since {fmt(m.started)}</span>
+                <span className="care-muted"> · {m.when.join(', ')}</span>
+                <span className={`med-for ${m.known ? '' : 'is-unknown'}`}>{m.what_for}</span>
+                {m.known && (
+                  <details className="med-more">
+                    <summary>How it helps, and what to look out for</summary>
+                    {m.how_it_helps && <p>{m.how_it_helps}</p>}
+                    <ul>
+                      {m.look_out_for.map((x) => (
+                        <li key={x}>{x}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </span>
-              {m.for_bp && <span className="owner-chip">BP</span>}
+              {m.group && <span className="owner-chip">{m.group}</span>}
             </li>
           ))}
         </ul>
       )}
+      {v && v.medicines.length > 0 && <p className="care-muted">{v.always}</p>}
       {low && (
         <p className="care-notice">
           Said a medicine was running low on {fmt(low.date)}. Check the refill is collected (add a to-do above).
         </p>
       )}
-      <p className="care-muted">
-        Taken on {insights.adherence.taken_days} of {insights.adherence.reported_days} reported days. Doses are as on the label; CareLoop never changes them.
-      </p>
+      {insights && (
+        <p className="care-muted">
+          Taken on {insights.adherence.taken_days} of {insights.adherence.reported_days} reported days. Doses are as on the label; CareLoop never changes them.
+        </p>
+      )}
+      {v && <p className="care-muted plan-small">{v.note}</p>}
+    </section>
+  );
+}
+
+function StayingWell({ seniorId, contactId, notes, set, today, name }: { seniorId: string; contactId: string; notes: CareNotes; set: SetFn; today: string; name: string }) {
+  const [v, setV] = useState<PreventionView | null>(null);
+  const done = notes.prevention ?? {};
+  const key = JSON.stringify(done) + notes.appointments.map((a) => a.date).join(',');
+  useEffect(() => {
+    getPrevention(seniorId, contactId).then(setV, () => setV(null));
+  }, [seniorId, contactId, key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!v) return null;
+  const due = v.items.filter((i) => i.status === 'due').length;
+  const mark = (id: string) => set({ prevention: { ...done, [id]: today } });
+  const undo = (id: string) => {
+    const next = { ...done };
+    delete next[id];
+    set({ prevention: next });
+  };
+  return (
+    <section className="care-card">
+      <div className="card-head">
+        <h2>Staying well</h2>
+        {due > 0 && <span className="care-pill">{due} due</span>}
+      </div>
+      <p className="care-muted">Vaccines, screenings and check-ups for {name}. Tick one off when it's done; due ones go on the GP brief.</p>
+      <ul className="plan-list sw-list">
+        {v.items.map((i) => (
+          <li key={i.id} className={`sw-item is-${i.status}`}>
+            <span className="plan-q">
+              <strong>{i.title}</strong> <span className={`sw-status is-${i.status}`}>{i.status_text}</span>
+              <span className="care-muted sw-why">{i.why}</span>
+              <span className="care-muted sw-where">
+                {i.where}
+                {i.last_done ? ` · last done ${fmt(i.last_done)}` : ''}
+                {i.status === 'booked' && i.next_due ? ` · visit on ${fmt(i.next_due)}` : ''}
+                {i.status === 'done' && i.next_due ? ` · next by ${fmt(i.next_due)}` : ''}
+                {i.placeholder ? ' · interval to be checked by a clinician' : ''}
+              </span>
+            </span>
+            {done[i.id] === today ? (
+              <button className="care-link" onClick={() => undo(i.id)}>Undo</button>
+            ) : i.status !== 'done' ? (
+              <button className="care-secondary sw-mark" onClick={() => mark(i.id)}>Done today</button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      <p className="care-muted plan-small">{v.note}</p>
     </section>
   );
 }

@@ -314,6 +314,7 @@ export interface CareNotes {
   questions: Question[];
   tasks: Task[];
   emergency: { allergies: string; gp_name: string; gp_phone: string; home_address: string; notes: string };
+  prevention?: Record<string, string>; // staying-well item id -> date last done
   updated_by?: string | null;
   updated_at?: string | null;
 }
@@ -368,4 +369,43 @@ export interface TimetableImport {
   warnings: string[];
   saved: boolean;
   feed: ProgrammeFeed | null;
+}
+
+// GET /senior/{id}/medicines (added: Nathan, needs team OK). Fixed plain-language notes, not a model.
+export interface MedicineNote {
+  name: string;
+  dose_text: string;
+  when: string[];
+  for_bp: boolean;
+  known: boolean;
+  generic: string | null;
+  group: string | null;
+  what_for: string;
+  how_it_helps: string | null;
+  look_out_for: string[];
+}
+
+export interface MedicinesView {
+  medicines: MedicineNote[];
+  always: string;
+  note: string;
+}
+
+// GET /senior/{id}/prevention (added: Nathan, needs team OK). Vaccines, screenings and check-ups.
+export interface PreventionItem {
+  id: string;
+  title: string;
+  why: string;
+  where: string;
+  every_days: number | null;
+  last_done: string | null;
+  next_due: string | null;
+  status: 'due' | 'done' | 'not_recorded' | 'booked';
+  status_text: string;
+  placeholder: boolean;
+}
+
+export interface PreventionView {
+  items: PreventionItem[];
+  note: string;
 }

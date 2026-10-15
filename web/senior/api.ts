@@ -2,7 +2,9 @@
 // in-browser mock (mock.ts) so the app works before the contract freezes and without a backend.
 import type { Lang } from '../shared/i18n';
 import type { CheckInResult, Consent, KnownFact, PairResult, ReadingResult, Today } from './types';
+import type { MedicinesView, PreventionView } from '../shared/contract';
 import { mock } from './mock';
+import { getMedicines as mockMedicines, getPrevention as mockPrevention } from '../care/mock';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
 export const usingMock = !BASE;
@@ -40,6 +42,13 @@ export const api = {
 
   knows: (seniorId: string): Promise<KnownFact[]> =>
     usingMock ? mock.knows(seniorId) : http('GET', `/senior/${seniorId}/knows`),
+
+  // Added endpoints (Nathan, need team OK): what each medicine is for, and vaccines and check-ups due.
+  medicines: (seniorId: string, lang: Lang): Promise<MedicinesView> =>
+    usingMock ? mockMedicines() : http('GET', `/senior/${seniorId}/medicines?lang=${lang}`),
+
+  prevention: (seniorId: string, lang: Lang): Promise<PreventionView> =>
+    usingMock ? mockPrevention() : http('GET', `/senior/${seniorId}/prevention?lang=${lang}`),
 
   forget: (seniorId: string, factId: string): Promise<void> =>
     usingMock ? mock.forget(seniorId, factId) : http('DELETE', `/senior/${seniorId}/knows/${encodeURIComponent(factId)}`),

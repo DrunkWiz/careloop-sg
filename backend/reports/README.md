@@ -4,6 +4,24 @@ Weekly digest, handover pack, GP brief PDF. Every line traces to the decision lo
 
 Owner: Nathan
 
+## Medicines explained (`medicines.py`)
+
+`explain_all(senior, lang)` says what each of the senior's medicines is for, how it helps and what to look out
+for, in English or Mandarin, from a fixed table of common Singapore BP, diabetes, cholesterol and aspirin
+medicines (generic names and listed brands). How they take it always comes from their own label. A medicine
+not in the table is never guessed at: "CareLoop isn't able to identify this medicine. Please check with your
+pharmacist." A test holds every note to the guardrail's no-diagnosis, no-dose-change and no-stopping rules.
+PLACEHOLDER: the wording needs a pharmacist's or the medical student's check.
+
+## Staying well (`prevention.py`)
+
+`checklist(senior, today, notes, lang)` lists the vaccines, screenings and check-ups that apply (from conditions
+and medicines) and whether each is due, done, booked or not recorded (dates from `carenotes.prevention`).
+Vaccines follow MOH's National Adult Immunisation Schedule (1 Apr 2026) and the 2025/26 COVID-19 advice;
+screenings follow Screen for Life. Age and sex aren't stored, so items are those for adults 65+, and
+sex-specific screenings are left out. Check-up intervals marked placeholder need the medical student's sign-off.
+Due items print on the GP brief.
+
 ## Timetable import
 
 `timetable.parse(text, today=...)` reads a centre's own timetable: a calendar (.ics, as Google Calendar or

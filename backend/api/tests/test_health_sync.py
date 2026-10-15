@@ -62,6 +62,22 @@ class HealthSyncApi(unittest.TestCase):
         self.assertEqual(b["skipped"], 0)
         self.assertEqual(self.c.post("/demo/health-sync/wong").status_code, 409)  # no phone in the demo
 
+    def test_demo_phone_through_the_day(self):
+        """Fixed times, so it doesn't depend on when the tests run: a repeat sync changes nothing, and the
+        total only grows as the hours pass, up to the day's plan."""
+        from datetime import datetime
+
+        from backend.healthsync.mapping import SGT
+
+        d = api.today()
+        counts = []
+        for hh in (9, 9, 13, 22):
+            demo.phone_sync(self.store, "lim", datetime(d.year, d.month, d.day, hh, 30, tzinfo=SGT))
+            counts.append(self.store.get("reading", f"hs-lim-steps-{d}")["values"]["count"])
+        self.assertEqual(counts[0], counts[1])
+        self.assertLess(counts[1], counts[2])
+        self.assertLess(counts[2], counts[3])
+
     def test_demo_cuff_reading(self):
         r = self.c.post("/demo/health-sync/kaur", json={"bp": [133, 81]}).json()
         self.assertEqual(r["imported"].get("bp"), 1)
