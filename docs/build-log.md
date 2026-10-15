@@ -2,6 +2,13 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: same-day red flags
+
+- **The original bug was already fixed by Vibu** (`f7ae358`, "bug fixes"): a red flag on the same day as a rung-4 handover now gets its own `red_flag` handover (`ho-{decision}-R`), next to the first. Checked on the video's day: after the fortnight, "I'm fine lah, BP 186/112" gives Mr Tan two handovers and the family app shows the red flag first. Vibu's test: `test_rung4_handover_then_red_flag_same_day_gets_two_handovers`.
+- **Fixed (Nathan, in `ladder.py`): a second red flag the same day reset the first.** It rebuilt the red-flag handover, reopening it and wiping who had claimed it, so another family member could act on it twice. Today's red-flag handover is now kept as it is. Test: `test_second_red_flag_same_day_keeps_the_claim` (fails without the fix).
+- Engine changed after the blind run, so any held-out re-run is not blind. The held-out set was not run; the tuning set gives identical results before and after.
+- **For Vibu to decide:** a second, different red flag the same day (BP first, then chest pain) isn't messaged again, because messages are sent once per audience and rung each day. The family has already been told to act now; whether a new danger symptom should alert them again is a policy call.
+
 ## 15 Oct 2026: architecture and trust-boundary diagrams
 
 - `docs/architecture.md` (Nathan), for the challenge's "architecture diagram, trust-boundary diagram, key design trade-offs": the system diagram, one check-in step by step with five trust boundaries (input, model, consent, a person decides, data), how the prompts drive the model, the trade-offs table, and what's real, simulated or not yet. SVGs in `docs/architecture/` (GitHub shows them), with PNG copies for the deck.
@@ -72,7 +79,6 @@ What has been built, the decisions behind it, and what is still open. Newest fir
 ## Open items, most important first
 
 1. **Caregiver app: what the API doesn't give it yet** (Vibu). The app now uses the contract shapes as they are; these are the gaps it works around:
-   - **Same-day red flag has no handover (engine bug).** When a rung-4 handover already exists that day, a red flag the same day reuses its `handover_id` (`ladder.py`, `if out.rung in ("4", "R") and not decision["handover_id"]`), so no `red_flag` handover is made. Messages and `status` are right, so nothing is held back, but there is nothing to claim. The demo hits this: advance 11 days, then say the red flag. The app falls back to showing the message with "I've seen this".
    - **Caseload drops claimed handovers.** It returns only open ones, so a claimed row loses its "handling it" state.
    - **Caseload has no centre.** The app reads the AAC id and name from a senior's `brief.json` to find the programmes.
    - **GP brief gap.** `brief.json` has adherence for all medicines together, not per medicine.

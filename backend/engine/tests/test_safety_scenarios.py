@@ -262,6 +262,22 @@ class Scenarios(unittest.TestCase):
         self.assertNotEqual(handovers[0]["kind"], "red_flag")
         self.assertEqual(handovers[1]["kind"], "red_flag")
 
+    def test_second_red_flag_same_day_keeps_the_claim(self):
+        w = World()
+        w.day(TODAY, text="I'm fine lah, BP 186/112 this morning")
+        d1 = w.run(TODAY)
+        self.assertEqual(d1["rung"], "R")
+        claim(w.store, d1["handover_id"], "c1", "call_now")
+
+        # A second red flag later that day: the claim stands, so nobody else acts on it twice.
+        w.day(TODAY, text="Still got chest pain", bp=None)
+        d2 = w.run(TODAY)
+        self.assertEqual(d2["rung"], "R")
+        self.assertEqual(d2["handover_id"], d1["handover_id"])
+        ho = w.store.get("handover", d1["handover_id"])
+        self.assertEqual((ho["status"], ho["claimed_by"], ho["choice"]), ("claimed", "c1", "call_now"))
+        self.assertEqual(len([h for h in w.store.list("handover", senior_id=w.sid) if h["kind"] == "red_flag"]), 1)
+
     def test_every_day_is_logged_with_a_reason_rung_0_too(self):
         w = World()
         logged = w.store.list("decision", senior_id=w.sid)

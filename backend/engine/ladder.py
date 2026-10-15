@@ -104,7 +104,10 @@ def run_day(store, senior_id: str, day: date, *, now: datetime | None = None, ga
     }
 
     if out.rung == "R" or (out.rung == "4" and not decision["handover_id"]):
-        ho = _handover(store, senior, out, days, day, did, recent, now)
+        # A second red flag the same day keeps today's red-flag handover as it is: rebuilding it would reopen
+        # it and wipe who claimed it, so another family member could act on it twice.
+        existing = store.get("handover", f"ho-{did}-R") if out.rung == "R" else None
+        ho = existing or _handover(store, senior, out, days, day, did, recent, now)
         decision["handover_id"] = ho["id"]
 
     contacts = contacts_for(store, senior)
