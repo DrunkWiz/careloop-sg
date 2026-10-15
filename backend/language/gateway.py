@@ -10,6 +10,7 @@ Standard library only, so the language layer adds no dependencies to the backend
 from __future__ import annotations
 
 import json
+import logging
 import os
 import urllib.error
 import urllib.request
@@ -56,6 +57,10 @@ class OpenAICompatible:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 data = json.load(resp)
             return data["choices"][0]["message"]["content"]
+        except urllib.error.HTTPError as e:
+            # The provider's own error text (never the key) says why: a bad key, model name or quota.
+            detail = e.read(300).decode("utf-8", "replace") if e.fp else ""
+            raise ModelError(f"{self.name}: HTTP {e.code} {detail}".strip()) from e
         except (urllib.error.URLError, TimeoutError, KeyError, IndexError, ValueError) as e:
             raise ModelError(f"{self.name}: {e}") from e
 
@@ -105,6 +110,9 @@ class Chain:
             if accept(out):
                 return out, g.name
             errors.append(f"{g.name}: unusable reply")
+        if errors:
+            # Falling back to rules and templates is safe, but should never go unnoticed.
+            logging.getLogger("careloop.model").warning("model chain failed, using rules and templates: %s", "; ".join(errors))
         raise ModelError("; ".join(errors) or "no model configured")
 
 
