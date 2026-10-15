@@ -38,7 +38,7 @@ class OpenAICompatible:
     base_url: str
     api_key: str
     model: str
-    timeout: float = 12.0
+    timeout: float = 5.0  # a senior is waiting; past this, rules and templates answer instead
 
     def complete(self, system: str, user: str, *, want_json: bool = False) -> str:
         body: dict = {
@@ -119,12 +119,17 @@ class Chain:
 def from_env(env: dict | None = None) -> Chain:
     env = os.environ if env is None else env
     rungs: list[Gateway] = []
+    try:
+        timeout = float(env.get("LLM_TIMEOUT_SECONDS", 5))
+    except ValueError:
+        timeout = 5.0
     if env.get("HUNYUAN_API_KEY"):
         rungs.append(OpenAICompatible(
             name="hunyuan",
             base_url=env.get("HUNYUAN_BASE_URL", HUNYUAN_BASE_URL),
             api_key=env["HUNYUAN_API_KEY"],
             model=env.get("HUNYUAN_MODEL", HUNYUAN_MODEL),
+            timeout=timeout,
         ))
     if env.get("LLM_FALLBACK_BASE_URL") and env.get("LLM_FALLBACK_API_KEY") and env.get("LLM_FALLBACK_MODEL"):
         rungs.append(OpenAICompatible(
@@ -132,6 +137,7 @@ def from_env(env: dict | None = None) -> Chain:
             base_url=env["LLM_FALLBACK_BASE_URL"],
             api_key=env["LLM_FALLBACK_API_KEY"],
             model=env["LLM_FALLBACK_MODEL"],
+            timeout=timeout,
         ))
     return Chain(rungs)
 

@@ -51,6 +51,7 @@ The red-flag templates are **PLACEHOLDER** until the medical student signs off (
 1. Tencent Hunyuan via its OpenAI-compatible endpoint: `HUNYUAN_API_KEY` (optional `HUNYUAN_MODEL`, default `hunyuan-turbos-latest`; `HUNYUAN_BASE_URL`).
 2. Any OpenAI-compatible fallback: `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_API_KEY`, `LLM_FALLBACK_MODEL` (optional `LLM_FALLBACK_NAME`). The hosted demo uses Gemini here (`gemini-3.8-flash` via Google's OpenAI-compatible endpoint) until a Hunyuan key is set.
    When every model fails, the server logs why (the provider's error, never the key) before falling back.
+   Each model call gives up after 5 seconds (`LLM_TIMEOUT_SECONDS`), because a senior is waiting for the reply; rules and templates answer instead.
 3. No model: rules and templates. Always there, so the demo survives a dead API.
 
 `describe()` returns the chain for `GET /meta`.
