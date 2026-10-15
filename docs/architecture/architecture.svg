@@ -86,9 +86,9 @@
   <text x="644" y="216" class="t">Language layer</text>
   <text x="644" y="240" class="s">understand(): rules extract BP, doses,</text>
   <text x="644" y="256" class="s">symptoms; the model may add meaning</text>
-  <text x="644" y="278" class="s">write(): the model drafts words in their</text>
-  <text x="644" y="294" class="s">language; guardrail checks every draft,</text>
-  <text x="644" y="310" class="s">or a fixed template goes out</text>
+  <text x="644" y="278" class="s">write(): the model rewords the fixed</text>
+  <text x="644" y="294" class="s">message in their language; guardrail</text>
+  <text x="644" y="310" class="s">checks it. Red flags: fixed wording only</text>
   <text x="644" y="334" class="k">The only door to a model. Works with no</text>
   <text x="644" y="349" class="k">model at all (rules + templates).</text>
   <path d="M600 276 H626" class="ln" marker-end="url(#a)" marker-start="url(#a)"/>

@@ -22,7 +22,8 @@ and when it wakes the demo starts again from 24 Oct.
 ### How CareLoop uses AI
 
 - **Reading check-ins.** Rules read every check-in first, in English, Singlish and Mandarin (BP, doses, symptoms, red flags). Tencent Hunyuan then adds what rules miss: a symptom said in a roundabout way, the mood, an English gloss. It can add meaning but never remove a finding or invent a number.
-- **Writing messages.** Hunyuan drafts each message in the senior's language and tone, inside the step the rules already chose. Every draft passes a guardrail (no diagnosis, no dose change, no stopping a medicine, no calm words on a red flag), or a fixed template goes out.
+- **Writing messages.** The model drafts each message in the senior's language and tone, inside the step the rules already chose, keeping everything the fixed message says. Every draft passes a guardrail (no diagnosis, no dose change, no stopping a medicine, no invented number), or the fixed template goes out. **Red flags always use the fixed, signed-off wording**, sent at once, never reworded by a model.
+- **Which model.** Built for Tencent Hunyuan. The hosted demo runs on Gemini (`gemini-3.8-flash`) through the same fallback slot until a Hunyuan key is set; with no key at all, rules and templates.
 - **Never deciding.** Rules decide when to step in and who to tell, from the senior's own baseline, so every decision is explainable and tested. Without a model key CareLoop still works, on rules and templates.
 - Patterns, the GP brief, medicine notes and the staying-well checklist are rules and statistics, so every line traces back to the data.
 

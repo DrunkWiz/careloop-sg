@@ -121,10 +121,23 @@ class WriteFallsBack(unittest.TestCase):
         return FakeGateway().reply("Rung:", text)
 
     def test_bad_draft_replaced_by_template(self):
-        m = write("R", RED, "en", to="senior", gateway=self.draft("Don't worry lah, just rest."))
+        m = write("1", CALM, "en", to="senior", gateway=self.draft("Sounds like a stroke, maybe rest first."))
         self.assertTrue(m.from_template)
-        self.assertIn("995", m.text)
-        self.assertIn("draft:calm_on_red_flag", m.guardrail.reasons)
+        self.assertIn("draft:diagnosis", m.guardrail.reasons)
+
+    def test_red_flag_never_goes_to_the_model(self):
+        """The signed-off red-flag wording goes out as it is, at once: no model call, even when one is there."""
+        gw = self.draft("Don't worry lah, just rest.")
+        for to in ("senior", "family"):
+            m = write("R", RED, "en", to=to, gateway=gw, context={"name": "Mr Tan", "contact": "Wei Ling", "summary": "chest pain."})
+            self.assertTrue(m.from_template)
+            self.assertIn("995", m.text)
+        self.assertEqual(gw.calls, [])
+
+    def test_the_model_is_given_the_template_to_keep(self):
+        gw = self.draft("Morning! Sleep ok or not? When free, can measure your BP?")
+        write("1", CALM, "en-SG", gateway=gw)
+        self.assertIn("Keep everything this message says", gw.calls[0][1])
 
     def test_bad_mandarin_draft_replaced(self):
         m = write("1", CALM, "zh", gateway=self.draft("今晚多吃一粒药。"))

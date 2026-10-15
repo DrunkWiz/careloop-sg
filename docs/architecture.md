@@ -36,8 +36,9 @@ It runs as one service (`backend/api/serve.py`) on Render in Singapore: https://
    - It can add meaning: a symptom said in a roundabout way, the mood, an English gloss.
    - It can't remove a rule finding.
    - A BP number from the model is kept only if both numbers are in the text, and then at confidence 0.5.
-   - Every draft passes the guardrail (no diagnosis, no dose change, no stopping a medicine, no calm words on a red
-     flag, no outdoor advice during haze, no invented number), or the fixed template for that rung goes out.
+   - Every draft passes the guardrail (no diagnosis, no dose change, no stopping a medicine, no outdoor advice during
+     haze, no invented number), or the fixed template for that rung goes out.
+   - Red flags never go to the model: the fixed, signed-off wording goes out at once.
 3. **Consent.** Family sees only what the senior chose: nothing, a weekly summary, or readings, and whether their words
    and activity are shared. Red flags always reach them.
 4. **A person decides.** CareLoop tells the family or centre, then waits for someone to pick a step (call, polyclinic,
@@ -59,8 +60,12 @@ OpenAI-compatible model, then no model (rules and templates). Each prompt narrow
   into what the rules found, never the other way round.
 - **Writing** (`backend/language/write.py`): "The rung (what kind of message) is already decided. Write ONLY the message
   text." The hard rules repeat the guardrail: never diagnose, never mention a dose, never start a senior's message with a
-  number, never reassure on a red flag, never suggest going out during haze, at most three short sentences. The prompt
-  carries the rung and what it means, the audience, the language, the facts and the context (name, contact, place, haze).
+  number, never suggest going out during haze, at most three short sentences. The prompt carries the rung and what it
+  means, the audience, the language, the facts, the context (name, contact, place, haze), and the rung's fixed message:
+  "Keep everything this message says, and add nothing to it. Change only the wording and tone." Red flags skip the model.
+- **Which model:** the hosted demo uses Gemini (`gemini-3.8-flash`) in the fallback slot until a Hunyuan key is set.
+  Tested live on 15 Oct: it caught "my chest feel like got elephant sitting on top" as chest pain (rules alone missed
+  it), kept "204/126" exactly when the check-in tried to make it say all was fine, and read low mood in Mandarin.
 - **Then the guardrail checks the draft anyway.** A prompt asks; the guardrail enforces.
 
 ## 4. Key design trade-offs
@@ -70,6 +75,7 @@ OpenAI-compatible model, then no model (rules and templates). Each prompt narrow
 | Rules pick the rung; the model only handles words | An LLM deciding who to alert | Every decision is explainable, logged, tested offline, and measured on a frozen held-out set (5 of 5 red flags, 16 of 17 real problems, no false handovers) | Less nuance: a new situation needs a new rule |
 | The senior's own baseline | A fixed "BP over 140" alert | No false handovers (the fixed rule sends about 1.3 per persona-month), and it sees missed medicine, days unwell, isolation | Drifts are handed over 3 to 10 days later than the fixed rule. We lead the evaluation page with this loss |
 | Quiet by default: ask, nudge and note first; cooldowns; at most one non-urgent centre alert per senior a week | Alerting on everything | Families and centres keep trusting the alerts | A slow problem waits a few days. Red flags never wait |
+| Fixed, signed-off wording for red flags | The model rewording urgent instructions | What to do in an emergency never drifts, and goes out at once (a model call took up to 20 s) | Red-flag messages read the same every time |
 | A fixed template when the model fails or is missing | Model-only messages | Works with no key and no network; the demo survives a dead API | Template wording is plainer |
 | Fixed, reviewable medicine notes | A model explaining medicines | Never crosses into medication advice; a pharmacist can check every line; unknown medicines are never guessed | Covers 17 common medicines; anything else goes to the pharmacist |
 | Speech-to-text in the browser | Tencent Cloud ASR first | Free and on the phone | Quality varies by browser and needs HTTPS; Tencent ASR is wired up but not yet run live |
@@ -81,4 +87,4 @@ OpenAI-compatible model, then no model (rules and templates). Each prompt narrow
 
 | Real and running | Simulated | Not yet |
 |---|---|---|
-| Engine, language rules, guardrail, templates, consent, handovers, reports, GP brief, medicine notes, staying well, timetable import, the hosted site | The senior's phone syncing Fitbit and OMRON data; the demo clock and 12 synthetic seniors | A Hunyuan key on the hosted site; Tencent Cloud ASR against a live account; Postgres; installing on a real phone; clinical sign-off |
+| Engine, language rules, guardrail, templates, consent, handovers, reports, GP brief, medicine notes, staying well, timetable import, the hosted site, a live model (Gemini, standing in for Hunyuan) | The senior's phone syncing Fitbit and OMRON data; the demo clock and 12 synthetic seniors | A Hunyuan key on the hosted site; Tencent Cloud ASR against a live account; Postgres; installing on a real phone; clinical sign-off |

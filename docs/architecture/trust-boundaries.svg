@@ -25,7 +25,7 @@
 
   <!-- AI zone -->
   <rect x="190" y="84" width="1040" height="128" rx="14" fill="#fffaf0" stroke="#e7cf9b"/>
-  <text x="206" y="106" class="h" fill="#8a5a00">AI ZONE · TENCENT HUNYUAN · OPTIONAL: CARELOOP WORKS WITHOUT IT</text>
+  <text x="206" y="106" class="h" fill="#8a5a00">AI ZONE · TENCENT HUNYUAN (GEMINI IN THE DEMO) · OPTIONAL: CARELOOP WORKS WITHOUT IT</text>
   <rect x="206" y="118" width="300" height="82" rx="10" class="ai"/>
   <text x="220" y="140" class="t">Model reads (inside understand)</text>
   <text x="220" y="160" class="s">May add a symptom said in passing,</text>
@@ -33,9 +33,9 @@
   <text x="220" y="192" class="s">a rule finding or invent a number.</text>
   <rect x="904" y="118" width="310" height="82" rx="10" class="ai"/>
   <text x="918" y="140" class="t">Model writes (inside write)</text>
-  <text x="918" y="160" class="s">Drafts the words in their language and</text>
-  <text x="918" y="176" class="s">tone. Never picks the rung, who is told,</text>
-  <text x="918" y="192" class="s">or whether a number is dangerous.</text>
+  <text x="918" y="160" class="s">Rewords the fixed message in their</text>
+  <text x="918" y="176" class="s">language and tone. Never on a red flag;</text>
+  <text x="918" y="192" class="s">never picks the rung or who is told.</text>
   <path d="M356 200 V262" stroke="#a8700a" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#b)"/>
   <path d="M1004 200 V262" stroke="#a8700a" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#b)"/>
 
@@ -103,8 +103,8 @@
     <text x="916" y="362" class="s">change, stopping,</text>
     <text x="916" y="378" class="s">calm on a red flag,</text>
     <text x="916" y="394" class="s">invented number.</text>
-    <text x="916" y="416" class="k">Fails, or no model:</text>
-    <text x="916" y="430" class="k">the fixed template</text>
+    <text x="916" y="416" class="k">Fails, no model, or a</text>
+    <text x="916" y="430" class="k">red flag: fixed template</text>
 
     <rect x="1078" y="266" width="152" height="196" rx="10" class="box"/>
     <text x="1090" y="288" class="n">7</text>
