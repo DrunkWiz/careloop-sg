@@ -2,6 +2,12 @@
 
 What has been built, the decisions behind it, and what is still open. Newest first. Add to it when you finish a piece of work; keep each entry short.
 
+## 15 Oct 2026: hosted at https://careloop-sg.onrender.com
+
+- One Render web service (Singapore, free plan, auto-deploys `main`) runs `backend/api/serve.py` (new; Nathan): the API under `/api`, `web/dist` everywhere else. One HTTPS origin for phones, so installing the app and hold-to-talk can work there. The API moved under `/api` because page paths like `/care/family/health` look like API paths like `/care/family/{contact}`. Tests: `backend/api/tests/test_serve.py`.
+- `CARELOOP_DEMO_DAYS=11` plays the fortnight on a fresh store, so the link opens on 24 Oct.
+- **Limits of the free plan:** the service sleeps after about 15 minutes idle (the next visit waits about a minute), and its disk is wiped on restart or sleep, so the demo resets to 24 Oct. For judging, the starter plan (always on) or Postgres (`DATABASE_URL`, not run yet) would fix both; Vibu's call.
+
 ## 15 Oct 2026: phone health apps (simulated), more demo people, timetable import
 
 - **Apple Health and Health Connect, simulated** (`backend/healthsync`, new; Nathan). Records as each platform hands them over (Health Connect `StepsRecord`, `RestingHeartRateRecord`, `SleepSessionRecord`, `BloodPressureRecord`; HealthKit samples and the BP correlation) become readings: steps, resting heart rate, sleep (source `watch`) and BP (source `cuff`). Steps are merged by record id across syncs, so a full or partial re-sync never counts twice; unknown types and wrong units are skipped, never converted; future records are skipped; every reading passes the trust check. `POST /senior/{id}/health-sync` stores a sync and runs today again, so a synced 186/112 is a red flag at once (tested in the browser: the family app's full-screen red flag came up). `GET /senior/{id}/health-sync` shows what's connected (consent applies). `simulate.py` stands in for the phone app, which isn't built. Endpoints need the team's OK.
@@ -83,7 +89,7 @@ What has been built, the decisions behind it, and what is still open. Newest fir
    - Installing the app on a real phone (needs HTTPS hosting).
    - Fitbit and OMRON data from a real phone: the CareLoop phone app that would read Apple Health or Health Connect isn't built; `backend/healthsync/simulate.py` stands in for it.
 6. **Still to collect:** the real family story for the video opening (with consent), and optionally a quote from an AAC worker.
-7. **Hosting on HTTPS.** Needed for judges to open a link, for installing the app on a phone, and for hold-to-talk on a phone. Waits on Vibu's hosting decision (item 4).
+7. **Hosting: up on Render's free plan** (https://careloop-sg.onrender.com, see 15 Oct). Still to decide: an always-on plan or Postgres so the demo doesn't sleep or reset during judging; test hold-to-talk and installing on a real phone there.
 8. **Not making it; say so in the deck:** the CareLoop phone app that reads Apple Health or Health Connect (simulated instead), a Chinese caregiver app, Postgres in use.
 
 ### Done since this list was written

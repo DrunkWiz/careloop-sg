@@ -8,6 +8,15 @@ or to their Active Ageing Centre (AAC) if they have no family, with the evidence
 
 Tencent Cloud Hackathon SG 2026, Healthcare track, NTU LKCMedicine Challenge 2.
 
+**Try it: https://careloop-sg.onrender.com** (synthetic demo; opens on the video's day, 24 Oct)
+- Senior app: [/senior?senior=tan](https://careloop-sg.onrender.com/senior?senior=tan)
+- Family app: [/care/family?contact=tan-weiling](https://careloop-sg.onrender.com/care/family?contact=tan-weiling)
+- Centre console: [/care/aac?worker=aac-siti](https://careloop-sg.onrender.com/care/aac?worker=aac-siti)
+- Add `&demo` to a family or centre link for the demo clock (reset, +1 day, +11 days).
+
+The first visit after a quiet spell can take about a minute: the free service sleeps when nobody uses it,
+and when it wakes the demo starts again from 24 Oct.
+
 ## The interfaces
 
 One web build, three apps, one backend. A check-in on the senior app shows up in the family app and the centre console.
@@ -137,6 +146,17 @@ Without the API (`npm run dev`), the apps run on in-browser mocks in the same sh
 - `/care/aac?worker=aac-siti`: CareLoop for Centres, the AAC staff console (`?worker=aac-farid` for the second centre). `/care/aac/programmes` is the timetable, its import, and who each programme suits.
 - `?demo`: a bar to move the demo clock (+1 day, +11 days for the video's fortnight, reset). API only.
 - Mocks only: `?scenario=quiet`, `?scenario=redflag` (both views).
+
+### Hosting
+
+One Render web service (Singapore, free plan) runs `backend/api/serve.py`: the API under `/api` and the built web app at every other path, so phones get one HTTPS address. It deploys on every push to `main`.
+
+```
+pip install -r backend/requirements.txt && cd web && npm ci --include=dev && npm run build      # build (VITE_API_URL=/api)
+uvicorn backend.api.serve:site --host 0.0.0.0 --port $PORT                                       # start
+```
+
+Environment: `CARELOOP_SEED=demo`, `CARELOOP_DEMO_DAYS=11` (plays the fortnight on a fresh store), `VITE_API_URL=/api`, `PYTHON_VERSION=3.11.9`, `NODE_VERSION=20.18.0`. The store is SQLite on the service's own disk, which is wiped when it restarts or sleeps; for the demo that means it starts again from 24 Oct. Postgres (`DATABASE_URL`) is supported by the store but not run yet.
 
 ### On a phone, as an app
 
