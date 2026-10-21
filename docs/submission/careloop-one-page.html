@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CareLoop SG: one-page description</title>
+<style>
+  @page { size: A4; margin: 13mm 14mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Helvetica, Arial, sans-serif; color: #1d2b24; font-size: 10.1pt; line-height: 1.38; }
+  h1 { font-size: 21pt; margin: 0; letter-spacing: -.01em; }
+  .tag { font-size: 11.5pt; color: #24533f; margin: 2px 0 8px; font-weight: 600; }
+  h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: .06em; color: #24533f; margin: 9px 0 3px; border-bottom: 1px solid #cfe0d6; padding-bottom: 2px; }
+  p { margin: 0 0 5px; }
+  ul { margin: 0 0 4px; padding-left: 15px; }
+  li { margin-bottom: 2px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 4px; }
+  .stat { background: #eef5f0; border-radius: 6px; padding: 5px 8px; }
+  .stat b { font-size: 15pt; display: block; color: #24533f; }
+  .links { background: #f6f8f5; border: 1px solid #cfe0d6; border-radius: 6px; padding: 6px 9px; font-size: 9.6pt; }
+  .links a { color: #1d4a8a; text-decoration: none; }
+  .small { font-size: 8.4pt; color: #5f6660; margin-top: 6px; }
+  strong { color: #1d2b24; }
+</style>
+</head>
+<body>
+  <h1>CareLoop SG</h1>
+  <p class="tag">Quiet, AI-assisted support for seniors with high blood pressure, between doctor visits</p>
+
+  <h2>The problem</h2>
+  <p>Most of hypertension care happens at home, between visits. Readings drift, pills get missed, a senior feels unwell and says nothing. Families worry from afar, and seniors who live alone may have no one checking at all. Alert apps make it worse: a fixed "BP over 140" alarm fires so often that families stop listening.</p>
+
+  <h2>What CareLoop does</h2>
+  <p>A short daily check-in, by voice or big buttons, in English, Singlish or Mandarin. CareLoop learns <strong>each senior's own normal</strong> and stays quiet while things are normal for them. When something changes, it steps up gently: it asks, then nudges, then notes it, and only hands over to the family (or to their Active Ageing Centre if they have no family) when a problem persists, with the evidence. <strong>Red flags</strong> (a dangerous reading or a danger symptom) reach the family at once, every time.</p>
+
+  <div class="cols">
+    <div>
+      <h2>Who uses it</h2>
+      <ul>
+        <li><strong>Seniors:</strong> a large-text, low-effort app; it explains what each medicine is for and which vaccines or check-ups are due.</li>
+        <li><strong>Family:</strong> a quiet app with the trends, the evidence when needed, a shared care plan, and a one-page GP brief to print.</li>
+        <li><strong>Centre staff:</strong> a caseload console for seniors who live alone, sorted by who needs a call first.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Key features</h2>
+      <ul>
+        <li>Personal baselines and context (rain, haze, festivals) before anyone is alerted</li>
+        <li>Handovers that wait for a person to choose a step; CareLoop never calls anyone itself</li>
+        <li>Consent: the senior chooses what family sees</li>
+        <li>Readings from a Fitbit or OMRON cuff via Apple Health / Health Connect (simulated in the demo)</li>
+        <li>Medicine notes in plain words; an unknown medicine goes to the pharmacist, never guessed</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>How it uses AI, safely</h2>
+  <p><strong>Rules decide; the AI only reads and writes words.</strong> A large language model reads each check-in to catch what simple rules miss (in a live test, "my chest feel like got elephant sitting on top" became a chest-pain red flag that keyword rules alone had missed), and words the gentler messages in the senior's own language and tone. It never chooses who is told or whether a number is dangerous. Every message passes a guardrail (no diagnosis, no dose changes, no invented numbers) or a fixed template goes out; red flags always use fixed wording. With no model at all, CareLoop still works on rules and templates.</p>
+
+  <h2>Tested blind</h2>
+  <p>On a frozen, held-out set of synthetic seniors (720 days), compared with the usual "alert above 140" rule:</p>
+  <div class="stats">
+    <div class="stat"><b>5 of 5</b>red flags caught (fixed rule: 3 of 5)</div>
+    <div class="stat"><b>16 of 17</b>real problems handed over</div>
+    <div class="stat"><b>0</b>false alarms per senior-month (fixed rule: 1.29)</div>
+  </div>
+  <p>The honest trade-off: a slow blood-pressure drift is handed over about 3 days later than the fixed rule. In return, families get no false alarms, and CareLoop sees what one number can't: missed medicine, days unwell, isolation.</p>
+
+  <h2>How it's built</h2>
+  <p>React web app (installable on a phone) · Python FastAPI backend · a rule engine with one thresholds file · a language layer that is the only path to the model (Tencent Hunyuan or any OpenAI-compatible model) · open data from data.gov.sg (haze, rainfall, centre locations) · 183 offline tests.</p>
+
+  <div class="links">
+    <b>Live demo:</b> <a href="https://careloop-sg.onrender.com">careloop-sg.onrender.com</a> (may take a minute to wake) ·
+    <b>Senior app:</b> <a href="https://careloop-sg.onrender.com/senior?senior=tan">/senior?senior=tan</a> ·
+    <b>Family:</b> <a href="https://careloop-sg.onrender.com/care/family?contact=tan-weiling">/care/family</a> ·
+    <b>Centre:</b> <a href="https://careloop-sg.onrender.com/care/aac?worker=aac-siti">/care/aac</a><br>
+    <b>Code:</b> <a href="https://github.com/DrunkWiz/careloop-sg">github.com/DrunkWiz/careloop-sg</a> ·
+    <b>Architecture:</b> docs/architecture.md · <b>Evaluation:</b> docs/evaluation.md
+  </div>
+  <p class="small">All people in the demo are synthetic. CareLoop is a student prototype, not a medical device, and is not connected to any clinic system. Clinical thresholds, red-flag wording and medicine notes are placeholders until reviewed by a clinician. Team: Nathan, Mingyu, Vibu.</p>
+</body>
+</html>
